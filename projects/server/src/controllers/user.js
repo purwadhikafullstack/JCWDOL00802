@@ -1,7 +1,6 @@
 const { hashPassword } = require("../config/encript");
 const UserModel = require("../model/user");
 const { Op } = require("sequelize");
-// const { checkDataLogin } = require("../config/middleware");
 const bcrypt = require("bcrypt");
 const sequelize = require("sequelize");
 const { cetakToken } = require("../config/encript");
@@ -15,21 +14,18 @@ module.exports = {
       let data = await UserModel.findAll();
       res.status(200).send(data);
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },
 
   regis: async (req, res) => {
     try {
-      console.log(req.body);
       let { email } = req.body;
       let data = await UserModel.findAll({
         where: {
           [Op.or]: [{ email }],
         },
       });
-      console.log(data);
       if (data.length > 0) {
         res.status(400).send({
           success: false,
@@ -60,14 +56,12 @@ module.exports = {
         });
       }
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },
 
   verify: async (req, res) => {
     try {
-      console.log(req.decript.email);
       let email = req.decript.email;
       let { password } = req.body;
       //patch disini
@@ -77,37 +71,23 @@ module.exports = {
           where: { email },
         }
       );
-      console.log(newUser);
-      console.log(password);
-
-      // newUser.password = hashPassword(password);
-
-      // await newUser.save();
 
       res.status(200).send({
         success: true,
         msg: "Verification Success",
       });
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },
 
   login: async (req, res) => {
     try {
-      console.log(req.body);
       let { email, pass } = req.body;
       let get = await UserModel.findAll({
         where: { email },
       });
-      console.log(`email = ${email}`);
-      console.log(`get = ${get}`);
-      console.log(`pass = ${pass}`);
-      console.log(`dataval = ${get[0].dataValues.password}`);
-
       let checkPass = bcrypt.compareSync(pass, get[0].dataValues.password);
-      console.log(checkPass);
       if (get.length == 0) {
         res.status(401).send({
           success: false,
@@ -152,7 +132,6 @@ module.exports = {
         }
       }
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },
@@ -162,17 +141,14 @@ module.exports = {
       let get = await UserModel.findAll({
         where: { email: req.decript.email },
       });
-      console.log(`get keep login`, get);
       res.status(200).send({ ...get[0].dataValues, token });
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },
 
   requestReset: async (req, res) => {
     try {
-      console.log(req.body.email);
       let email = req.body.email;
       //patch disini
       let resetUser = await UserModel.update(
@@ -182,7 +158,6 @@ module.exports = {
           where: { email },
         }
       );
-
       //kirim email
 
       let tokenEmail = cetakToken({ email });
@@ -202,14 +177,12 @@ module.exports = {
         msg: "Reset password Success",
       });
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },
 
   resetPassword: async (req, res) => {
     try {
-      console.log(req.decript.email);
       let email = req.decript.email;
       let { password } = req.body;
       //patch disini
@@ -219,15 +192,12 @@ module.exports = {
           where: { email },
         }
       );
-      console.log(newUser);
-      console.log(password);
 
       res.status(200).send({
         success: true,
         msg: "Reset Password Success",
       });
     } catch (error) {
-      console.log(error);
       res.status(500).send(error);
     }
   },

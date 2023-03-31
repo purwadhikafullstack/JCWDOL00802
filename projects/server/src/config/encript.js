@@ -11,7 +11,6 @@ module.exports = {
     return token;
   },
   readToken: (req, res, next) => {
-    console.log("read token jalan");
     // pengecekan token
     jwt.verify(req.token, "cnc!", (err, decript) => {
       if (err) {
@@ -20,7 +19,6 @@ module.exports = {
           message: "Authenticate token failed ⚠️",
         });
       }
-      console.log(decript);
       req.decript = decript;
       next();
     });

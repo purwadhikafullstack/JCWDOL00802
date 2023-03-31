@@ -39,7 +39,6 @@ function App() {
   const keepLogin = async () => {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
-      console.log(`local storage = ${getLocalStorage}`);
       if (getLocalStorage) {
         let res = await Axios.get(API_URL + `/user/keep`, {
           headers: {
@@ -50,13 +49,12 @@ function App() {
         dispatch(loginAction(res.data)); // menjalankan fungsi action
         setLoading(false); // loading dimatikan ketika berhasil mendapat response
         localStorage.setItem("cnc_login", res.data.token);
-        console.log(`res data =`, res.data);
       } else {
         setLoading(false);
       }
     } catch (error) {
       console.log(error);
-      setLoading(false); // loading dimatikan ketika berhasil mendapat response
+      setLoading(false);
     }
   };
 

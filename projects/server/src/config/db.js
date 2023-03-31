@@ -10,10 +10,7 @@ const dbSequelize = new Sequelize(
 const checkSequelize = async () => {
   try {
     await dbSequelize.authenticate();
-    console.log("Sequelize connected");
-  } catch (error) {
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 module.exports = {

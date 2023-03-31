@@ -24,9 +24,7 @@ const Login = (props) => {
       pass: inputPass,
     })
       .then((response) => {
-        console.log(response.data);
-        // delete response.data[0].password;
-        dispatch(loginAction(response.data)); // menjalankan fungsi action
+        dispatch(loginAction(response.data));
         localStorage.setItem("cnc_login", response.data.token);
         navigate("/", { replace: true });
       })
