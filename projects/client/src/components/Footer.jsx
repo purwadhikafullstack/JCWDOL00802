@@ -26,7 +26,7 @@ const Footer = (props) => {
           <li>Lokasi Kami</li>
         </ul>
         <div className="d-none d-md-block">
-          <b>Follow us</b>
+          <b>Ikuti Kami</b>
           <div className="d-flex">
             <AiFillFacebook size={42} color="#f96c08" />
             <AiFillInstagram size={42} color="#f96c08" />
@@ -52,9 +52,7 @@ const Footer = (props) => {
           </span>
         </span>
       </div>
-      <div className="text-muted text-center">
-        © 2023 ClickNCollect. All rights reserved.
-      </div>
+      <div className="text-muted text-center">© 2023 ClickNCollect.</div>
     </div>
   );
 };

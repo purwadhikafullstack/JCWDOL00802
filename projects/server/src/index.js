@@ -17,7 +17,13 @@ app.use(
 app.use(express.json());
 
 //#region API ROUTES
+//CHECK SEQUELIZE
+const { checkSequelize } = require("./config/db");
+checkSequelize();
 
+//ROUTES
+const { userRouter } = require("./routers");
+app.use("/user", userRouter);
 // ===========================
 // NOTE : Add your routes here
 
