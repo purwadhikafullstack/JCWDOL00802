@@ -17,6 +17,7 @@ import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
+import ReportSales from "./pages/SalesReport";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -73,6 +74,7 @@ function App() {
         <Route path="/newuser" element={<NewUser />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/admin/salesreport" element={<ReportSales />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
