@@ -35,7 +35,7 @@ module.exports = {
       };
       let filterCategory = {};
       let filterName = {};
-
+      console.log("tes");
       if (warehouse !== "" && typeof warehouse !== "undefined") {
         filterWarehouse.warehouse_sender = warehouse;
       }
