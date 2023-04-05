@@ -18,6 +18,7 @@ import {
 function ReportSales() {
 
    const [salesData,setSalesData]= useState(null);
+   const [dataExist,setDataExist]= useState(false)
    const [pendapatan,setPendapatan]= useState(0);
    const [pesanan,setPesanan]= useState(0);
    const [penjualan,setPenjualan]= useState(0)
@@ -51,6 +52,9 @@ function ReportSales() {
         .then(
             (response)=>{
                 setSalesData(response.data)
+                if(response.length>0){
+                  setDataExist(true)
+                } else{setDataExist(false)}
             }
         )
     }
@@ -209,8 +213,8 @@ function ReportSales() {
         <TableContainer>
   <Table variant='simple'>
     {
-        salesData == [] || salesData == null &&
-    <TableCaption>tidak Ada</TableCaption>
+        !dataExist &&
+    <TableCaption>tidak Ada Data</TableCaption>
     }
     <Thead>
       <Tr>
