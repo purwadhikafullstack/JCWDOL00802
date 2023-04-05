@@ -35,6 +35,13 @@ function App() {
   const [loading, setLoading] = React.useState(true);
 
   const dispatch = useDispatch();
+  const { id_user, role } = useSelector((state) => {
+    return {
+      id_user: state.userReducer.id_user,
+      role: state.userReducer.role,
+    };
+  });
+  const admin = [2, 3];
 
   //KEEP LOGIN
   const keepLogin = async () => {
@@ -72,9 +79,14 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/regis" element={<Register />} />
         <Route path="/newuser" element={<NewUser />} />
+        {admin.includes(role) && (
+          <>
+            <Route path="/admin/salesreport" element={<ReportSales />} />
+          </>
+        )}
         <Route path="/resetPassword" element={<ResetPassword />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/admin/salesreport" element={<ReportSales />} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
