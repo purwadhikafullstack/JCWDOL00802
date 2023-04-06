@@ -19,7 +19,7 @@ const Login = (props) => {
 
   const onBtnLogin = () => {
     // Melakukan request data ke server
-    Axios.post(API_URL + `/user/login`, {
+    Axios.post(API_URL + `/apis/user/login`, {
       email: inputEmail,
       pass: inputPass,
     })
