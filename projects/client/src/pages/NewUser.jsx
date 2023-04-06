@@ -17,7 +17,7 @@ const NewUser = (props) => {
 
   const onRegis = () => {
     Axios.patch(
-      API_URL + `/user/verify`,
+      API_URL + `/apis/user/verify`,
       {
         password,
       },

@@ -21,6 +21,7 @@ import ReportSales from "./pages/SalesReport";
 import AdminWarehouse from "./pages/AdminWarehouse";
 import NewWarehouse from "./pages/NewWarehouse";
 import EditWarehouse from "./pages/EditWarehouse";
+import OrderPage from "./pages/Orderlist";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -51,7 +52,7 @@ function App() {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
       if (getLocalStorage) {
-        let res = await Axios.get(API_URL + `/user/keep`, {
+        let res = await Axios.get(API_URL + `/apis/user/keep`, {
           headers: {
             Authorization: `Bearer ${getLocalStorage}`,
           },
@@ -82,14 +83,23 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/regis" element={<Register />} />
         <Route path="/newuser" element={<NewUser />} />
+        <Route path="/resetPassword" element={<ResetPassword />} />
+        {/* semua yang butuh login user taruh dalam <></> bawah ini */}
+        {role == 1 && (
+          <>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/transaction" element={<OrderPage />} />
+          </>
+        )}
+        {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}
         {admin.includes(role) && (
           <>
             <Route path="/admin/salesreport" element={<ReportSales />} />
             <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
           </>
         )}
-        <Route path="/resetPassword" element={<ResetPassword />} />
-        <Route path="/profile" element={<Profile />} />
+        {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
+        {role == 3 && <>{/* placebo */}</>}
 
         <Route path="*" element={<NotFound />} />
 

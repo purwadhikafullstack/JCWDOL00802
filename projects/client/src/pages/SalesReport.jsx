@@ -43,7 +43,7 @@ function ReportSales() {
       let getLocalStorage = localStorage.getItem("cnc_login")
         const formattedBulan= parseInt(bulan)+1;
         const formattedTahun= parseInt(tahun)
-        Axios.get(`${API_URL}/product/sales?bulan=${formattedBulan}&tahun=${formattedTahun}&search=${search}&warehouse=${selectedWarehouse}&category=${selectedCategory}`,
+        Axios.get(`${API_URL}/apis/product/sales?bulan=${formattedBulan}&tahun=${formattedTahun}&search=${search}&warehouse=${selectedWarehouse}&category=${selectedCategory}`,
         {
           headers: {
       Authorization: `Bearer ${getLocalStorage}`,

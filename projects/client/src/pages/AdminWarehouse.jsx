@@ -24,7 +24,7 @@ function AdminWarehouse() {
   const getWarehouse = async () => {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
-      let warehouse = await Axios.get(API_URL + `/warehouse/list`, {
+      let warehouse = await Axios.get(API_URL + `/apis/warehouse/list`, {
         params: { search },
         headers: { Authorization: `Bearer ${getLocalStorage}` },
       });

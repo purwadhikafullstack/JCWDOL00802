@@ -25,7 +25,7 @@ const EditWarehouse = (props) => {
   const getWarehouse = async () => {
     try {
       let warehouse = await Axios.get(
-        API_URL + `/warehouse/detailwarehouse?id_warehouse=${idWarehouse}`
+        API_URL + `/apis/warehouse/detailwarehouse?id_warehouse=${idWarehouse}`
       );
       setWarehouseData(warehouse.data[0]);
       setNameEdit(warehouse.data[0].warehouse_branch_name);
@@ -39,7 +39,7 @@ const EditWarehouse = (props) => {
   const onGetSelectedCity = async () => {
     try {
       let response = await Axios.get(
-        API_URL + `/warehouse/postal?postal=${warehouseData.postal_code}`
+        API_URL + `/apis/warehouse/postal?postal=${warehouseData.postal_code}`
       );
       let kota = response.data;
       let container = {
@@ -59,7 +59,7 @@ const EditWarehouse = (props) => {
 
   const onGetProvince = useCallback(async () => {
     try {
-      let response = await Axios.get(API_URL + `/rajaongkir/getprovince`);
+      let response = await Axios.get(API_URL + `/apis/rajaongkir/getprovince`);
       setProvinceList(response.data);
     } catch (error) {
       console.log(error);
@@ -70,7 +70,7 @@ const EditWarehouse = (props) => {
     async (idprop) => {
       try {
         let response = await Axios.get(
-          API_URL + `/rajaongkir/getcity?province=${idprop}`
+          API_URL + `/apis/rajaongkir/getcity?province=${idprop}`
         );
         let kota = response.data;
         let container = [];
@@ -146,7 +146,7 @@ const EditWarehouse = (props) => {
   //FUNCTION BUTTON
   const onEdit = async () => {
     try {
-      await Axios.post(API_URL + `/warehouse/editwarehouse`, {
+      await Axios.post(API_URL + `/apis/warehouse/editwarehouse`, {
         id_warehouse: idWarehouse,
         warehouse_branch_name: nameEdit,
         phone_number: phoneNumberEdit,
@@ -166,7 +166,7 @@ const EditWarehouse = (props) => {
   };
 
   const onDelete = () => {
-    Axios.post(API_URL + `/warehouse/deletewarehouse`, {
+    Axios.post(API_URL + `/apis/warehouse/deletewarehouse`, {
       id_warehouse: idWarehouse,
     })
       .then((response) => {

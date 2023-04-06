@@ -19,7 +19,7 @@ const NewWarehouse = (props) => {
   //GET DATA
   let onGetProvince = async () => {
     try {
-      let response = await Axios.get(API_URL + `/rajaongkir/getprovince`);
+      let response = await Axios.get(API_URL + `/apis/rajaongkir/getprovince`);
       setProvinceList(response.data);
     } catch (error) {
       console.log(error);
@@ -30,7 +30,7 @@ const NewWarehouse = (props) => {
     try {
       setKeyProvinceEdit(idprop);
       let response = await Axios.get(
-        API_URL + `/rajaongkir/getcity?province=${idprop}`
+        API_URL + `/apis/rajaongkir/getcity?province=${idprop}`
       );
       let kota = response.data;
       let container = [];
@@ -97,7 +97,7 @@ const NewWarehouse = (props) => {
 
   //FUNCTION BUTTON
   const onAdd = () => {
-    Axios.post(API_URL + `/warehouse/addwarehouse`, {
+    Axios.post(API_URL + `/apis/warehouse/addwarehouse`, {
       warehouse_branch_name: nameEdit,
       phone_number: phoneNumberEdit,
       city: selectedCity?.city_name,

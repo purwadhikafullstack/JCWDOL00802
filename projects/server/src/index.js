@@ -22,16 +22,8 @@ const { checkSequelize } = require("./config/db");
 checkSequelize();
 
 //ROUTES
-const {
-  userRouter,
-  productRouter,
-  warehouseRouter,
-  rajaOngkirRouter,
-} = require("./routers");
-app.use("/user", userRouter);
-app.use("/product", productRouter);
-app.use("/warehouse", warehouseRouter);
-app.use("/rajaongkir", rajaOngkirRouter);
+const configRouter = require("./routers");
+app.use("/apis", configRouter);
 // ===========================
 // NOTE : Add your routes here
 

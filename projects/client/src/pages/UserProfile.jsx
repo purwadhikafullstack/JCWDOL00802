@@ -20,7 +20,7 @@ const Profile = (props) => {
 
   const onRegis = () => {
     Axios.patch(
-      API_URL + `/user/edit`,
+      API_URL + `/apis/user/edit`,
       {
         //data ygdiedit disini
       },
@@ -37,7 +37,7 @@ const Profile = (props) => {
   };
 
   const onReset = () => {
-    Axios.post(API_URL + `/user/resetRequest`, {
+    Axios.post(API_URL + `/apis/user/resetRequest`, {
       email,
     })
       .then((response) => {
