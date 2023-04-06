@@ -18,6 +18,9 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 import ReportSales from "./pages/SalesReport";
+import AdminWarehouse from "./pages/AdminWarehouse";
+import NewWarehouse from "./pages/NewWarehouse";
+import EditWarehouse from "./pages/EditWarehouse";
 import OrderPage from "./pages/Orderlist";
 
 function App() {
@@ -92,12 +95,20 @@ function App() {
         {admin.includes(role) && (
           <>
             <Route path="/admin/salesreport" element={<ReportSales />} />
+            <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
           </>
         )}
         {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
         {role == 3 && <>{/* placebo */}</>}
 
         <Route path="*" element={<NotFound />} />
+
+        {role == 3 && (
+          <>
+            <Route path="/admin/warehouse" element={<AdminWarehouse />} />
+            <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
+          </>
+        )}
       </Routes>
       <Footer />
     </div>

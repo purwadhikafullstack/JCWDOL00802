@@ -17,7 +17,7 @@ const ResetPassword = (props) => {
 
   const onRegis = () => {
     Axios.patch(
-      API_URL + `/user/resetpassword`,
+      API_URL + `/apis/user/resetpassword`,
       {
         password,
       },

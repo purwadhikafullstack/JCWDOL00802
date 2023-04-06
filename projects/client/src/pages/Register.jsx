@@ -9,7 +9,7 @@ const Register = (props) => {
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("");
   const onRegis = () => {
-    Axios.post(API_URL + `/user/regis`, {
+    Axios.post(API_URL + `/apis/user/regis`, {
       email,
     });
     navigate("/")
