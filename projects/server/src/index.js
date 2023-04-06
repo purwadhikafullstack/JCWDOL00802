@@ -22,9 +22,8 @@ const { checkSequelize } = require("./config/db");
 checkSequelize();
 
 //ROUTES
-const { userRouter, productRouter } = require("./routers");
-app.use("/user", userRouter);
-app.use("/product", productRouter);
+const configRouter = require("./routers");
+app.use("/apis", configRouter);
 // ===========================
 // NOTE : Add your routes here
 
