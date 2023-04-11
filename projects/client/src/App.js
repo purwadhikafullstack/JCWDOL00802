@@ -22,6 +22,9 @@ import AdminWarehouse from "./pages/AdminWarehouse";
 import NewWarehouse from "./pages/NewWarehouse";
 import EditWarehouse from "./pages/EditWarehouse";
 import OrderPage from "./pages/Orderlist";
+import AdminProducts from "./pages/AdminProduct";
+import EditProduct from "./pages/EditProduct";
+import NewProduct from "./pages/NewProduct";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -95,7 +98,9 @@ function App() {
         {admin.includes(role) && (
           <>
             <Route path="/admin/salesreport" element={<ReportSales />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
+            <Route path="/admin/editproduct" element={<EditProduct />} />
           </>
         )}
         {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
@@ -107,6 +112,7 @@ function App() {
           <>
             <Route path="/admin/warehouse" element={<AdminWarehouse />} />
             <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
+            <Route path="/admin/newproduct" element={<NewProduct />} />
           </>
         )}
       </Routes>

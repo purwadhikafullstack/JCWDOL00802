@@ -2,10 +2,11 @@ import React, { useCallback, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Axios from "axios";
 import { Button, Text } from "@chakra-ui/react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../helper";
 
 const NewUser = (props) => {
+  const navigate = useNavigate();
   const location = useLocation();
   let token = location.search.split("=")[1];
 
@@ -16,7 +17,7 @@ const NewUser = (props) => {
   const [visible2, setVisible2] = React.useState("password");
 
   const onRegis = () => {
-    Axios.patch(
+    Axios.post(
       API_URL + `/apis/user/verify`,
       {
         password,
@@ -29,6 +30,7 @@ const NewUser = (props) => {
     )
       .then((response) => {
         alert("Verify Success ✅");
+        navigate("/");
       })
       .catch((error) => {
         console.log(error);
@@ -102,7 +104,7 @@ const NewUser = (props) => {
                 </label>
                 <div className="input-group border rounded">
                   <input
-                    type={visible}
+                    type={visible2}
                     className="form-control p-3 border-0"
                     placeholder="8+ character"
                     onChange={(e) => setCheck(e.target.value)}
