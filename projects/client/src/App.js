@@ -25,6 +25,8 @@ import OrderPage from "./pages/Orderlist";
 import AdminProducts from "./pages/AdminProduct";
 import EditProduct from "./pages/EditProduct";
 import NewProduct from "./pages/NewProduct";
+import StockHistory from "./pages/StockHistory";
+import StockHistoryDetail from "./pages/StockHistoryDetail";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -101,13 +103,15 @@ function App() {
             <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
             <Route path="/admin/editproduct" element={<EditProduct />} />
+            <Route path="/admin/stockhistory" element={<StockHistory />} />
+            <Route
+              path="/admin/stockhistory/:id"
+              element={<StockHistoryDetail />}
+            />
           </>
         )}
+
         {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
-        {role == 3 && <>{/* placebo */}</>}
-
-        <Route path="*" element={<NotFound />} />
-
         {role == 3 && (
           <>
             <Route path="/admin/warehouse" element={<AdminWarehouse />} />
@@ -115,6 +119,7 @@ function App() {
             <Route path="/admin/newproduct" element={<NewProduct />} />
           </>
         )}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </div>
