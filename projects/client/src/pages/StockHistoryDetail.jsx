@@ -65,7 +65,7 @@ function StockHistoryDetail() {
         .then(
             (response)=>{
                 setSalesData(response.data.data)
-                console.log(response.data);
+                
                 setTotalPage(response.data.total_page)
                 if(response.length>0){
                   setDataExist(true)
