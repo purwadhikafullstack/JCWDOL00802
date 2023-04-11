@@ -24,6 +24,7 @@ checkSequelize();
 //ROUTES
 const configRouter = require("./routers");
 app.use("/apis", configRouter);
+app.use(express.static("src/public"));
 // ===========================
 // NOTE : Add your routes here
 

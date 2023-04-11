@@ -11,10 +11,10 @@ const Register = (props) => {
   const onRegis = () => {
     Axios.post(API_URL + `/apis/user/regis`, {
       email,
-    });
-    navigate("/")
+    })
       .then((response) => {
         alert("Register Success ✅");
+        navigate("/");
       })
       .catch((error) => {
         console.log(error);

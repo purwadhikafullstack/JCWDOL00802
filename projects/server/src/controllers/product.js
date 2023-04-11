@@ -7,6 +7,7 @@ const WarehouseModel = require("../model/warehouse");
 const CategoryProductModel = require("../model/Category_Product");
 const WarehouseAdminModel = require("../model/Warehouse_admin");
 const CategoryModel = require("../model/category");
+const { Op } = require("sequelize");
 
 module.exports = {
   getProductSales: async (req, res) => {
@@ -140,6 +141,183 @@ module.exports = {
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
+    }
+  },
+  getProductAdmin: async (req, res) => {
+    try {
+      let role = req.decript.role;
+      let warehouse = req.body.warehouse;
+      let search = req.body.search;
+      let category = req.body.category;
+
+      let filterCategory = {};
+      let filterName = {};
+      let filterWarehouse = {};
+
+      if (warehouse !== "" && typeof warehouse !== "undefined") {
+        filterWarehouse.id_warehouse = warehouse;
+      }
+      if (search !== "" && typeof search !== "undefined") {
+        filterName.name = {
+          [sequelize.Op.like]: [`%${search}%`],
+        };
+      }
+
+      if (category !== "" && typeof category !== "undefined") {
+        filterCategory.id_category = category;
+      }
+      if (role == 2) {
+        let find = await WarehouseAdminModel.findAll({
+          where: { id_user: req.decript.id_user },
+        });
+        warehouse = find[0].dataValues.id_warehouse;
+        filterWarehouse.id_warehouse = warehouse;
+      }
+
+      const data = await ProductModel.findAll({
+        where: filterName,
+
+        group: ["id_product", "Category_Products.id_category_product"],
+        attributes: [
+          "id_product",
+          "name",
+          "price",
+          "status",
+          [sequelize.fn("sum", sequelize.col("stocks.stock")), "total_stock"],
+        ],
+        include: [
+          {
+            model: CategoryProductModel,
+            where: filterCategory,
+            attributes: [],
+          },
+          {
+            model: StockModel,
+            as: "stocks",
+            where: filterWarehouse,
+            attributes: [],
+          },
+        ],
+      });
+      return res.status(201).send(data);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+
+  getDetailProducts: async (req, res) => {
+    try {
+      let { id_product } = req.query;
+      let data = await ProductModel.findOne({
+        where: {
+          id_product,
+        },
+      });
+
+      res.status(200).send(data);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+  editProducts: async (req, res) => {
+    try {
+      let { id_product, name, description, price, weight, product_picture } =
+        req.body;
+      if (req.file) {
+        product_picture = req.file.filename;
+      }
+      let data = await ProductModel.findAll({
+        where: {
+          [Op.or]: [{ name }],
+        },
+      });
+      if (data.length > 1) {
+        res.status(400).send({
+          success: false,
+          msg: "Name already registered",
+        });
+      } else {
+        let editProd = await ProductModel.update(
+          { name, description, price, weight, product_picture },
+          {
+            where: { id_product },
+          }
+        );
+      }
+      res.status(200).send({
+        success: true,
+        msg: "Edit Data Success",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+  deleteProducts: async (req, res) => {
+    try {
+      let { id_product } = req.body;
+
+      let delProd = await ProductModel.update(
+        { status: 0 },
+        {
+          where: { id_product },
+        }
+      );
+
+      res.status(200).send({
+        success: true,
+        msg: "Edit Data Success",
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+  newProducts: async (req, res) => {
+    try {
+      let { name, description, price, weight, product_picture } = req.body;
+      if (req.file) {
+        product_picture = req.file.filename;
+      }
+      let data = await ProductModel.findAll({
+        where: {
+          [Op.or]: [{ name }],
+        },
+      });
+      if (data.length > 0) {
+        res.status(400).send({
+          success: false,
+          msg: "Name already registered",
+        });
+      } else {
+        let results = await ProductModel.create({
+          name,
+          description,
+          price,
+          weight,
+          product_picture,
+        });
+
+        let getWarehouse = await WarehouseModel.findAll();
+        let warehouse = getWarehouse;
+
+        warehouse.map((val, idx) => {
+          let newStock = StockModel.create({
+            id_warehouse: val.dataValues.id_warehouse,
+            id_product: results.id_product,
+            stock: 0,
+          });
+        });
+        res.status(200).send({
+          success: true,
+          msg: "Add Product Success",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
     }
   },
 };

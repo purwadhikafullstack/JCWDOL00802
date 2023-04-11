@@ -5,7 +5,7 @@ const route = express.Router();
 
 route.get("/", userController.getDataUser);
 route.post("/regis", userController.regis);
-route.patch("/verify", readToken, userController.verify);
+route.post("/verify", readToken, userController.verify);
 route.post("/resetRequest", userController.requestReset);
 route.patch("/resetpassword", readToken, userController.resetPassword);
 route.post("/login", userController.login);
