@@ -66,7 +66,6 @@ function AdminProducts() {
         },
         { headers: { Authorization: `Bearer ${getLocalStorage}` } }
       );
-      console.log(`dataaa`, products.data);
       setDataProduct(products.data);
     } catch (error) {
       console.log(error);
@@ -129,7 +128,6 @@ function AdminProducts() {
 
   const printData = () => {
     let data = dataProductExist ? dataProduct : [];
-    console.log(data);
     return data.map((val, idx) => {
       let editpage = `/admin/editproduct?id_product=${val.id_product}`;
       let requestpage = `/admin/requeststock?id_product=${val.id_product}`;

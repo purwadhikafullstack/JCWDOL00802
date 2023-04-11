@@ -51,7 +51,6 @@ const EditProduct = (props) => {
       let products = await Axios.get(API_URL + `/apis/product/detailproduct`, {
         params: { id_product: idProd },
       });
-      console.log(`prod`, products.data.name);
       setDataProduct(products.data);
       setIdEdit(products.data.id_product);
       setNameEdit(products.data.name);
@@ -73,28 +72,6 @@ const EditProduct = (props) => {
     }).then((response) => {
       setDataWarehouse(response.data);
     });
-  };
-
-  const getStock = async (id) => {
-    try {
-      let getLocalStorage = localStorage.getItem("cnc_login");
-      let stocks = await Axios.get(API_URL + `/apis/product/stock`, {
-        params: {
-          warehouse: dataWarehouse,
-        },
-        headers: { Authorization: `Bearer ${getLocalStorage}` },
-      });
-      let stok = 0;
-      stocks.data.map((value, index) => {
-        if (value.id_product == idProd) {
-          stok = stok + value.stock;
-        }
-      });
-
-      setDataStock(stok);
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   //GAMBAR
