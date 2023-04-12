@@ -76,5 +76,11 @@ route.post(
   ProductController.newProducts
 );
 route.post("/deleteproduct", ProductController.deleteProducts);
+route.post("/stockhistory", ProductController.getStockHistory);
+route.post(
+  "/stockhistorydetail",
+  authorizeController.authAdmin,
+  ProductController.getStockHistoryDetail
+);
 
 module.exports = route;

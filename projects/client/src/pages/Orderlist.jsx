@@ -31,7 +31,9 @@ const getOrder = async ()=>{
           Authorization: `Bearer ${getLocalStorage}`,
         },
             })
-             .then((response)=>{setOrderData(response.data)
+             .then((response)=>{
+              console.log(response.data);
+              setOrderData(response.data)
               
               
             }).catch((error)=>{console.log(error)})    
@@ -57,7 +59,7 @@ const PrintOrder = ()=>{
 let data = orderData
     if (data !== null){
         return data.map((val,idx)=>{
-          let gambar = `http://localhost:3600/img/product/${val.Transaction_Details[0].Product.product_picture}.jpg`
+          let gambar = `http://localhost:3600/img/product/${val.Transaction_Details[0].Product.product_picture}`
           return <div className ="" key={val.id_transaction}>
               <div className="row">
               <div className="col-1 fs-6 pe-1"><strong>Belanja</strong></div>
