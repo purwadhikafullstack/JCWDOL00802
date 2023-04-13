@@ -192,6 +192,7 @@ function AdminProducts() {
           "
             >
               <option value="">all category</option>
+              <option value={0}>No Category</option>
               {printCategory()}
             </select>
           </div>

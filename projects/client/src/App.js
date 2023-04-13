@@ -25,6 +25,7 @@ import OrderPage from "./pages/Orderlist";
 import AdminProducts from "./pages/AdminProduct";
 import EditProduct from "./pages/EditProduct";
 import NewProduct from "./pages/NewProduct";
+import AdminCategoryProduct from "./pages/CategoryProduct";
 import StockHistory from "./pages/StockHistory";
 import StockHistoryDetail from "./pages/StockHistoryDetail";
 
@@ -101,7 +102,8 @@ function App() {
           <>
             <Route path="/admin/salesreport" element={<ReportSales />} />
             <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
+            <Route path="/admin/category" element={<AdminCategoryProduct />} />
+
             <Route path="/admin/editproduct" element={<EditProduct />} />
             <Route path="/admin/stockhistory" element={<StockHistory />} />
             <Route
@@ -117,6 +119,7 @@ function App() {
             <Route path="/admin/warehouse" element={<AdminWarehouse />} />
             <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
             <Route path="/admin/newproduct" element={<NewProduct />} />
+            <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
           </>
         )}
         <Route path="*" element={<NotFound />} />
