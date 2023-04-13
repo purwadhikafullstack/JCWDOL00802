@@ -5,6 +5,7 @@ const CartModel = require("./Cart");
 const StockModel = require("./stock");
 const WarehouseModel = require("./warehouse");
 const CategoryProductModel = require("./Category_Product");
+const StockHistoryModel = require("./Stock_History");
 
 const ProductModel = dbSequelize.define(
   "Product",
@@ -61,5 +62,9 @@ CategoryProductModel.hasMany(ProductModel, {
 });
 ProductModel.hasMany(CategoryProductModel, {
   foreignKey: "id_product",
+});
+ProductModel.hasMany(StockHistoryModel, {
+  foreignKey: "id_product",
+  as: "stockprod",
 });
 module.exports = ProductModel;

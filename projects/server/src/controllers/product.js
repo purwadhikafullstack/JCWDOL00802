@@ -8,6 +8,8 @@ const CategoryProductModel = require("../model/Category_Product");
 const WarehouseAdminModel = require("../model/Warehouse_admin");
 const CategoryModel = require("../model/category");
 const { Op } = require("sequelize");
+const StockHistoryModel = require("../model/Stock_History");
+const StockHistoryTypeModel = require("../model/stock_history_type");
 
 module.exports = {
   getProductSales: async (req, res) => {
@@ -416,6 +418,232 @@ module.exports = {
       res.status(200).send({
         success: true,
         msg: "Delete Category Success",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+
+  getStockHistoryDetail: async (req, res) => {
+    try {
+      let limit = parseInt(req.query.limit);
+      let page = parseInt(req.query.page);
+      let offset = limit * page;
+      let role = req.decript.role;
+      let id_user = req.decript.id_user;
+      let id_product = req.query.id_product;
+      let warehouse = req.body.warehouse;
+      let bulan = parseInt(req.body.bulan);
+      let tahun = parseInt(req.body.tahun);
+      let startDate = new Date(`2023-${bulan}-01`);
+      let endDate =
+        bulan < 12
+          ? new Date(`${tahun}-${bulan + 1}-01`)
+          : new Date(`${tahun + 1}-1-31`);
+      let type = req.body.type;
+      let filterhistory = {
+        date: {
+          [sequelize.Op.and]: {
+            [sequelize.Op.gte]: startDate,
+            [sequelize.Op.lt]: endDate,
+          },
+        },
+        id_product: id_product,
+      };
+      if (warehouse !== "" && typeof warehouse !== "undefined") {
+        filterhistory.id_warehouse = warehouse;
+      }
+      if (role == 2) {
+        let find = await WarehouseAdminModel.findAll({
+          where: { id_user },
+        });
+        warehouse = find[0].dataValues.id_warehouse;
+        filterhistory.id_warehouse = warehouse;
+      }
+      if (type !== "" && typeof type !== "undefined") {
+        if (type === "allin") {
+          filterhistory.type = {
+            [sequelize.Op.or]: [1, 3, 7, 6],
+          };
+        } else if (type === "allout") {
+          filterhistory.type = {
+            [sequelize.Op.or]: [2, 4, 5],
+          };
+        } else {
+          filterhistory.type = type;
+        }
+        console.log(filterhistory.type);
+      }
+      let data = await StockHistoryModel.findAndCountAll({
+        where: filterhistory,
+        limit,
+        offset,
+        page,
+        include: [{ model: StockHistoryTypeModel }],
+      });
+      let result = data.rows;
+      let total_item = data.count;
+      let total_page = Math.ceil(total_item / limit);
+      return res.status(201).send({ data: result, total_page, page });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+  getStockHistory: async (req, res) => {
+    try {
+      let warehouse = req.body.warehouse;
+      let order = req.body.order;
+      let category = req.body.category;
+      let search = req.body.search;
+      let result = [];
+      let limit = parseInt(req.query.limit);
+      let page = parseInt(req.query.page);
+      let offset = page * limit;
+      let bulan = parseInt(req.body.bulan);
+      let tahun = parseInt(req.body.tahun);
+      let filterCategory = {};
+      let startDate = new Date(`2023-${bulan}-01`);
+      let endDate =
+        bulan < 12
+          ? new Date(`${tahun}-${bulan + 1}-01`)
+          : new Date(`${tahun + 1}-1-01`);
+      let filterProduct = {};
+      let orderFilter = ["id_product", "asc"];
+      if (search !== "" && typeof search !== "undefined") {
+        filterProduct.name = {
+          [sequelize.Op.like]: [`%${search}%`],
+        };
+      }
+      if (order !== "" && typeof order !== "undefined") {
+        orderFilter = order;
+      }
+      if (category !== "" && typeof category !== "undefined") {
+        filterCategory.id_category = category;
+      }
+
+      let productData = await ProductModel.findAndCountAll({
+        where: filterProduct,
+
+        limit,
+        order: [orderFilter],
+        page,
+        offset,
+        raw: true,
+        include: [
+          {
+            model: CategoryProductModel,
+            where: filterCategory,
+            attributes: [],
+          },
+        ],
+      });
+      ///get total item sama total page
+      const total_item = productData.count;
+      const total_page = Math.ceil(total_item / limit);
+      for (let i = 0; i < productData.rows.length; i++) {
+        let tempt = {};
+        tempt.id_product = productData.rows[i].id_product;
+        tempt.name = productData.rows[i].name;
+        id_product = productData.rows[i].id_product;
+        let filterhistory = {
+          date: {
+            [sequelize.Op.and]: {
+              [sequelize.Op.gte]: startDate,
+              [sequelize.Op.lt]: endDate,
+            },
+          },
+          id_product,
+        };
+        let filterminus = {
+          date: {
+            [sequelize.Op.and]: {
+              [sequelize.Op.gte]: startDate,
+              [sequelize.Op.lt]: endDate,
+            },
+          },
+          id_product,
+          type: { [sequelize.Op.or]: [2, 4, 5] },
+        };
+        let filterplus = {
+          date: {
+            [sequelize.Op.and]: {
+              [sequelize.Op.gte]: startDate,
+              [sequelize.Op.lt]: endDate,
+            },
+          },
+          id_product,
+          type: { [sequelize.Op.or]: [1, 3, 6, 7] },
+        };
+        if (warehouse !== "" && typeof warehouse !== "undefined") {
+          filterhistory.id_warehouse = warehouse;
+          filterplus.id_warehouse = warehouse;
+          filterminus.id_warehouse = warehouse;
+        }
+        let out = await ProductModel.findAll({
+          where: { id_product },
+          group: ["id_product"],
+          raw: true,
+          attributes: [
+            "id_product",
+            "name",
+            [sequelize.fn("sum", sequelize.col("amount")), "jumlah"],
+          ],
+          include: [
+            {
+              model: StockHistoryModel,
+              as: "stockprod",
+              attributes: [],
+              where: filterminus,
+            },
+          ],
+        });
+        let In = await ProductModel.findAll({
+          where: { id_product },
+          group: ["id_product"],
+          raw: true,
+          attributes: [
+            "id_product",
+            "name",
+            [sequelize.fn("sum", sequelize.col("amount")), "jumlah"],
+          ],
+          include: [
+            {
+              model: StockHistoryModel,
+              as: "stockprod",
+              attributes: [],
+              where: filterplus,
+            },
+          ],
+        });
+        let last = await StockHistoryModel.findAll({
+          where: filterhistory,
+          limit: 1,
+          order: [["date", "desc"]],
+        });
+        if (last.length > 0) {
+          tempt.last = last[0].total;
+        } else {
+          tempt.last = 0;
+        }
+        if (out.length > 0) {
+          tempt.out = parseInt(out[0].jumlah);
+        } else {
+          tempt.out = 0;
+        }
+        if (In.length > 0) {
+          tempt.In = parseInt(In[0].jumlah);
+        } else {
+          tempt.In = 0;
+        }
+        result.push(tempt);
+      }
+      return res.status(201).send({
+        data: result,
+        total_item,
+        total_page,
+        page,
       });
     } catch (error) {
       console.log(error);

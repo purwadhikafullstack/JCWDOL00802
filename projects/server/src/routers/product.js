@@ -114,6 +114,12 @@ route.post(
   ProductController.newProducts
 );
 route.post("/deleteproduct", ProductController.deleteProducts);
+route.post("/stockhistory", ProductController.getStockHistory);
+route.post(
+  "/stockhistorydetail",
+  authorizeController.authAdmin,
+  ProductController.getStockHistoryDetail
+);
 
 route.post("/categorylist", ProductController.getCategoryList);
 route.post(

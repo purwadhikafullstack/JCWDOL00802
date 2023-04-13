@@ -1,5 +1,6 @@
 const { Sequelize } = require("sequelize");
 const { dbSequelize } = require("../config/db");
+const StockHistoryTypeModel = require("./stock_history_type");
 
 const { DataTypes } = Sequelize;
 
@@ -36,4 +37,12 @@ const StockHistoryModel = dbSequelize.define(
   { timestamps: false }
 );
 
+StockHistoryTypeModel.belongsTo(StockHistoryModel, {
+  foreignKey: "type",
+  targetKey: "type",
+});
+StockHistoryModel.hasOne(StockHistoryTypeModel, {
+  foreignKey: "type",
+  sourceKey: "type",
+});
 module.exports = StockHistoryModel;
