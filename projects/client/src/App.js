@@ -103,7 +103,7 @@ function App() {
             <Route path="/admin/salesreport" element={<ReportSales />} />
             <Route path="/admin/products" element={<AdminProducts />} />
             <Route path="/admin/category" element={<AdminCategoryProduct />} />
-            <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
+
             <Route path="/admin/editproduct" element={<EditProduct />} />
             <Route path="/admin/stockhistory" element={<StockHistory />} />
             <Route
@@ -119,6 +119,7 @@ function App() {
             <Route path="/admin/warehouse" element={<AdminWarehouse />} />
             <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
             <Route path="/admin/newproduct" element={<NewProduct />} />
+            <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
           </>
         )}
         <Route path="*" element={<NotFound />} />

@@ -15,7 +15,7 @@ import {
   Link,
 } from "@chakra-ui/react";
 
-function ReportSales() {
+function StockHistory() {
   const [salesData, setSalesData] = useState(null);
   const [dataExist, setDataExist] = useState(false);
   const [pendapatan, setPendapatan] = useState(0);
@@ -31,6 +31,10 @@ function ReportSales() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [search, setSearch] = useState("");
   const [placebo, setPlacebo] = useState("search");
+  const [page, setPage] = useState(0);
+  const [totalPage, setTotalPage] = useState(0);
+  const [limit, setLimit] = useState(5);
+  const [order, setOrder] = useState(["id_product", "asc"]);
   const { id_user, role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
@@ -42,15 +46,26 @@ function ReportSales() {
     let getLocalStorage = localStorage.getItem("cnc_login");
     const formattedBulan = parseInt(bulan) + 1;
     const formattedTahun = parseInt(tahun);
-    Axios.get(
-      `${API_URL}/apis/product/sales?bulan=${formattedBulan}&tahun=${formattedTahun}&search=${search}&warehouse=${selectedWarehouse}&category=${selectedCategory}`,
+
+    Axios.post(
+      `${API_URL}/apis/product/stockhistory?page=${page}&limit=${limit}`,
+      {
+        bulan: formattedBulan,
+        tahun: formattedTahun,
+        search: search,
+        warehouse: selectedWarehouse,
+        category: selectedCategory,
+        order: [order[0]],
+      },
       {
         headers: {
           Authorization: `Bearer ${getLocalStorage}`,
         },
       }
     ).then((response) => {
-      setSalesData(response.data);
+      setSalesData(response.data.data);
+
+      setTotalPage(response.data.total_page);
       if (response.length > 0) {
         setDataExist(true);
       } else {
@@ -76,28 +91,6 @@ function ReportSales() {
     });
   };
 
-  const getPesanan = () => {
-    const data = salesData;
-    if (salesData) {
-      const pendapatan = data.reduce(
-        (accumulator, val) => accumulator + parseInt(val?.total_biaya),
-        0
-      );
-      setPendapatan(pendapatan);
-
-      const pesanan = data.reduce(
-        (accumulator, val) => accumulator + parseInt(val?.total_pesanan),
-        0
-      );
-      setPesanan(pesanan);
-
-      const penjualan = data.reduce(
-        (accumulator, val) => accumulator + parseInt(val?.jumlah),
-        0
-      );
-      setPenjualan(penjualan);
-    }
-  };
   const setDefault = () => {
     const monthNames = [
       "Januari",
@@ -210,6 +203,45 @@ function ReportSales() {
       });
     }
   };
+  const printPage = () => {
+    let page = parseInt(totalPage);
+    let data = [];
+    for (let i = 0; i < page; i++) {
+      data.push(i + 1);
+    }
+    return data.map((val, idx) => {
+      return (
+        <option value={val - 1} selected={val == parseInt(page) + 1}>
+          {val}
+        </option>
+      );
+    });
+  };
+  const printLimit = () => {
+    let data = [5, 10, 15, 20];
+    return data.map((val) => {
+      return (
+        <option value={val} selected={val == limit}>
+          {val}
+        </option>
+      );
+    });
+  };
+  const printOrder = () => {
+    let data = [
+      ["id_product", "asc"],
+      ["id_product", "desc"],
+      ["name", "asc"],
+      ["name", "desc"],
+    ];
+    return data.map((val) => {
+      return (
+        <option value={val} selected={val == order}>
+          {val}
+        </option>
+      );
+    });
+  };
 
   useEffect(() => {
     setDefault();
@@ -222,25 +254,31 @@ function ReportSales() {
   }, [id_user]);
   useEffect(() => {
     getTransaction();
-  }, [bulan, tahun, selectedCategory, selectedWarehouse, search]);
-  useEffect(() => {
-    getPesanan();
-  }, [salesData]);
+  }, [
+    bulan,
+    tahun,
+    selectedCategory,
+    selectedWarehouse,
+    search,
+    limit,
+    page,
+    order,
+  ]);
 
   const printData = () => {
     let data = salesData;
     if (salesData !== null) {
       return data.map((val, idx) => {
-        let linkproduct = `/detail/${val.id_product}`;
-        let total_biaya = parseInt(val?.total_biaya);
+        let linkproduct = `/admin/stockhistory/${val.id_product}`;
+
         return (
           <Tr>
             <Td>
               <Link href={linkproduct}>{val?.name}</Link>
             </Td>
-            <Td isNumeric>Rp.{total_biaya.toLocaleString()}</Td>
-            <Td isNumeric>{val?.jumlah}</Td>
-            <Td isNumeric>{val?.total_pesanan}</Td>
+            <Td isNumeric>{Math.abs(val?.out)}</Td>
+            <Td isNumeric>{val?.In}</Td>
+            <Td isNumeric>{val?.last}</Td>
           </Tr>
         );
       });
@@ -272,9 +310,9 @@ function ReportSales() {
             <Thead>
               <Tr>
                 <Th>Nama Produk</Th>
-                <Th isNumeric>Pendapatan</Th>
-                <Th isNumeric>Terjual</Th>
-                <Th isNumeric>Pesanan</Th>
+                <Th isNumeric>Stok Keluar</Th>
+                <Th isNumeric>Stok Masuk</Th>
+                <Th isNumeric>Stok Akhir</Th>
               </Tr>
             </Thead>
             <Tbody>{printData()}</Tbody>
@@ -282,18 +320,6 @@ function ReportSales() {
         </TableContainer>
       </div>
 
-      <div>
-        {" "}
-        total pendapatan bulan {namaBulan} = Rp {pendapatan.toLocaleString()}
-      </div>
-      <div>
-        {" "}
-        total pesanan bulan {namaBulan} = {pesanan}
-      </div>
-      <div>
-        {" "}
-        total penjualan produk bulan {namaBulan} = {penjualan}
-      </div>
       <div className="my-3 ">
         <label className="form-label fw-bold text-muted">
           Pilih Report di Bulan
@@ -334,8 +360,37 @@ function ReportSales() {
           {printWarehouse()}
         </select>
       </div>
+      <div className="my-3 ">
+        <label className="form-label fw-bold text-muted">Pilih Page</label>
+        <select
+          onChange={(e) => setPage(e.target.value)}
+          className="form-control form-control-lg mt-3"
+        >
+          {printPage()}
+        </select>
+      </div>
+
+      <div className="my-3 ">
+        <label className="form-label fw-bold text-muted">Pilih limit</label>
+        <select
+          onChange={(e) => setLimit(e.target.value)}
+          className="form-control form-control-lg mt-3"
+        >
+          {printLimit()}
+        </select>
+      </div>
+      {/* <div className="my-3 ">
+              <label className="form-label fw-bold text-muted">Pilih limit</label>
+              <select
+                onChange={(e)=>setOrder(e.target.value)}
+                className="form-control form-control-lg mt-3"
+              >
+                
+                {printOrder()}
+              </select>
+            </div> */}
     </div>
   );
 }
 
-export default ReportSales;
+export default StockHistory;
