@@ -100,7 +100,11 @@ route.post(
   ProductController.getProductAdmin
 );
 
-route.get("/detailproduct", ProductController.getDetailProducts);
+route.get(
+  "/detailproduct",
+  authorizeController.authAdmin,
+  ProductController.getDetailProductsAdmin
+);
 route.post(
   "/editproduct",
   authorizeController.authSuperAdmin,

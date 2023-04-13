@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Axios from "axios";
-import { Button, ButtonGroup, Text } from "@chakra-ui/react";
+import { Button, ButtonGroup, Text, Textarea } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
 import { API_URL } from "../helper";
@@ -13,6 +13,14 @@ const NewProduct = (props) => {
   const [weightEdit, setWeightEdit] = useState("");
   const [preview, setPreview] = useState("https://fakeimg.pl/350x200/");
   const [productPicture, setProductPicture] = useState("");
+  const [dataCategory, setDataCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const getCategory = async () => {
+    Axios.get(`${API_URL}/apis/product/category`).then((response) => {
+      setDataCategory(response.data);
+    });
+  };
 
   //GAMBAR
   const loadProfilePictureEdit = (e) => {
@@ -31,6 +39,7 @@ const NewProduct = (props) => {
         price: priceEdit,
         weight: weightEdit,
         product_picture: productPicture,
+        id_category: selectedCategory,
       },
       {
         headers: {
@@ -45,13 +54,36 @@ const NewProduct = (props) => {
       })
       .catch((error) => {
         console.log(error);
+        // alert(error.response.data.msg);
       });
+  };
+
+  //USE EFFECT
+  useEffect(() => {
+    getCategory();
+  }, []);
+
+  //PRINT DATA
+  const printCategory = () => {
+    let data = dataCategory;
+
+    if (dataCategory) {
+      return data.map((val, idx) => {
+        return (
+          <option
+            value={val?.id_category}
+            selected={val.id_category == selectedCategory}
+          >
+            {val?.category}
+          </option>
+        );
+      });
+    }
   };
 
   return (
     <div>
       <Text className="ps-4 pt-3" fontSize="4xl">
-        {" "}
         Add Product
       </Text>
       <div id="regispage" className="row">
@@ -68,34 +100,48 @@ const NewProduct = (props) => {
           </div>
           <div className="my-3">
             <label className="form-label fw-bold text-muted">Description</label>
-            <input
+            <Textarea
               type="text"
               className="form-control p-3"
               placeholder="DESC"
+              style={{
+                resize: "none",
+                height: "250px",
+              }}
               value={descriptionEdit}
               onChange={(e) => setDescriptionEdit(e.target.value)}
             />
           </div>
           <div className="my-3 row">
-            <div className="col-6 ">
-              <label className="form-label fw-bold text-muted">Price</label>
+            <div className="col-3 ">
+              <label className="form-label fw-bold text-muted">Harga</label>
               <input
                 type="text"
                 className="form-control p-3"
-                placeholder=""
+                placeholder="Rp."
                 onChange={(e) => setPriceEdit(e.target.value)}
                 value={priceEdit}
               />
             </div>
-            <div className="col-6 ">
-              <label className="form-label fw-bold text-muted">Weight</label>
+            <div className="col-3 ">
+              <label className="form-label fw-bold text-muted">Berat</label>
               <input
                 type="text"
                 className="form-control p-3"
-                placeholder=""
+                placeholder="Berat Barang (gram)"
                 onChange={(e) => setWeightEdit(e.target.value)}
                 value={weightEdit}
               />
+            </div>
+            <div className=" col-6">
+              <label className="form-label fw-bold text-muted">Kategori</label>
+              <select
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="form-control form-control-lg mt-3"
+              >
+                <option value={0}>Select Category</option>
+                {printCategory()}
+              </select>
             </div>
           </div>
         </div>

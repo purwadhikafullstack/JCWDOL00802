@@ -208,16 +208,29 @@ module.exports = {
     }
   },
 
-  getDetailProducts: async (req, res) => {
+  getDetailProductsAdmin: async (req, res) => {
     try {
       let { id_product } = req.query;
+      let role = req.decript.role;
+      let edit = true;
+
+      if (role == 2) {
+        edit = false;
+      }
+
       let data = await ProductModel.findOne({
         where: {
           id_product,
         },
+        include: [
+          {
+            model: CategoryProductModel,
+            attributes: ["id_category"],
+          },
+        ],
       });
 
-      res.status(200).send(data);
+      res.status(200).send({ data, edit });
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
@@ -225,8 +238,15 @@ module.exports = {
   },
   editProducts: async (req, res) => {
     try {
-      let { id_product, name, description, price, weight, product_picture } =
-        req.body;
+      let {
+        id_product,
+        name,
+        description,
+        price,
+        weight,
+        product_picture,
+        id_category,
+      } = req.body;
       if (req.file) {
         product_picture = req.file.filename;
       }
@@ -243,6 +263,12 @@ module.exports = {
       } else {
         let editProd = await ProductModel.update(
           { name, description, price, weight, product_picture },
+          {
+            where: { id_product },
+          }
+        );
+        let editCat = await CategoryProductModel.update(
+          { id_category },
           {
             where: { id_product },
           }
@@ -279,7 +305,8 @@ module.exports = {
   },
   newProducts: async (req, res) => {
     try {
-      let { name, description, price, weight, product_picture } = req.body;
+      let { name, description, price, weight, product_picture, id_category } =
+        req.body;
       if (req.file) {
         product_picture = req.file.filename;
       }
@@ -300,6 +327,11 @@ module.exports = {
           price,
           weight,
           product_picture,
+        });
+
+        let newCat = await CategoryProductModel.create({
+          id_product: results.id_product,
+          id_category,
         });
 
         let getWarehouse = await WarehouseModel.findAll();
@@ -324,18 +356,44 @@ module.exports = {
   },
   getCategoryList: async (req, res) => {
     try {
-      let search = req.body.search;
+      let { search } = req.body;
+      let limit = parseInt(req.query.limit);
+      let page = parseInt(req.query.page);
       let filterName = {};
+      let result = [];
+      let offset = page * limit;
+      // let orderFilter = ["id_category", "asc"];
 
       if (search !== "" && typeof search !== "undefined") {
         filterName.category = {
           [sequelize.Op.like]: [`%${search}%`],
         };
       }
-      let getData = await CategoryModel.findAll({
+      // if (order !== "" && typeof order !== "undefined") {
+      //   orderFilter = order;
+      // }
+      let getData = await CategoryModel.findAndCountAll({
         where: filterName,
-      }).then((response) => {
-        return res.status(201).send(response);
+        limit,
+        // order: [orderFilter],
+        page,
+        offset,
+        raw: true,
+      });
+      const total_item = getData.count;
+      const total_page = Math.ceil(total_item / limit);
+      for (let i = 0; i < getData.rows.length; i++) {
+        let tempt = {};
+        tempt.id_category = getData.rows[i].id_category;
+        tempt.category = getData.rows[i].category;
+        tempt.category_picture = getData.rows[i].category_picture;
+
+        result.push(tempt);
+      }
+      return res.status(201).send({
+        data: result,
+        total_page,
+        page,
       });
     } catch (error) {
       console.log(error);
@@ -415,6 +473,13 @@ module.exports = {
       let deleteCategory = await CategoryModel.destroy({
         where: { id_category },
       });
+
+      let checkProd = await CategoryProductModel.update(
+        {
+          id_category: 0,
+        },
+        { where: { id_category } }
+      );
       res.status(200).send({
         success: true,
         msg: "Delete Category Success",
@@ -473,7 +538,6 @@ module.exports = {
         } else {
           filterhistory.type = type;
         }
-        console.log(filterhistory.type);
       }
       let data = await StockHistoryModel.findAndCountAll({
         where: filterhistory,

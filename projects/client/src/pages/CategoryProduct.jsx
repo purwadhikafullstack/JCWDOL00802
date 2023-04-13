@@ -15,6 +15,12 @@ import {
   Button,
   ButtonGroup,
   Input,
+  HStack,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
 } from "@chakra-ui/react";
 
 function AdminCategoryProduct() {
@@ -38,6 +44,9 @@ function AdminCategoryProduct() {
   // STATE
   const [dataCategory, setDataCategory] = useState(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const [totalPage, setTotalPage] = useState(1);
+  const [limit, setLimit] = useState(5);
 
   //STATE BUAT KATEGORI BARU
   const [newCategory, setNewCategory] = useState("");
@@ -59,13 +68,14 @@ function AdminCategoryProduct() {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
       let category = await Axios.post(
-        API_URL + `/apis/product/categorylist`,
+        API_URL + `/apis/product/categorylist?page=${page}&limit=5`,
         { search },
         {
           headers: { Authorization: `Bearer ${getLocalStorage}` },
         }
       );
-      setDataCategory(category.data);
+      setDataCategory(category.data.data);
+      setTotalPage(category.data.total_page);
     } catch (error) {
       console.log(error);
     }
@@ -151,6 +161,7 @@ function AdminCategoryProduct() {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
@@ -183,33 +194,36 @@ function AdminCategoryProduct() {
   };
 
   const onDelete = () => {
-    Axios.post(
-      API_URL + `/apis/product/categorydelete`,
-      {
-        id_category: idEdit,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
+    let text = `Apa anda mau hapus kategori ${categoryEdit}`;
+    if (window.confirm(text) == true) {
+      Axios.post(
+        API_URL + `/apis/product/categorydelete`,
+        {
+          id_category: idEdit,
         },
-      }
-    )
-      .then((response) => {
-        alert("Delete Category Success ✅");
-        setCategoryEdit("");
-        setPreviewEdit(`${API_URL}/img/category/default.png`);
-        setCategoryPictureEdit("");
-        getCategory();
-        setShowEdit(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
+          },
+        }
+      )
+        .then((response) => {
+          alert("Delete Category Success ✅");
+          setCategoryEdit("");
+          setPreviewEdit(`${API_URL}/img/category/default.png`);
+          setCategoryPictureEdit("");
+          getCategory();
+          setShowEdit(false);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   useEffect(() => {
     getCategory();
-  }, [search]); //KALO SEARCH BERUBAH
+  }, [search, page]); //KALO SEARCH BERUBAH
 
   useEffect(() => {
     resetEdit();
@@ -220,6 +234,7 @@ function AdminCategoryProduct() {
   }, [showNew]);
 
   //PRINT DATA
+
   const printData = () => {
     let data = dataExist ? dataCategory : [];
     let num = 0;
@@ -238,12 +253,39 @@ function AdminCategoryProduct() {
             />
           </Td>
           <Td>
-            <p onClick={() => showTabEdit(val)}>Detail</p>
+            <Button
+              type="button"
+              colorScheme="orange"
+              variant="solid"
+              onClick={() => showTabEdit(val)}
+            >
+              Detail
+            </Button>
           </Td>
         </Tr>
       );
     });
   };
+
+  //page
+  function pageButton() {
+    return (
+      <NumberInput
+        size="xs"
+        maxW={16}
+        defaultValue={1}
+        min={1}
+        max={totalPage}
+        onChange={(e) => setPage(parseInt(e) - 1)}
+      >
+        <NumberInputField />
+        <NumberInputStepper>
+          <NumberIncrementStepper />
+          <NumberDecrementStepper />
+        </NumberInputStepper>
+      </NumberInput>
+    );
+  }
 
   return (
     <div className="bg-white  w-100 p-5 m-auto ">
@@ -286,6 +328,7 @@ function AdminCategoryProduct() {
                   <Th>No.</Th>
                   <Th>Kategori</Th>
                   <Th></Th>
+                  <Th>{pageButton()}</Th>
                 </Tr>
               </Thead>
               <Tbody>{printData()}</Tbody>
@@ -403,7 +446,7 @@ function AdminCategoryProduct() {
                         type="button"
                         colorScheme="orange"
                         variant="solid"
-                        onClick={onDelete}
+                        onClick={() => onDelete()}
                       >
                         Hapus Kategori
                       </Button>
