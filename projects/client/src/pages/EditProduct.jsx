@@ -1,11 +1,28 @@
 import React, { useState, useEffect } from "react";
 import Axios from "axios";
 import { Button, ButtonGroup, Image, Text, Textarea } from "@chakra-ui/react";
+import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { API_URL } from "../helper";
 const EditProduct = (props) => {
   const navigate = useNavigate();
+  // AMBIL DATA ROLE UTK DISABLE BUTTON EDIT KALO BUKAN SUPERADMIN
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
+
+  const [isEdit, setIsEdit] = useState(false);
+
+  useEffect(() => {
+    if (role === 3) {
+      setIsEdit(true);
+    } else {
+      setIsEdit(false);
+    }
+  }, [role]);
 
   //STATE
   const [idEdit, setIdEdit] = useState("");
@@ -23,9 +40,6 @@ const EditProduct = (props) => {
   const [dataWarehouse, setDataWarehouse] = useState(null);
   const [dataStock, setDataStock] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState("");
-  const [dataCategory, setDataCategory] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [isEdit, setIsEdit] = useState(false);
 
   // GET NOMOR ID PRODUK DARI QUERY
   const location = useLocation();
@@ -33,26 +47,17 @@ const EditProduct = (props) => {
 
   //FUNCTION FE
   const getProduct = async () => {
-    let getLocalStorage = localStorage.getItem("cnc_login");
     try {
       let products = await Axios.get(API_URL + `/apis/product/detailproduct`, {
         params: { id_product: idProd },
-        headers: {
-          Authorization: `Bearer ${getLocalStorage}`,
-        },
       });
-      setDataProduct(products.data.data);
-      setIdEdit(products.data.data.id_product);
-      setNameEdit(products.data.data.name);
-      setDescriptionEdit(products.data.data.description);
-      setPriceEdit(products.data.data.price);
-      setWeightEdit(products.data.data.weight);
-      setProductPicture(products.data.data.product_picture);
-      setSelectedCategory(products.data.data.Category_Products[0].id_category);
-      setPreview(
-        `${API_URL}/img/product/${products.data.data.product_picture}`
-      );
-      setIsEdit(products.data.edit);
+      setDataProduct(products.data);
+      setIdEdit(products.data.id_product);
+      setNameEdit(products.data.name);
+      setDescriptionEdit(products.data.description);
+      setPriceEdit(products.data.price);
+      setWeightEdit(products.data.weight);
+      setPreview(`${API_URL}/img/product/${products.data.product_picture}`);
     } catch (error) {
       console.log(error);
     }
@@ -69,14 +74,8 @@ const EditProduct = (props) => {
     });
   };
 
-  const getCategory = async () => {
-    Axios.get(`${API_URL}/apis/product/category`).then((response) => {
-      setDataCategory(response.data);
-    });
-  };
-
   //GAMBAR
-  const loadProductPictureEdit = (e) => {
+  const loadProfilePictureEdit = (e) => {
     const image = e.target.files[0];
     setProductPicture(image);
     setPreview(URL.createObjectURL(image));
@@ -93,7 +92,6 @@ const EditProduct = (props) => {
         price: priceEdit,
         weight: weightEdit,
         product_picture: productPicture,
-        id_category: selectedCategory,
       },
       {
         headers: {
@@ -121,7 +119,6 @@ const EditProduct = (props) => {
       })
       .catch((error) => {
         console.log(error);
-        // alert(error.response.data.msg);
       });
   };
 
@@ -149,9 +146,8 @@ const EditProduct = (props) => {
   useEffect(() => {
     getWarehouse();
   }, []);
-  useEffect(() => {
-    getCategory();
-  }, []);
+
+  
 
   //PRINT DATA
   const printSelectWarehouse = () => {
@@ -172,27 +168,11 @@ const EditProduct = (props) => {
     }
   };
 
-  const printCategory = () => {
-    let data = dataCategory;
-
-    if (dataCategory) {
-      return data.map((val, idx) => {
-        return (
-          <option
-            value={val?.id_category}
-            selected={val.id_category == selectedCategory}
-          >
-            {val?.category}
-          </option>
-        );
-      });
-    }
-  };
-
   return (
     <div className="bg-white  w-100 p-3 m-auto ">
       <Text className="ps-4 pt-3" fontSize="4xl">
-        Detail Product
+        {" "}
+        Edit Product
       </Text>
       <div id="regispage" className="row">
         <div className="col-6 px-5">
@@ -223,38 +203,29 @@ const EditProduct = (props) => {
             />
           </div>
           <div className="flex row">
-            <div className="my-3 col-3 ">
-              <label className="form-label fw-bold text-muted">Harga</label>
+            <div className="my-3 col-6 ">
+              <label className="form-label fw-bold text-muted">Price</label>
               <input
                 type="text"
                 className="form-control p-3"
-                placeholder="Rp."
+                placeholder=""
                 onChange={(e) => setPriceEdit(e.target.value)}
                 value={priceEdit}
                 disabled={!isEdit}
               />
             </div>
-            <div className="my-3 col-3">
-              <label className="form-label fw-bold text-muted">Berat</label>
+            <div className="my-3 col-6">
+              <label className="form-label fw-bold text-muted">
+                Berat Barang (gram)
+              </label>
               <input
                 type="text"
                 className="form-control p-3"
-                placeholder="Berat Barang (gram)"
+                placeholder=""
                 onChange={(e) => setWeightEdit(e.target.value)}
                 value={weightEdit}
                 disabled={!isEdit}
               />
-            </div>
-            <div className=" col-6">
-              <label className="form-label fw-bold text-muted">Kategori</label>
-              <select
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="form-control form-control-lg mt-3"
-                disabled={!isEdit}
-              >
-                <option value={0}>Select Category</option>
-                {printCategory()}
-              </select>
             </div>
           </div>
 
@@ -265,27 +236,9 @@ const EditProduct = (props) => {
             </label>
             <div>
               {preview ? (
-                <Image
-                  className="img-thumbnail"
-                  src={preview}
-                  alt=""
-                  style={{
-                    height: "300px",
-                    width: "300px",
-                    objectFit: "cover",
-                  }}
-                />
+                <Image className="img-thumbnail" src={preview} alt="" />
               ) : (
-                <img
-                  src={productPicture}
-                  className="img-thumbnail"
-                  alt=""
-                  style={{
-                    height: "300px",
-                    width: "300px",
-                    objectFit: "cover",
-                  }}
-                />
+                <img src={productPicture} className="img-thumbnail" alt="" />
               )}
             </div>
             {isEdit && (
@@ -294,7 +247,7 @@ const EditProduct = (props) => {
                   Upload image here
                 </label>
                 <input
-                  onChange={loadProductPictureEdit}
+                  onChange={loadProfilePictureEdit}
                   className="form-control"
                   type="file"
                   id="formFile"
@@ -340,7 +293,7 @@ const EditProduct = (props) => {
                 className="form-control form-control-lg mt-3"
                 onChange={(e) => setSelectedWarehouse(e.target.value)}
               >
-                {isEdit && <option>Pilih Gudang</option>}
+                {role == 3 && <option>Pilih Gudang</option>}
                 {printSelectWarehouse()}
               </select>
               <label className="form-label fw-bold text-muted">Stock</label>

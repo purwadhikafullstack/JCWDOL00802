@@ -4,7 +4,7 @@ const { readAdmin } = require("../config/encript");
 const { ProductController, authorizeController } = require("../controllers");
 const multer = require("multer");
 
-//MULTER PRODUCT
+//MULTER
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./src/public/img/product/");
@@ -42,44 +42,6 @@ const upload = multer({
   fileFilter: fileFilter,
 });
 
-//MULTER CATEGORY
-const storageCategory = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "./src/public/img/category/");
-  },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      Date.now() +
-        "." +
-        file.originalname.split(".")[file.originalname.split(".").length - 1]
-    );
-  },
-});
-
-const fileFilterCategory = (req, file, cb) => {
-  // Accept only jpg, png, and jpeg files
-  if (
-    file.mimetype === "image/jpeg" ||
-    file.mimetype === "image/png" ||
-    file.mimetype === "image/jpg"
-  ) {
-    cb(null, true);
-  } else {
-    cb(
-      new Error(
-        "Invalid file type. Only jpg, png, and jpeg files are allowed."
-      ),
-      false
-    );
-  }
-};
-
-const uploadCategory = multer({
-  storage: storageCategory,
-  fileFilter: fileFilterCategory,
-});
-
 //ROUTE
 
 route.get(
@@ -100,11 +62,7 @@ route.post(
   ProductController.getProductAdmin
 );
 
-route.get(
-  "/detailproduct",
-  authorizeController.authAdmin,
-  ProductController.getDetailProductsAdmin
-);
+route.get("/detailproduct", ProductController.getDetailProducts);
 route.post(
   "/editproduct",
   authorizeController.authSuperAdmin,
@@ -125,22 +83,4 @@ route.post(
   ProductController.getStockHistoryDetail
 );
 
-route.post("/categorylist", ProductController.getCategoryList);
-route.post(
-  "/categoryadd",
-  authorizeController.authSuperAdmin,
-  uploadCategory.single("category_picture"),
-  ProductController.addCategory
-);
-route.post(
-  "/categoryedit",
-  authorizeController.authSuperAdmin,
-  uploadCategory.single("category_picture"),
-  ProductController.editCategory
-);
-route.post(
-  "/categorydelete",
-  authorizeController.authSuperAdmin,
-  ProductController.deleteCategory
-);
 module.exports = route;

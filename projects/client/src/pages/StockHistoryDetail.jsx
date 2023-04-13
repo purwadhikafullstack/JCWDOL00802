@@ -14,8 +14,9 @@ import {
     TableContainer,
     Link,
   } from '@chakra-ui/react'
+import { useParams } from "react-router-dom"
 
-function ReportSales() {
+function StockHistoryDetail() {
 
    const [salesData,setSalesData]= useState(null);
    const [dataExist,setDataExist]= useState(false)
@@ -32,18 +33,30 @@ function ReportSales() {
    const [selectedCategory,setSelectedCategory]=useState("")
    const [search,setSearch]=useState("")
    const [placebo,setPlacebo]=useState("search")
+   const [page,setPage]=useState(0)
+   const [totalPage,setTotalPage]=useState(0)
+   const [limit,setLimit]=useState(5)
    const {id_user,role} = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
       role: state.userReducer.role,
     };})
 
-
+    const {id} = useParams()
     const getTransaction = async ()=>{
       let getLocalStorage = localStorage.getItem("cnc_login")
+      
         const formattedBulan= parseInt(bulan)+1;
         const formattedTahun= parseInt(tahun)
-        Axios.get(`${API_URL}/apis/product/sales?bulan=${formattedBulan}&tahun=${formattedTahun}&search=${search}&warehouse=${selectedWarehouse}&category=${selectedCategory}`,
+        Axios.post(`${API_URL}/apis/product/stockhistorydetail?page=${page}&limit=${limit}&id_product=${id}`,{
+            bulan : formattedBulan,
+            tahun : formattedTahun,
+            
+            warehouse : selectedWarehouse,
+            
+            
+            
+        },
         {
           headers: {
       Authorization: `Bearer ${getLocalStorage}`,
@@ -51,7 +64,9 @@ function ReportSales() {
         })
         .then(
             (response)=>{
-                setSalesData(response.data)
+                setSalesData(response.data.data)
+                
+                setTotalPage(response.data.total_page)
                 if(response.length>0){
                   setDataExist(true)
                 } else{setDataExist(false)}
@@ -59,16 +74,7 @@ function ReportSales() {
         )
     }
     
-    const getCategory = async ()=>{
-      let getLocalStorage = localStorage.getItem("cnc_login")
-      Axios.get(`${API_URL}/apis/product/category`)
-      .then(
-          (response)=>{
-           
-              setDataCategory(response.data)
-          }
-      )
-    }
+    
     const getWarehouse = async ()=>{
       let getLocalStorage = localStorage.getItem("cnc_login")
       Axios.get(`${API_URL}/apis/product/warehouse`,{
@@ -84,21 +90,7 @@ function ReportSales() {
       )
     }
 
-    const getPesanan = ()=>{
-        const data = salesData
-        if (salesData){
-        const pendapatan = data.reduce((accumulator,val)=>accumulator+parseInt(val?.total_biaya),0)
-        setPendapatan(pendapatan)
-       
-        const pesanan = data.reduce((accumulator,val)=>accumulator+parseInt(val?.total_pesanan),0)
-        setPesanan(pesanan)
-        
-        const penjualan = data.reduce((accumulator,val)=>accumulator+parseInt(val?.jumlah),0)
-        setPenjualan(penjualan)
-        
-        
-    }
-}
+    
     const setDefault =()=>{
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "July", "Agustus", "September", "Oktober", "November", "Desember"]
         const month = new Date().getMonth()
@@ -134,14 +126,7 @@ function ReportSales() {
         });
       }
     }
-    const printCategory =()=>{
-      let data = dataCategory
-      if (dataCategory){
-      return data.map((val, idx) => {
-          return <option value={val?.id_category} selected = {val.id_category == selectedCategory}>{val?.category}</option>;
-        });
-      }
-    }
+    
     const printWarehouse =()=>{
       let data = dataWarehouse
       if (dataWarehouse){
@@ -150,38 +135,49 @@ function ReportSales() {
         });
       }
     }
-
+    const printPage=()=>{
+        let page=parseInt(totalPage)
+        let data = []
+        for (let i = 0; i < page; i++) {
+            data.push((i+1))
+            
+        }
+        return data.map((val,idx)=>{
+            return <option value={val-1} selected = {val == (parseInt(page)+1)}>{val}</option>
+        })
+    }
+    const printLimit=()=>{
+        let data = [5,10,15,20]
+        return data.map((val)=>{
+            return <option value={val} selected={val == limit}>{val}</option>
+        })
+    }
 
 
     useEffect(() => {
         setDefault()
     }, []);
-    useEffect(() => {
-      getCategory()
-  }, [id_user]);
+    
   useEffect(() => {
     getWarehouse()
 }, [id_user]);
     useEffect(() => {
         getTransaction()
-    }, [bulan,tahun,selectedCategory,selectedWarehouse,search]);
-    useEffect(() => {
-        getPesanan()
-    }, [salesData]);
+    }, [bulan,tahun,selectedCategory,selectedWarehouse,limit,page,id]);
+    
 
     const printData=()=>{
         let data = salesData
         if (salesData !== null){
         return data.map((val,idx)=>{
-            let linkproduct= `/detail/${val.id_product}`
-            let total_biaya = parseInt(val?.total_biaya)
+            
+            
             return <Tr>
-            <Td>
-                <Link href= {linkproduct}>{val?.name}</Link>
-            </Td>
-            <Td isNumeric>Rp.{total_biaya.toLocaleString()}</Td>
-            <Td isNumeric>{val?.jumlah}</Td>
-            <Td isNumeric>{val?.total_pesanan}</Td>
+            
+            <Td >{val?.date}</Td>
+            <Td >{val?.amount}</Td>
+            
+            <Td >{val?.Stock_history_type.description}</Td>
           </Tr>
         })
     } 
@@ -218,10 +214,10 @@ function ReportSales() {
     }
     <Thead>
       <Tr>
-        <Th>Nama Produk</Th>
-        <Th isNumeric>Pendapatan</Th>
-        <Th isNumeric>Terjual</Th>
-        <Th isNumeric>Pesanan</Th>
+        <Th >tanggal</Th>
+        <Th >jumlah</Th>
+        <Th >type</Th>
+        
       </Tr>
     </Thead>
     <Tbody>
@@ -232,9 +228,7 @@ function ReportSales() {
 </TableContainer>
         </div>
 
-        <div> total pendapatan bulan {namaBulan} = Rp {pendapatan.toLocaleString()}</div>
-        <div> total pesanan bulan {namaBulan} = {pesanan}</div>
-        <div> total penjualan produk bulan {namaBulan} = {penjualan}</div>
+        
         <div className="my-3 ">
               <label className="form-label fw-bold text-muted">Pilih Report di Bulan</label>
               <select
@@ -255,17 +249,7 @@ function ReportSales() {
                 {printYear()}
               </select>
             </div>
-            <div className="my-3 ">
-              <label className="form-label fw-bold text-muted">Pilih Category</label>
-              <select
-                onChange={(e)=>setSelectedCategory(e.target.value)}
-                className="form-control form-control-lg mt-3"
-              >
-                <option value="">all category</option>
-                {printCategory()}
-              </select>
-              
-            </div>
+            
             <div className="my-3 ">
               <label className="form-label fw-bold text-muted">Pilih warehouse</label>
               <select
@@ -278,9 +262,29 @@ function ReportSales() {
               </select>
               
             </div>
-
+            <div className="my-3 ">
+              <label className="form-label fw-bold text-muted">Pilih Page</label>
+              <select
+                onChange={(e)=>setPage(e.target.value)}
+                className="form-control form-control-lg mt-3"
+              >
+                
+                {printPage()}
+              </select>
+            </div>
+            <div>limit :{limit}</div>
+            <div className="my-3 ">
+              <label className="form-label fw-bold text-muted">Pilih limit</label>
+              <select
+                onChange={(e)=>setLimit(e.target.value)}
+                className="form-control form-control-lg mt-3"
+              >
+                
+                {printLimit()}
+              </select>
+            </div>
     </div>
   )
 }
 
-export default ReportSales
+export default StockHistoryDetail
