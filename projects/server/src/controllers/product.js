@@ -230,10 +230,10 @@ module.exports = {
       }
       let data = await ProductModel.findAll({
         where: {
-          [Op.or]: [{ name }],
+          [Op.or]: [{ name, id_product: !id_product }],
         },
       });
-      if (data.length > 1) {
+      if (data.length > 0) {
         res.status(400).send({
           success: false,
           msg: "Name already registered",
@@ -318,6 +318,108 @@ module.exports = {
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
+    }
+  },
+  getCategoryList: async (req, res) => {
+    try {
+      let search = req.body.search;
+      let filterName = {};
+
+      if (search !== "" && typeof search !== "undefined") {
+        filterName.category = {
+          [sequelize.Op.like]: [`%${search}%`],
+        };
+      }
+      let getData = await CategoryModel.findAll({
+        where: filterName,
+      }).then((response) => {
+        return res.status(201).send(response);
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+  addCategory: async (req, res) => {
+    try {
+      let { category, category_picture } = req.body;
+      if (req.file) {
+        category_picture = req.file.filename;
+      }
+      let check = await CategoryModel.findAll({
+        where: {
+          [Op.or]: [{ category }],
+        },
+      });
+
+      if (check.length > 0) {
+        res.status(400).send({
+          success: false,
+          msg: "Name already registered",
+        });
+      } else {
+        let newCategory = await CategoryModel.create({
+          category,
+          category_picture,
+        });
+        res.status(200).send({
+          success: true,
+          msg: "Add Category Success",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+  editCategory: async (req, res) => {
+    try {
+      let { id_category, category, category_picture } = req.body;
+      if (req.file) {
+        category_picture = req.file.filename;
+      }
+      let check = await CategoryModel.findAll({
+        where: {
+          [Op.or]: [{ category, id_category: !id_category }],
+        },
+      });
+
+      if (check.length > 0) {
+        res.status(400).send({
+          success: false,
+          msg: "Name already registered",
+        });
+      } else {
+        let editCategory = await CategoryModel.update(
+          {
+            category,
+            category_picture,
+          },
+          { where: { id_category } }
+        );
+        res.status(200).send({
+          success: true,
+          msg: "Edit Category Success",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+  deleteCategory: async (req, res) => {
+    try {
+      let { id_category } = req.body;
+      let deleteCategory = await CategoryModel.destroy({
+        where: { id_category },
+      });
+      res.status(200).send({
+        success: true,
+        msg: "Delete Category Success",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
     }
   },
 };

@@ -147,10 +147,6 @@ const EditProduct = (props) => {
     getWarehouse();
   }, []);
 
-  useEffect(() => {
-    getStock();
-  }, [dataWarehouse]);
-
   //PRINT DATA
   const printSelectWarehouse = () => {
     let data = dataWarehouse;
