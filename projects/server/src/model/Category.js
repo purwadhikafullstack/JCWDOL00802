@@ -14,6 +14,9 @@ const CategoryModel = dbSequelize.define(
     category: {
       type: DataTypes.STRING,
     },
+    category_picture: {
+      type: DataTypes.STRING,
+    },
   },
   { timestamps: false }
 );

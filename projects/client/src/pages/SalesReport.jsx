@@ -61,7 +61,7 @@ function ReportSales() {
     
     const getCategory = async ()=>{
       let getLocalStorage = localStorage.getItem("cnc_login")
-      Axios.get(`${API_URL}/apis/product/category`)
+      Axios.get(`${API_URL}/product/category`)
       .then(
           (response)=>{
            
@@ -71,7 +71,7 @@ function ReportSales() {
     }
     const getWarehouse = async ()=>{
       let getLocalStorage = localStorage.getItem("cnc_login")
-      Axios.get(`${API_URL}/apis/product/warehouse`,{
+      Axios.get(`${API_URL}/product/warehouse`,{
         headers: {
     Authorization: `Bearer ${getLocalStorage}`,
   },
