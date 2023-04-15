@@ -43,8 +43,13 @@ ProductModel.hasMany(StockModel, {
   sourceKey: "id_product",
   as: "stocks",
 });
-
+CartModel.belongsTo(ProductModel, { foreignKey: "id_product" });
+ProductModel.hasMany(CartModel, { foreignKey: "id_product" });
 StockModel.hasOne(WarehouseModel, {
+  foreignKey: "id_warehouse",
+  sourceKey: "id_warehouse",
+});
+WarehouseModel.hasMany(StockModel, {
   foreignKey: "id_warehouse",
   sourceKey: "id_warehouse",
 });

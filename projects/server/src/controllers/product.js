@@ -714,4 +714,32 @@ module.exports = {
       return res.status(500).send(error);
     }
   },
+  getProductDetail: async (req, res) => {
+    try {
+      const response = await ProductModel.findOne({
+        where: {
+          id_product: req.query.id,
+        },
+        attributes: [
+          "id_product",
+          "name",
+          "description",
+          "weight",
+          "price",
+          [sequelize.fn("sum", sequelize.col("stocks.stock")), "stock"],
+        ],
+        include: [
+          {
+            model: StockModel,
+            as: "stocks",
+            attributes: [],
+          },
+        ],
+      });
+
+      res.json(response);
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
