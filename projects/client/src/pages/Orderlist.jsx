@@ -91,7 +91,7 @@ const OrderPage = (props) => {
     let data = orderData;
     if (data !== null) {
       return data.map((val, idx) => {
-        let gambar = `http://localhost:3600/img/product/${val.Transaction_Details[0].Product.product_picture}`;
+        let gambar = `${API_URL}/img/product/${val.Transaction_Details[0].Product.product_picture}`;
         return (
           <div className="" key={val.id_transaction}>
             <div className="row">
