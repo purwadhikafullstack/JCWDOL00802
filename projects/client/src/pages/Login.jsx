@@ -11,10 +11,8 @@ const Login = (props) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const [inputEmail, setInputEmail] = React.useState(
-    "adminclickncollectTangerang@gmail.com"
-  );
-  const [inputPass, setInputPass] = React.useState("Shinysmile123!");
+  const [inputEmail, setInputEmail] = React.useState("");
+  const [inputPass, setInputPass] = React.useState("");
   const [inputType, setInputType] = React.useState("password");
 
   const onBtnLogin = () => {
