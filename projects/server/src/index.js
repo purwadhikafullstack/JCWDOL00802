@@ -23,10 +23,8 @@ checkSequelize();
 
 //ROUTES
 const configRouter = require("./routers");
-const productRouter = require("./routers/product");
+
 // app.use("/apis", configRouter);
-//
-app.use("/api", productRouter);
 app.use(express.static("src/public"));
 // ===========================
 // NOTE : Add your routes here
@@ -40,6 +38,9 @@ app.get("/api/greetings", (req, res, next) => {
     message: "Hello, Student !",
   });
 });
+
+const productRouter = require("./routers/product");
+app.use("/api", productRouter);
 
 // ===========================
 
