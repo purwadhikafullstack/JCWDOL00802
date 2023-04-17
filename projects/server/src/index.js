@@ -40,7 +40,7 @@ app.get("/api/greetings", (req, res, next) => {
 });
 
 const productRouter = require("./routers/product");
-app.use("/api", productRouter);
+app.use("/api/product", productRouter);
 
 // ===========================
 
