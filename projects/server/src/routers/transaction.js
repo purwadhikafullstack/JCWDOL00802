@@ -1,10 +1,10 @@
 const express = require("express");
 const { authUser } = require("../controllers/authorize");
-const { TransactionController } = require("../controllers");
+const { transactionController } = require("../controllers");
 const route = express.Router();
 
-route.get("/list", authUser, TransactionController.getTransaction);
-route.post("/add", authUser, TransactionController.addTrans);
-route.get("/changestatus", TransactionController.changeStatusTrans);
-route.get("/warehouse", authUser, TransactionController.getWarehouse);
+route.get("/list", authUser, transactionController.getTransaction);
+route.post("/add", authUser, transactionController.addTrans);
+route.get("/changestatus", transactionController.changeStatusTrans);
+route.get("/warehouse", authUser, transactionController.getWarehouse);
 module.exports = route;

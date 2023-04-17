@@ -5,7 +5,7 @@ const CartModel = require("./Cart");
 const StockModel = require("./stock");
 const WarehouseModel = require("./warehouse");
 const CategoryProductModel = require("./Category_Product");
-const StockHistoryModel = require("./Stock_History");
+const StockHistoryModel = require("./stock_history");
 
 const ProductModel = dbSequelize.define(
   "Product",

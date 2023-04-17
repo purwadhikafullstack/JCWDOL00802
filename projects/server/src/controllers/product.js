@@ -6,9 +6,9 @@ const StockModel = require("../model/stock");
 const WarehouseModel = require("../model/warehouse");
 const CategoryProductModel = require("../model/Category_Product");
 const WarehouseAdminModel = require("../model/Warehouse_admin");
-const CategoryModel = require("../model/category");
+const CategoryModel = require("../model/Category");
 const { Op } = require("sequelize");
-const StockHistoryModel = require("../model/Stock_History");
+const StockHistoryModel = require("../model/stock_history");
 const StockHistoryTypeModel = require("../model/stock_history_type");
 
 module.exports = {

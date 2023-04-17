@@ -81,8 +81,8 @@ await Axios.post(`${API_URL}/apis/cart/inc`,{id_cart}).then((response)=>
 const delCart= async (arg)=>{
 let text = `apakah anda yakin akan menghapus ini?`
 if (window.confirm(text)){
-  let id= arg
-await Axios.delete(`${API_URL}/apis/cart/delete?id=${id}`, ).then((response)=> 
+  
+await Axios.delete(`${API_URL}/apis/cart/delete?id=${arg}`, ).then((response)=> 
   {alert(response.data.message)
       getCart()
   }).catch((error)=>{alert(error)})
@@ -125,7 +125,7 @@ const onSelect = async (id_cart,checker) =>{
     if( checker == 0){
       let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: "1", id_cart })
       getCart()
-      console.log("oke");
+      
     }else{
     let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: "0" , id_cart})
       getCart()
