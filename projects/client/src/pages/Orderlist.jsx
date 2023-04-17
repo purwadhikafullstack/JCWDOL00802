@@ -44,13 +44,37 @@ const OrderPage = (props) => {
       },
     })
       .then((response) => {
-        console.log(response.data);
+        
         setOrderData(response.data);
       })
       .catch((error) => {
         console.log(error);
       });
   };
+  let changeStatus = async(id,stat)=>{
+    let getLocalStorage = localStorage.getItem("cnc_login")
+    
+    if (stat==9){
+      let text = `apakah anda yakin ingin membatalkan pesanan? ${id}`
+      window.confirm(text)
+    }
+    if (stat==7){
+      let text = `apakah anda yakin ingin menerima pesanan? ${id}`
+      window.confirm(text)
+    }
+    if (stat==8){
+      let text = `apakah anda yakin ingin mengajukan komplain pesanan? ${id}`
+      window.confirm(text)
+    }
+    if (window.confirm){
+    const change = await Axios.get(`${API_URL}/apis/trans/changestatus?id=${id}&stat=${stat}`,{
+              headers: {
+          Authorization: `Bearer ${getLocalStorage}`,
+        },
+            })
+    getOrder()
+          }
+}
 
   useEffect(() => {
     getOrder();
@@ -67,7 +91,7 @@ const OrderPage = (props) => {
     let data = orderData;
     if (data !== null) {
       return data.map((val, idx) => {
-        let gambar = `http://localhost:3600/img/product/${val.Transaction_Details[0].Product.product_picture}`;
+        let gambar = `${API_URL}/img/product/${val.Transaction_Details[0].Product.product_picture}`;
         return (
           <div className="" key={val.id_transaction}>
             <div className="row">
@@ -75,7 +99,7 @@ const OrderPage = (props) => {
                 <strong>Belanja</strong>
               </div>
               <div className="col-auto fs-6">
-                {format(new Date(val.date), "yyyy-MM-dd h:m a")}
+                {format(new Date(val.date), "yyyy-MM-dd hh:mm a")}
               </div>
               {val.transaction_status < 9 && (
                 <div className="col-auto fs-6 px-1 border rounded text-center bg-success text-white">
@@ -138,7 +162,7 @@ const OrderPage = (props) => {
                       </Button>
                       {val.transaction_status == 1 && (
                         <div>
-                          <Button variant="solid" colorScheme="orange" mx="1">
+                          <Button variant="solid" colorScheme="orange" mx="1"onClick={()=>changeStatus(val.id_transaction,9)}>
                             cancel
                           </Button>
                           <Button variant="solid" mx="1" colorScheme="orange">
@@ -153,10 +177,10 @@ const OrderPage = (props) => {
                       )}
                       {val.transaction_status == 6 && (
                         <div>
-                          <Button variant="solid" mx="1" colorScheme="orange">
+                          <Button variant="solid" mx="1" colorScheme="orange"onClick={()=>changeStatus(val.id_transaction,7)}>
                             terima pesanan
                           </Button>
-                          <Button variant="solid" mx="1" colorScheme="orange">
+                          <Button variant="solid" mx="1" colorScheme="orange"onClick={()=>changeStatus(val.id_transaction,8)}>
                             ajukan komplain
                           </Button>
                         </div>
@@ -205,7 +229,7 @@ const OrderPage = (props) => {
                   data-bs-parent="#accordionExample"
                 >
                   <div class="accordion-body ">
-                    <Link href="/order/">
+                    <Link href="/transaction/">
                       <div className="">Daftar Transaksi</div>
                     </Link>
                     <div className="" onClick={() => menunggu()}>

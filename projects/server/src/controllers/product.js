@@ -6,9 +6,9 @@ const StockModel = require("../model/stock");
 const WarehouseModel = require("../model/warehouse");
 const CategoryProductModel = require("../model/Category_Product");
 const WarehouseAdminModel = require("../model/Warehouse_admin");
-const CategoryModel = require("../model/category");
+const CategoryModel = require("../model/Category");
 const { Op } = require("sequelize");
-const StockHistoryModel = require("../model/Stock_History");
+const StockHistoryModel = require("../model/stock_history");
 const StockHistoryTypeModel = require("../model/stock_history_type");
 
 module.exports = {
@@ -712,6 +712,34 @@ module.exports = {
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
+    }
+  },
+  getProductDetail: async (req, res) => {
+    try {
+      const response = await ProductModel.findOne({
+        where: {
+          id_product: req.query.id,
+        },
+        attributes: [
+          "id_product",
+          "name",
+          "description",
+          "weight",
+          "price",
+          [sequelize.fn("sum", sequelize.col("stocks.stock")), "stock"],
+        ],
+        include: [
+          {
+            model: StockModel,
+            as: "stocks",
+            attributes: [],
+          },
+        ],
+      });
+
+      res.json(response);
+    } catch (error) {
+      console.log(error);
     }
   },
 };

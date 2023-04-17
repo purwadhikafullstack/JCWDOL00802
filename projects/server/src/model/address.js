@@ -1,13 +1,12 @@
 const { Sequelize } = require("sequelize");
 const { dbSequelize } = require("../config/db");
-const ProductModel = require("./Product");
-const UserModel = require("./user");
+
 const { DataTypes } = Sequelize;
 
-const CartModel = dbSequelize.define(
-  "cart",
+const AddressModel = dbSequelize.define(
+  "address",
   {
-    id_cart: {
+    id_address: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -15,20 +14,23 @@ const CartModel = dbSequelize.define(
     id_user: {
       type: DataTypes.INTEGER,
     },
-    id_product: {
+    coordinate_lat: {
       type: DataTypes.INTEGER,
     },
-    total_item: {
+    coordinate_long: {
       type: DataTypes.INTEGER,
     },
-    selected: {
+    detail_address: {
+      type: DataTypes.STRING,
+    },
+    postal_code: {
+      type: DataTypes.INTEGER,
+    },
+    priority: {
       type: DataTypes.TINYINT,
     },
   },
   { timestamps: false }
 );
 
-UserModel.hasMany(CartModel, { foreignKey: "id_user" });
-CartModel.belongsTo(UserModel, { foreignKey: "id_user" });
-
-module.exports = CartModel;
+module.exports = AddressModel;

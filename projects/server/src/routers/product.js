@@ -143,4 +143,5 @@ route.post(
   authorizeController.authSuperAdmin,
   ProductController.deleteCategory
 );
+route.get("/detail", ProductController.getProductDetail);
 module.exports = route;

@@ -28,6 +28,9 @@ import NewProduct from "./pages/NewProduct";
 import AdminCategoryProduct from "./pages/CategoryProduct";
 import StockHistory from "./pages/StockHistory";
 import StockHistoryDetail from "./pages/StockHistoryDetail";
+import Cart from "./pages/CartPage";
+import CheckOut from "./pages/CheckOutPage";
+import DetailPage from "./pages/DetailProduct";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -90,11 +93,14 @@ function App() {
         <Route path="/regis" element={<Register />} />
         <Route path="/newuser" element={<NewUser />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
+        <Route path="/product/detail/:id" element={<DetailPage />} />
         {/* semua yang butuh login user taruh dalam <></> bawah ini */}
         {role == 1 && (
           <>
             <Route path="/profile" element={<Profile />} />
             <Route path="/transaction" element={<OrderPage />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout/" element={<CheckOut />} />
           </>
         )}
         {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}

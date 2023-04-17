@@ -31,7 +31,7 @@ module.exports = {
       { headers: { key: `${process.env.RAJAONGKIR_API_KEY}` } }
     );
     let cost = result.data.rajaongkir;
-    console.log(cost);
+
     res.status(200).send(cost);
   },
 };
