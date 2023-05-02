@@ -13,9 +13,62 @@ const AddressModel = require("../model/address");
 module.exports = {
   getTransaction: async (req, res) => {
     try {
-      let data = await TransactionModel.findAll({
-        where: { id_user: req.decript.id_user },
+      let filterProduct = {};
+      let filterTransaction = { id_user: req.decript.id_user };
+      let limit = parseInt(req.query.limit);
+      let page = parseInt(req.query.page);
+      let search = req.body.search;
+      let month = req.body.month;
+      let year = req.body.year;
+      let status = req.body.status;
+      let offset = limit * page;
+      let searchTracker = false;
 
+      if (search !== "" && typeof search !== "undefined") {
+        filterProduct.name = {
+          [sequelize.Op.like]: [`%${search}%`],
+        };
+        searchTracker = true;
+      }
+
+      if (
+        month !== "" &&
+        typeof month !== "undefined" &&
+        year !== "" &&
+        typeof year !== "undefined"
+      ) {
+        let startDate = new Date(`${parseInt(year)}-${parseInt(month)}-01`);
+        let endDate =
+          parseInt(month) < 12
+            ? new Date(`${parseInt(year)}-${parseInt(month) + 1}-01`)
+            : new Date(`${parseInt(year) + 1}-1-01`);
+        console.log("enddate", endDate);
+        console.log("start", startDate);
+        filterTransaction.date = {
+          [sequelize.Op.and]: {
+            [sequelize.Op.gte]: startDate,
+            [sequelize.Op.lt]: endDate,
+          },
+        };
+      }
+
+      if (status !== "" && typeof status !== "undefined") {
+        if (status == "ongoing") {
+          filterTransaction.transaction_status = {
+            [sequelize.Op.or]: [1, 2, 3, 4, 5, 6],
+          };
+        } else {
+          filterTransaction.transaction_status = status;
+        }
+      }
+
+      let data = await TransactionModel.findAndCountAll({
+        where: filterTransaction,
+        limit,
+        offset,
+        page,
+        distinct: true,
+        col: "id_transaction",
         include: [
           {
             model: TransactionStatusModel,
@@ -26,13 +79,45 @@ module.exports = {
             include: [
               {
                 model: ProductModel,
+                where: filterProduct,
               },
             ],
           },
         ],
         order: [["id_transaction", "desc"]],
-      }).then((response) => {
-        return res.status(200).send(response);
+      });
+      let result = data.rows;
+      let total_item = data.count;
+      if (searchTracker) {
+        let data = await TransactionModel.findAll({
+          where: filterTransaction,
+          limit,
+          offset,
+          page,
+          include: [
+            {
+              model: TransactionStatusModel,
+            },
+            {
+              model: TransactionDetailModel,
+
+              include: [
+                {
+                  model: ProductModel,
+                  where: filterProduct,
+                },
+              ],
+            },
+          ],
+          order: [["id_transaction", "desc"]],
+        });
+        total_item = data.length;
+      }
+      let total_page = Math.ceil(total_item / limit);
+      res.status(200).send({
+        data: result,
+        page,
+        total_page,
       });
     } catch (error) {
       console.log(error);
@@ -250,7 +335,7 @@ module.exports = {
 
         let closestWarehouse = closestLocation(findAddress[0], findWarehouse);
         id_warehouse = closestWarehouse.id_warehouse;
-        address = findAddress[0].detail_address;
+        address = findAddress[0].id_address;
         let addTrans = await TransactionModel.create({
           date,
           shipment_fee,
@@ -332,7 +417,7 @@ module.exports = {
             let amount = findMutation[i].total_item;
 
             let updateMutation = await WarehouseMutationModel.update(
-              { status: 5 },
+              { status: 7 },
               { where: { id_mutation } }
             );
             let totalCek = await StockHistoryModel.findAll({
@@ -420,5 +505,20 @@ module.exports = {
     let postalFind = await PostalCodeModel.findOne({ where: { postal_code } });
 
     return res.status(200).send(postalFind);
+  },
+  getTransDetail: async (req, res) => {
+    try {
+      let id_transaction = req.query.id;
+      let trans = await TransactionModel.findOne({ where: { id_transaction } });
+      let transDetail = await TransactionDetailModel.findAll({
+        where: { id_transaction },
+      });
+      res.status(200).send({
+        transaction: trans,
+        detailTransaction: transDetail,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   },
 };

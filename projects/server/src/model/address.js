@@ -29,6 +29,15 @@ const AddressModel = dbSequelize.define(
     priority: {
       type: DataTypes.TINYINT,
     },
+    isDeleted: {
+      type: DataTypes.TINYINT,
+    },
+    receiver: {
+      type: DataTypes.STRING,
+    },
+    phone_number: {
+      type: DataTypes.STRING,
+    },
   },
   { timestamps: false }
 );

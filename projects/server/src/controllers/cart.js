@@ -58,7 +58,12 @@ module.exports = {
         include: [
           {
             model: ProductModel,
-            attributes: ["name", "price"],
+            attributes: [
+              "name",
+              "product_picture",
+              "price",
+              [sequelize.fn("sum", sequelize.col("stock")), "stock"],
+            ],
             raw: true,
             include: [
               {
