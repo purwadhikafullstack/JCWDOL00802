@@ -9,6 +9,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@bramus/pagination-sequence": "^1.2.0",
     "@chakra-ui/react": "^2.5.1",
     "@chec/commerce.js": "^2.8.0",
     "@coreui/react": "^4.6.0",
@@ -28,6 +29,7 @@
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.8.2",
     "react-scripts": "5.0.1",
+    "react-strap": "^0.0.1",
     "redux-thunk": "^2.4.2",
     "web-vitals": "^2.1.4"
   },
