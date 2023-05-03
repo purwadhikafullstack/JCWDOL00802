@@ -39,8 +39,8 @@ app.get("/api/greetings", (req, res, next) => {
   });
 });
 
-const productRouter = require("./routers/product");
-app.use("/api/product", productRouter);
+// const productRouter = require("./routers/product");
+// app.use("/api/product", productRouter);
 
 // ===========================
 

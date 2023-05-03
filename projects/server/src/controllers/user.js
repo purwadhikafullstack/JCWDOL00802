@@ -7,6 +7,8 @@ const { cetakToken } = require("../config/encript");
 const jwt = require("jsonwebtoken");
 const REACT_URL = "http://localhost:3000";
 const { transporter } = require("../config/nodemailer");
+const protocol = 'http://localhost';
+
 
 module.exports = {
   getDataUser: async (req, res) => {
@@ -201,4 +203,73 @@ module.exports = {
       res.status(500).send(error);
     }
   },
+
+  editProfile: async (req, res) => {
+    try {
+      const { username, email, phone_number, full_name } = req.body;
+      const { id_user } = req.decript;
+      const user = await UserModel.findOne({
+        where: { id_user },
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updateData = {};
+      if (username !== undefined && username !== "") {
+        updateData.username = username;
+      }
+      if (email !== undefined && email !== "") {
+        updateData.email = email;
+      }
+      if (phone_number !== undefined && phone_number !== "") {
+        updateData.phone_number = phone_number;
+      }
+      if (full_name !== undefined && full_name !== "") {
+        updateData.full_name = full_name;
+      }
+      if (req.file) {
+        updateData.profile_picture = req.file.filename;
+      }
+
+      const updateProfile = await UserModel.update(updateData, {
+        where: { id_user },
+      });
+      console.log(req.file);
+      res.status(201).json({
+        message: "Success",
+        data: updateProfile,
+      });
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  },
+
+  getProfile: async (req, res) => {
+    try {
+      const response = await UserModel.findOne({
+        where: {
+          id_user: req.decript.id_user,
+        },
+      });
+
+      let profilePicture = response.profile_picture;
+
+      if (!profilePicture) {
+        profilePicture = "default.png";
+      } else {
+        profilePicture = `${profilePicture}`;
+      }
+
+      const picPath = `${protocol}:${process.env.PORT}/img/profile/${profilePicture}`;
+      response.profile_picture = picPath;
+
+      res.json(response);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  },
+
 };

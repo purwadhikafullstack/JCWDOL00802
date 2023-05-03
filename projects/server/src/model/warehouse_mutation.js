@@ -1,6 +1,7 @@
 const { Sequelize } = require("sequelize");
 const { dbSequelize } = require("../config/db");
-
+const  ProductModel  = require("./Product");
+const { WarehouseModel, associateWarehouseModel } = require("./warehouse");
 const { DataTypes } = Sequelize;
 
 const WarehouseMutationModel = dbSequelize.define(
@@ -36,4 +37,15 @@ const WarehouseMutationModel = dbSequelize.define(
   { timestamps: false }
 );
 
-module.exports = WarehouseMutationModel;
+const associateWarehouseMutationModel = (ProductModel, WarehouseModel) => {
+  WarehouseMutationModel.belongsTo(ProductModel, {
+    foreignKey: 'id_product',
+    as: 'product',
+  });
+  WarehouseMutationModel.belongsTo(WarehouseModel, {
+    foreignKey: 'id_warehouse_receiver',
+    as: 'warehouseReceiver',
+  });
+};
+
+module.exports = { WarehouseMutationModel, associateWarehouseMutationModel };

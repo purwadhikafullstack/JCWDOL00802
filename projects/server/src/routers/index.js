@@ -6,6 +6,7 @@ const warehouseRouter = require("./warehouse");
 const rajaOngkirRouter = require("./rajaongkir");
 const cartRouter = require("./cart");
 const addressRouter = require("./address");
+const dashboardRouter = require("./dashboard");
 
 const router = express.Router();
 

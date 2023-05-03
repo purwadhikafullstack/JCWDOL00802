@@ -3,7 +3,7 @@ const { dbSequelize } = require("../config/db");
 const { DataTypes } = Sequelize;
 
 const AddressModel = require("./address");
-const WarehouseModel = require("./warehouse");
+const { WarehouseModel, associateWarehouseModel } = require("./warehouse");
 
 const PostalCodeModel = dbSequelize.define(
   "postal_code",
