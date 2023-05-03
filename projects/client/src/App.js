@@ -34,6 +34,9 @@ import CheckOut from "./pages/CheckOutPage";
 import DetailPage from "./pages/DetailProduct";
 import Address from "./pages/Address";
 import Dashboard from "./pages/Dashboard";
+import RequestStock from "./pages/RequestStock";
+import NewPromo from "./pages/NewPromo";
+import AdminPromo from "./pages/AdminPromo";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -70,8 +73,8 @@ function App() {
           },
         });
         delete res.data.password;
-        dispatch(loginAction(res.data)); // menjalankan fungsi action
-        setLoading(false); // loading dimatikan ketika berhasil mendapat response
+        dispatch(loginAction(res.data));
+        setLoading(false);
         localStorage.setItem("cnc_login", res.data.token);
       } else {
         setLoading(false);
@@ -111,7 +114,7 @@ function App() {
           {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}
           {admin.includes(role) && (
             <>
-              <Route path="/admin/dashboard" element={<Dashboard />} />
+              <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/salesreport" element={<ReportSales />} />
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route
@@ -125,6 +128,7 @@ function App() {
                 path="/admin/stockhistory/:id"
                 element={<StockHistoryDetail />}
               />
+              <Route path="/admin/requeststock" element={<RequestStock />} />
             </>
           )}
 
@@ -135,6 +139,8 @@ function App() {
               <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
               <Route path="/admin/newproduct" element={<NewProduct />} />
               <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
+              <Route path="/admin/newpromo" element={<NewPromo />} />
+              <Route path="/admin/promo" element={<AdminPromo />} />
             </>
           )}
           <Route path="*" element={<NotFound />} />

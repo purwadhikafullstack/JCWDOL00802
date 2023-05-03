@@ -2,6 +2,7 @@ const { Sequelize } = require("sequelize");
 const { dbSequelize } = require("../config/db");
 const WarehouseAdminModel = require("./Warehouse_admin");
 const { DataTypes } = Sequelize;
+const StockModel = require("./stock");
 
 const WarehouseModel = dbSequelize.define(
   "warehouse",
@@ -36,11 +37,10 @@ const WarehouseModel = dbSequelize.define(
   { timestamps: false }
 );
 
-const associateWarehouseModel = (WarehouseAdminModel) => {
-  WarehouseModel.hasMany(WarehouseAdminModel, {
-    foreignKey: 'id_warehouse',
-    as: 'warehouseAdmin',
-  });
-};
+StockModel.hasOne(WarehouseModel, { foreignKey: "id_warehouse" });
+WarehouseModel.hasMany(StockModel, {
+  foreignKey: "id_warehouse",
+  sourceKey: "id_warehouse",
+});
 
-module.exports = { WarehouseModel, associateWarehouseModel };
+module.exports = WarehouseModel;

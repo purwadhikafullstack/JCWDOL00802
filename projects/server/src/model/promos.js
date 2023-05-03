@@ -2,46 +2,46 @@ const { Sequelize } = require("sequelize");
 const { dbSequelize } = require("../config/db");
 const { DataTypes } = Sequelize;
 
-const WarehouseMutationModel = dbSequelize.define(
-  "Warehouse_Mutation",
+const PromosModel = dbSequelize.define(
+  "Promos",
   {
-    id_mutation: {
+    id_promo: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    id_product: {
+    description: {
+      type: DataTypes.STRING,
+    },
+    count: {
       type: DataTypes.INTEGER,
     },
-    id_warehouse_sender: {
-      type: DataTypes.INTEGER,
-    },
-    id_warehouse_receiver: {
-      type: DataTypes.INTEGER,
-    },
-    date: {
-      type: DataTypes.DATE(0),
-    },
-    total_item: {
+    max_count: {
       type: DataTypes.INTEGER,
     },
     status: {
       type: DataTypes.INTEGER,
     },
-    reference: {
+    limitation: {
+      type: DataTypes.INTEGER,
+    },
+    expire_date: {
+      type: DataTypes.DATE(0),
+    },
+    promo_code: {
       type: DataTypes.STRING,
     },
-    notes: {
+    promo_picture: {
       type: DataTypes.STRING,
     },
-    resi: {
-      type: DataTypes.STRING,
+    type: {
+      type: DataTypes.INTEGER,
     },
-    courier: {
-      type: DataTypes.STRING,
+    discounted_percentage: {
+      type: DataTypes.INTEGER,
     },
   },
   { timestamps: false }
 );
 
-module.exports = WarehouseMutationModel;
+module.exports = PromosModel;

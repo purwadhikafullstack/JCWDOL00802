@@ -1,24 +1,34 @@
 const express = require("express");
 const { warehouseController, authorizeController } = require("../controllers");
-const { authAdmin } = require("../controllers/authorize");
 const route = express.Router();
 
 //AUTH SUPER ADMIN
-route.get(
+route.post(
   "/list",
   authorizeController.authSuperAdmin,
   warehouseController.getDataWarehouse
 );
-route.post("/addwarehouse", warehouseController.addWarehouse);
-route.post("/deletewarehouse", warehouseController.deleteWarehouse);
+route.post(
+  "/addwarehouse",
+  authorizeController.authSuperAdmin,
+  warehouseController.addWarehouse
+);
+route.post(
+  "/deletewarehouse",
+  authorizeController.authSuperAdmin,
+  warehouseController.deleteWarehouse
+);
 
 //AUTH MINIMAL ADMIN
 route.get(
   "/detailwarehouse",
-  //   authorizeController.authAdmin,
+  authorizeController.authSuperAdmin,
   warehouseController.getIdWarehouse
 );
 route.get("/postal", warehouseController.getPostalWarehouse);
-route.post("/editwarehouse", warehouseController.editWarehouse);
-
+route.post(
+  "/editwarehouse",
+  authorizeController.authSuperAdmin,
+  warehouseController.editWarehouse
+);
 module.exports = route;

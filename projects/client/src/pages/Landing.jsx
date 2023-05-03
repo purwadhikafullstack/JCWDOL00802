@@ -1,42 +1,100 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Image, Text } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
+import Axios from "axios";
+import { API_URL } from "../helper";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Landing = (props) => {
-  const productItem = [
-    {
-      path: "/products",
-      name: "Makanan Kering",
-      img: "https://cdn-brilio-net.akamaized.net/news/2020/09/01/191072/1299678-1000xauto-resep-kue-kering-tradisional.jpg",
-    },
-    {
-      path: "/products",
-      name: "Figure",
-      img: "https://images.tokopedia.net/img/cache/500-square/VqbcmM/2021/12/14/a347ad4b-efb1-4f2b-a6b2-ad9d1b8a7b89.jpg",
-    },
-    {
-      path: "/products",
-      name: "Tas Slempang Pria",
-      img: "https://cf.shopee.co.id/file/d1deb3abf6a3fe764d5abeabe3a83e1f",
-    },
-    {
-      path: "/products",
-      name: "Flat Shoes Wanita",
-      img: "https://lzd-img-global.slatic.net/g/p/8a0cf492b29ddad44c2cd40c9eb90115.jpg_720x720q80.jpg_.webp",
-    },
-    {
-      path: "/products",
-      name: "Toples",
-      img: "https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//94/MTA-12082188/kedaung_toples_hermetico_2_lt-_toples_kaca-_toples_full02_sjplx27.jpg",
-    },
-    {
-      path: "/products",
-      name: "Hardisk & Flashdisk",
-      img: "https://lzd-img-global.slatic.net/g/p/ad567e2aeaf726a40ca46b47d8fed009.jpg_720x720q80.jpg_.webp",
-    },
-  ];
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(0);
+  const [dataCategory, setDataCategory] = useState(null);
+  const [dataPromo, setDataPromo] = useState(null);
+
+  const getCategory = async () => {
+    try {
+      let category = await Axios.post(API_URL + `/apis/product/categorylist`, {
+        page: parseInt(page) - 1,
+        limit: 5,
+        search: "",
+        order: 0,
+      });
+      setDataCategory(category.data.data);
+      setLastPage(category.data.total_page);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const getPromo = async () => {
+    try {
+      let promo = await Axios.get(API_URL + `/apis/promo/getpromo`);
+      setDataPromo(promo.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  let dataExist = false;
+  if (dataCategory == null) {
+    dataExist = false;
+  } else {
+    dataExist = true;
+  }
+
+  useEffect(() => {
+    getCategory();
+  }, [page]);
+
+  useEffect(() => {
+    getPromo();
+  }, []);
+
+  const printDataCategory = () => {
+    let data = dataExist ? dataCategory : [];
+
+    return data.map((val, idx) => {
+      return (
+        <Link
+          className="card bg-white m-2 p-3 shadow d-flex "
+          activeclassName="active"
+          boxSize="150px"
+          style={{
+            width: "200px",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Image
+            src={`${API_URL}/img/category/${val.category_picture}`}
+            alt={val.category}
+            borderRadius="md"
+            boxSize="100px"
+            objectFit="cover"
+          />
+          <div className="link_text my-1">{val.category}</div>
+        </Link>
+      );
+    });
+  };
+
+  let previous = () => {
+    if (page == 1) {
+      setPage(lastPage);
+    } else {
+      setPage(page - 1);
+    }
+  };
+
+  let next = () => {
+    if (page == lastPage) {
+      setPage(1);
+    } else {
+      setPage(page + 1);
+    }
+  };
+
   return (
-    <div className="bg-white my-5 w-100 p-5 m-auto shadow">
+    <div className="bg-white w-100 p-2 m-auto shadow">
       {/* Component Carousel */}
       <div>
         <div id="banner">
@@ -69,23 +127,35 @@ const Landing = (props) => {
             <div class="carousel-inner">
               <div class="carousel-item active">
                 <img
-                  src={require("../Assets/hitam.jpg")}
+                  src={
+                    dataPromo
+                      ? `${API_URL}/img/promo/${dataPromo[0].promo_picture}`
+                      : require("../Assets/hitam.jpg")
+                  }
                   class="d-block w-100"
-                  alt="hitam"
+                  alt="1"
                 />
               </div>
               <div class="carousel-item">
                 <img
-                  src={require("../Assets/biru.jpg")}
+                  src={
+                    dataPromo
+                      ? `${API_URL}/img/promo/${dataPromo[1].promo_picture}`
+                      : require("../Assets/hitam.jpg")
+                  }
                   class="d-block w-100"
-                  alt="biru"
+                  alt="2"
                 />
               </div>
               <div class="carousel-item">
                 <img
-                  src={require("../Assets/ungu.jpg")}
+                  src={
+                    dataPromo
+                      ? `${API_URL}/img/promo/${dataPromo[2].promo_picture}`
+                      : require("../Assets/hitam.jpg")
+                  }
                   class="d-block w-100"
-                  alt="ungu"
+                  alt="3"
                 />
               </div>
             </div>
@@ -143,129 +213,37 @@ const Landing = (props) => {
           </div>
         </div>
       </div>
-      {/* Component CardCategory */}
+      {/* ComponentCategory */}
       <div>
-        <Text fontSize="50px" color="#f96c08">
+        <Text fontSize="2xl" color="#f96c08">
           Kategori
         </Text>
       </div>
       <br />
-      {/* CARD CATEGORY BARU */}
-      <div className="col-10 row bg-white m-auto card flex d-flex">
-        <div className="flex d-flex flex-container">
-          {productItem.map((item, index) => (
-            <Link
-              to={item.path}
-              key={index}
-              className="card bg-white my-1 shadow flex "
-              activeclassName="active"
-              boxSize="150px"
-              style={{ width: "10rem", justifyContent: "center" }}
-            >
-              <div>
-                <Image
-                  src={item.img}
-                  alt={item.name}
-                  borderRadius="lg"
-                  boxSize="100px"
-                  objectFit="cover"
-                  // className="my-5"
-                />
-              </div>
-              <div className="link_text my-1">{item.name}</div>
-            </Link>
-          ))}
+      {/* CARD CATEGORY */}
+      <div
+        className="d-flex flex-row card shadow m-auto p-2"
+        style={{ alignItems: "center", justifyContent: "center" }}
+      >
+        <div
+          className="d-flex col-1 landingpgg"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        >
+          <FaChevronLeft onClick={() => previous()} />
+        </div>
+        <div
+          className="d-flex col-10"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        >
+          {printDataCategory()}
+        </div>
+        <div
+          className="d-flex col-1 landingpgg"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        >
+          <FaChevronRight onClick={() => next()} />
         </div>
       </div>
-      {/* CARD LAMA */}
-      {/* <div>
-        <div className="col-10 row bg-white m-auto card flex d-flex">
-          <Card maxW="200px" size="sm" maxH="250px" margin="5px">
-            <CardBody>
-              <Image
-                src="https://cdn-brilio-net.akamaized.net/news/2020/09/01/191072/1299678-1000xauto-resep-kue-kering-tradisional.jpg"
-                alt="Green double couch with wooden legs"
-                borderRadius="lg"
-                boxSize="100px"
-                objectFit="cover"
-              />
-              <br />
-              <Heading size="sm">Makanan</Heading>
-              <Text>Kering</Text>
-            </CardBody>
-          </Card>
-          <Card maxW="200px" size="sm" maxH="250px" margin="5px">
-            <CardBody>
-              <Image
-                src="https://images.tokopedia.net/img/cache/500-square/VqbcmM/2021/12/14/a347ad4b-efb1-4f2b-a6b2-ad9d1b8a7b89.jpg"
-                alt="Green double couch with wooden legs"
-                borderRadius="lg"
-                boxSize="100px"
-                objectFit="cover"
-              />
-              <br />
-              <Heading size="sm">Figure</Heading>
-              <Text></Text>
-            </CardBody>
-          </Card>
-          <Card maxW="200px" size="sm" maxH="250px" margin="5px">
-            <CardBody>
-              <Image
-                src="https://cf.shopee.co.id/file/d1deb3abf6a3fe764d5abeabe3a83e1f"
-                alt="Green double couch with wooden legs"
-                borderRadius="lg"
-                boxSize="100px"
-                objectFit="cover"
-              />
-              <br />
-              <Heading size="sm">Tas Selempang</Heading>
-              <Text>Pria</Text>
-            </CardBody>
-          </Card>
-          <Card maxW="200px" size="sm" maxH="250px" margin="5px">
-            <CardBody>
-              <Image
-                src="https://lzd-img-global.slatic.net/g/p/8a0cf492b29ddad44c2cd40c9eb90115.jpg_720x720q80.jpg_.webp"
-                alt="Green double couch with wooden legs"
-                borderRadius="lg"
-                boxSize="100px"
-                objectFit="cover"
-              />
-              <br />
-              <Heading size="sm">Flat Shoes</Heading>
-              <Text>Wanita</Text>
-            </CardBody>
-          </Card>
-          <Card maxW="200px" size="sm" maxH="250px" margin="5px">
-            <CardBody>
-              <Image
-                src="https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//94/MTA-12082188/kedaung_toples_hermetico_2_lt-_toples_kaca-_toples_full02_sjplx27.jpg"
-                alt="Green double couch with wooden legs"
-                borderRadius="lg"
-                boxSize="100px"
-                objectFit="cover"
-              />
-              <br />
-              <Heading size="sm">Toples</Heading>
-              <Text></Text>
-            </CardBody>
-          </Card>
-          <Card maxW="200px" size="sm" maxH="250px" margin="5px">
-            <CardBody>
-              <Image
-                src="https://lzd-img-global.slatic.net/g/p/ad567e2aeaf726a40ca46b47d8fed009.jpg_720x720q80.jpg_.webp"
-                alt="Green double couch with wooden legs"
-                borderRadius="lg"
-                boxSize="100px"
-                objectFit="cover"
-              />
-              <br />
-              <Heading size="sm">Harddisk &</Heading>
-              <Text>Flashdisk</Text>
-            </CardBody>
-          </Card>
-        </div>
-      </div> */}
     </div>
   );
 };

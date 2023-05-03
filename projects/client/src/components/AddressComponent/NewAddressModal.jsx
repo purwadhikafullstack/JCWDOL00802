@@ -24,7 +24,7 @@ import {
   ModalFooter,
   Alert,
   AlertIcon,
-  Box
+  Box,
 } from "@chakra-ui/react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -71,7 +71,6 @@ const NewAddressModal = (props) => {
   let onGetProvince = async () => {
     try {
       let response = await Axios.get(API_URL + `/apis/rajaongkir/getprovince`);
-      console.log(`rajaongkir data propinsi=`, response.data);
       setProvinceList(response.data);
     } catch (error) {
       console.log(error);
@@ -80,12 +79,10 @@ const NewAddressModal = (props) => {
 
   let onGetCity = async (idprop) => {
     try {
-      console.log(`province id =`, idprop);
       setKeyProvinceEdit(idprop);
       let response = await Axios.get(
         API_URL + `/apis/rajaongkir/getcityaddress`
       );
-      console.log(`rajaongkir data kota=`, response.data);
       let kota = response.data;
       let container = [];
       kota.map((val, idx) => {
@@ -93,7 +90,6 @@ const NewAddressModal = (props) => {
           container.push(kota[idx]);
         }
       });
-      console.log(`container=`, container);
       setCityList(container);
     } catch (error) {
       console.log(error);
@@ -157,7 +153,6 @@ const NewAddressModal = (props) => {
 
   const printDataProvince = () => {
     let data = dataProvinceExist ? provinceList : [];
-    console.log(data);
     return data.map((val, idx) => {
       return <option value={val.province_id}>{val.province}</option>;
     });
@@ -172,7 +167,6 @@ const NewAddressModal = (props) => {
 
   const printDataCity = () => {
     let data = dataCityExist ? cityList : [];
-    console.log(`print data city = `, data);
     return data.map((val, idx) => {
       return (
         <option value={val.city_id}>
@@ -184,14 +178,11 @@ const NewAddressModal = (props) => {
 
   let onGetPostal = async (keyCity) => {
     try {
-      console.log(`inputnya get postal =`, keyCity);
       let data = cityList;
       let filterData = data.filter((x) => {
         return x.city_id == keyCity;
       });
-      console.log(`filter data =`, filterData[0]);
       setSelectedCity(filterData[0]);
-      console.log(`stlh di set = `, selectedCity);
     } catch (error) {
       console.log(error);
     }
@@ -200,9 +191,9 @@ const NewAddressModal = (props) => {
   return (
     <>
       <Box mt={2}>
-      <Button onClick={onOpen}  colorScheme="orange" variant="solid">
-        Add New Address
-      </Button>
+        <Button onClick={onOpen} colorScheme="orange" variant="solid">
+          Add New Address
+        </Button>
       </Box>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />

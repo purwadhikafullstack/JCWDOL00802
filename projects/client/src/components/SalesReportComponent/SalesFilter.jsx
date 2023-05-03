@@ -1,17 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Box, FormControl, InputGroup, Select, Stack ,Input} from '@chakra-ui/react';
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Box,
+  FormControl,
+  InputGroup,
+  Select,
+  Stack,
+  Input,
+} from "@chakra-ui/react";
 
-const SalesFilter = ({ warehouses, categories, handleFilter ,year, defaultMonth,defaultYear, }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedWarehouse, setSelectedWarehouse] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [buttonDisable,setButtonDisable]=useState(false)
-  const [yearList,setYearList]=useState([])
+const SalesFilter = ({
+  warehouses,
+  categories,
+  handleFilter,
+  year,
+  defaultMonth,
+  defaultYear,
+}) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedWarehouse, setSelectedWarehouse] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [buttonDisable, setButtonDisable] = useState(false);
+  const [yearList, setYearList] = useState([]);
 
   const month = [
-    {value:"", name : "Month"},
+    { value: "", name: "Month" },
     { value: 1, name: "January" },
     { value: 2, name: "February" },
     { value: 3, name: "March" },
@@ -23,36 +38,36 @@ const SalesFilter = ({ warehouses, categories, handleFilter ,year, defaultMonth,
     { value: 9, name: "September" },
     { value: 10, name: "October" },
     { value: 11, name: "November" },
-    { value: 12, name: "December" }
-  ]
+    { value: 12, name: "December" },
+  ];
   const handleSearchTermChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const validatedYear = ()=>{
-    if(!selectedMonth && selectedYear){
-        setButtonDisable(true)
-    }else if(selectedMonth && !selectedYear){
-        setButtonDisable(true)
-    } else (setButtonDisable(false))
-  }
-  const yearListDefault =()=>{
-    const year = new Date().getFullYear()
-    let baseYear= 2022
-    let dataYear=[]
+  const validatedYear = () => {
+    if (!selectedMonth && selectedYear) {
+      setButtonDisable(true);
+    } else if (selectedMonth && !selectedYear) {
+      setButtonDisable(true);
+    } else setButtonDisable(false);
+  };
+  const yearListDefault = () => {
+    const year = new Date().getFullYear();
+    let baseYear = 2022;
+    let dataYear = [];
     for (let i = parseInt(year); i >= baseYear; i--) {
-        dataYear.push(i);
-      }
-      setYearList(dataYear)
-  }    
+      dataYear.push(i);
+    }
+    setYearList(dataYear);
+  };
 
-    useEffect(() => {
-      yearListDefault()
-    }, [])
   useEffect(() => {
-    validatedYear()
-  }, [selectedMonth,selectedYear,warehouses])
-  
+    yearListDefault();
+  }, []);
+  useEffect(() => {
+    validatedYear();
+  }, [selectedMonth, selectedYear, warehouses]);
+
   const handleWarehouseChange = (event) => {
     setSelectedWarehouse(event.target.value);
   };
@@ -60,44 +75,51 @@ const SalesFilter = ({ warehouses, categories, handleFilter ,year, defaultMonth,
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
   };
-  const handleMonth = (event) =>{
-    setSelectedMonth(event.target.value)
-    console.log(event.target.value);;
-  }
-  const handleYear = (event) =>{
+  const handleMonth = (event) => {
+    setSelectedMonth(event.target.value);
+  };
+  const handleYear = (event) => {
     setSelectedYear(event.target.value);
-  }
+  };
 
   const handleFilterClick = () => {
     const filters = {
       searchTerm,
       selectedYear,
       selectedMonth,
-      warehouseFilter : selectedWarehouse,
-      categoryFilter :selectedCategory,
+      warehouseFilter: selectedWarehouse,
+      categoryFilter: selectedCategory,
     };
 
     handleFilter(filters);
   };
 
   return (
-    <Box  p={4} boxShadow="base" borderRadius="md">
+    <Box p={4} boxShadow="base" borderRadius="md">
       <Stack spacing={4}>
-      <InputGroup>
-          <Input placeholder="Search" onChange={handleSearchTermChange} value={searchTerm} />
+        <InputGroup>
+          <Input
+            placeholder="Search"
+            onChange={handleSearchTermChange}
+            value={searchTerm}
+          />
         </InputGroup>
-          <Select placeholder="Year" onChange={handleYear} >
-            {yearList.map((year) => (
-              <option key={year} value={year} >
-                {year}
-              </option>
-            ))}
-          </Select>
-        
+        <Select placeholder="Year" onChange={handleYear}>
+          {yearList.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </Select>
+
         <FormControl>
-          <Select onChange={handleMonth} >
+          <Select onChange={handleMonth}>
             {month.map((month, idx) => (
-              <option key={month.value} value={month.value} selected={month.value == selectedMonth} >
+              <option
+                key={month.value}
+                value={month.value}
+                selected={month.value == selectedMonth}
+              >
                 {month.name}
               </option>
             ))}
@@ -106,7 +128,10 @@ const SalesFilter = ({ warehouses, categories, handleFilter ,year, defaultMonth,
         <FormControl>
           <Select placeholder="Warehouse" onChange={handleWarehouseChange}>
             {warehouses?.map((warehouse) => (
-              <option key={warehouse.id_warehouse} value={warehouse.id_warehouse} >
+              <option
+                key={warehouse.id_warehouse}
+                value={warehouse.id_warehouse}
+              >
                 {warehouse.warehouse_branch_name}
               </option>
             ))}
@@ -121,7 +146,11 @@ const SalesFilter = ({ warehouses, categories, handleFilter ,year, defaultMonth,
             ))}
           </Select>
         </FormControl>
-        <Button colorScheme="orange" onClick={handleFilterClick} isDisabled={buttonDisable}>
+        <Button
+          colorScheme="orange"
+          onClick={handleFilterClick}
+          isDisabled={buttonDisable}
+        >
           Terapkan filter
         </Button>
       </Stack>

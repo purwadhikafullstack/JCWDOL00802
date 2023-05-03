@@ -14,7 +14,7 @@ module.exports = {
             as: "lala",
           },
         ],
-        order: [['priority', 'DESC']]
+        order: [["priority", "DESC"]],
       }).then((response) => {
         return res.status(200).send(response);
       });
@@ -69,7 +69,7 @@ module.exports = {
       return res.status(500).send(error);
     }
   },
-  
+
   addAddress: async (req, res) => {
     try {
       let {
@@ -120,7 +120,6 @@ module.exports = {
       let coordinate = await Axios.get(
         `https://api.opencagedata.com/geocode/v1/json?q=${city},+${encoded_province}&key=${process.env.OPENCAGE_API_KEY}&pretty=1&no_annotations=1`
       ).then((response) => {
-        console.log(response.data.results[0].geometry);
         let updatelat = AddressModel.update(
           { coordinate_lat: response.data.results[0].geometry.lat },
           {

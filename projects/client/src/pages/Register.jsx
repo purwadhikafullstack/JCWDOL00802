@@ -1,16 +1,25 @@
 import React, { useCallback, useState } from "react";
 // import { FcGoogle } from "react-icons/fc";
 import Axios from "axios";
-import { Button, Text } from "@chakra-ui/react";
+import { Button, Text, Input } from "@chakra-ui/react";
 import { API_URL } from "../helper";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import { basicSchema } from "../schemas";
 
 const Register = (props) => {
   const navigate = useNavigate();
-  const [email, setEmail] = React.useState("");
+
+  const { values, errors, touched, handleBlur, handleChange } = useFormik({
+    initialValues: {
+      email: "",
+    },
+    validationSchema: basicSchema,
+  });
+  // const [email, setEmail] = React.useState("");
   const onRegis = () => {
     Axios.post(API_URL + `/apis/user/regis`, {
-      email,
+      email: values.email,
     })
       .then((response) => {
         alert("Register Success ✅");
@@ -37,7 +46,6 @@ const Register = (props) => {
           <div className="col-12 col-md-4 p-5 shadow">
             <h6 className="fw-bold muted-color">Click N Collect</h6>
             <Text className="fw-bold" fontSize="4xl">
-              {" "}
               Daftar disini
             </Text>
             <div className="d-flex">
@@ -47,20 +55,29 @@ const Register = (props) => {
             <div id="form">
               <div className="my-3">
                 <label className="form-label fw-bold text-muted">Email</label>
-                <input
-                  type="email"
-                  className="form-control p-3"
-                  placeholder=""
-                  onChange={(e) => setEmail(e.target.value)}
+                <Input
+                  type="text"
+                  id="email"
+                  placeholder="email"
+                  value={values.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  className={errors.email && touched.email ? "input-error" : ""}
                 />
+                {errors.email && touched.email && (
+                  <Text fontSize="small" className="error">
+                    {errors.email}
+                  </Text>
+                )}
               </div>
             </div>
             <Button
               type="button"
               width="full"
               colorScheme="orange"
-              variant="solid"
-              onClick={onRegis}
+              variant={errors.email ? "outline" : "solid"}
+              onClick={() => onRegis()}
+              isDisabled={errors.email}
             >
               Daftar
             </Button>

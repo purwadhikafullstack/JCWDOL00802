@@ -1,4 +1,4 @@
-import React, { useCallback  } from "react";
+import React, { useCallback } from "react";
 import {
   Avatar,
   AvatarBadge,
@@ -49,6 +49,7 @@ const Navbar = (props) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState("");
+  const [dataCategory, setDataCategory] = useState(null);
 
   const { id_user, email, role, profile_picture } = useSelector((state) => {
     return {
@@ -59,7 +60,6 @@ const Navbar = (props) => {
     };
   });
 
-
   useEffect(() => {
     if (id_user) {
       const getUserById = async (id_user) => {
@@ -69,7 +69,6 @@ const Navbar = (props) => {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log(JSON.stringify(response));
         setAvatarSrc(response.data.profile_picture);
       };
       getUserById(id_user);
@@ -92,7 +91,6 @@ const Navbar = (props) => {
           },
         }
       );
-      console.log(response.data.pendingRequests);
 
       const removedNotifications =
         JSON.parse(localStorage.getItem("removedNotifications")) || [];
@@ -105,7 +103,6 @@ const Navbar = (props) => {
       setNewPendingRequestsCount(newPendingRequests.length);
       setNewPendingRequests(newPendingRequests);
       setPendingRequests(response.data.pendingRequests);
-      console.log("newPendingRequests:", newPendingRequests);
     } catch (error) {
       console.error(error);
     }
@@ -128,6 +125,45 @@ const Navbar = (props) => {
     },
     [newPendingRequests, newPendingRequestsCount]
   );
+
+  const getCategory = async () => {
+    try {
+      let category = await Axios.get(API_URL + `/apis/product/category`);
+      setDataCategory(category.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  let dataExist = false;
+  if (dataCategory == null) {
+    dataExist = false;
+  } else {
+    dataExist = true;
+  }
+
+  useEffect(() => {
+    getCategory();
+  }, []);
+
+  const printCategory = () => {
+    let data = dataExist ? dataCategory : [];
+    return (
+      <MenuList>
+        {data.map((val, idx) => {
+          if (idx < 10) {
+            return <MenuItem>{val.category}</MenuItem>;
+          }
+        })}
+        {data.length >= 10 && (
+          <>
+            <hr />
+            <MenuItem>Lihat Semua Kategori</MenuItem>
+          </>
+        )}
+      </MenuList>
+    );
+  };
 
   return (
     <nav className="navbar navbar-expand-lg bg-light">
@@ -162,10 +198,7 @@ const Navbar = (props) => {
               Kategori
             </MenuButton>
             {/* Drop Down Kategori */}
-            <MenuList>
-              <MenuItem>Parfum</MenuItem>
-              <MenuItem>Makanan</MenuItem>
-            </MenuList>
+            {printCategory()}
           </Menu>
           {/* Pencarian / Search Bar */}
           <InputGroup>
@@ -262,7 +295,7 @@ const Navbar = (props) => {
               <Menu>
                 <MenuButton type="button">
                   <Avatar
-                    src={avatarSrc} 
+                    src={avatarSrc}
                     size="md"
                     className="avatar"
                     textColor={"black"}

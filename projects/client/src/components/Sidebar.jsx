@@ -1,44 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, AvatarBadge } from "@chakra-ui/react";
 import {
   FaBars,
-  FaMoneyBill,
   FaShoppingBag,
-  FaSignInAlt,
-  FaSignOutAlt,
   FaTh,
   FaUserAlt,
-  FaUserEdit,
-  FaUsers,
   FaFileAlt,
-  FaGripVertical,
   FaHome,
   FaIcons,
   FaServer,
   FaHandHolding,
+  FaMoneyBillWave,
+  FaChevronRight,
+  FaChevronDown,
+  FaPlus,
+  FaFolder,
 } from "react-icons/fa";
 import { NavLink, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { logoutAction } from "../actions/userAction";
+import { useSelector } from "react-redux";
 
 const Sidebar = (props) => {
-  const dispatch = useDispatch();
-
-  // let show = window.location.pathname.includes("/admin");
-
   const { role } = useSelector((state) => {
     return {
       role: state.userReducer.role,
     };
   });
   const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
+  const toggle = () => {
+    if (isOpen == true) {
+      setIsOpen(!isOpen);
+      setIsOpenProduct(false);
+      setIsOpenWarehouse(false);
+      setIsOpenReport(false);
+      setIsOpenPromo(false);
+    } else {
+      setIsOpen(!isOpen);
+    }
+  };
+
   const loginStatus = localStorage.getItem("cnc_login");
   const roleAdmin = loginStatus && (role == 2 || role == 3);
   const roleSuperAdmin = loginStatus && role == 3;
 
+  // SHOW SIDEBAR IF ADMIN
   const [show, setShow] = useState(false);
-
   const checkLink = () => {
     if (window.location.pathname.includes("/admin")) {
       setShow(true);
@@ -51,60 +55,38 @@ const Sidebar = (props) => {
     checkLink();
   }, [useLocation()]);
 
-  const menuItem = [
-    {
-      path: "/admin",
-      name: "Home",
-      icon: <FaTh />,
-      show: roleAdmin,
-    },
-    {
-      path: "/admin/category",
-      name: "Kategori",
-      icon: <FaIcons />,
-      show: roleAdmin,
-    },
-    {
-      path: "/admin/products",
-      name: "Produk",
-      icon: <FaShoppingBag />,
-      show: roleAdmin,
-    },
-    {
-      path: "/admin/requeststock",
-      name: "Request stock",
-      icon: <FaHandHolding />,
-      show: roleAdmin,
-    },
+  // DROPDOWN CONDITION
+  const [isOpenPromo, setIsOpenPromo] = useState(false);
+  const togglePromo = () => {
+    if (isOpen) {
+      setIsOpenPromo(!isOpenPromo);
+    }
+  };
+  const [isOpenProduct, setIsOpenProduct] = useState(false);
+  const toggleProduct = () => {
+    if (isOpen) {
+      setIsOpenProduct(!isOpenProduct);
+    }
+  };
+  const [isOpenWarehouse, setIsOpenWarehouse] = useState(false);
+  const toggleWarehouse = () => {
+    if (isOpen) {
+      setIsOpenWarehouse(!isOpenWarehouse);
+    }
+  };
+  const [isOpenReport, setIsOpenReport] = useState(false);
+  const toggleReport = () => {
+    if (isOpen) {
+      setIsOpenReport(!isOpenReport);
+    }
+  };
 
-    {
-      path: "/admin/warehouse",
-      name: "Gudang",
-      icon: <FaHome />,
-      show: roleSuperAdmin,
-    },
-    {
-      path: "/admin/salesreport",
-      name: "Sales Report",
-      icon: <FaFileAlt />,
-      show: roleAdmin,
-    },
-    {
-      path: "/admin/stockhistory",
-      name: "StockHistory",
-      icon: <FaServer />,
-      show: roleAdmin,
-    },
-  ];
   return (
     <div>
-      <div
-        className="d-flex flex-row"
-        // style={{ position: "fixed" }}
-      >
+      <div className="d-flex flex-row">
         {show && (
-          <div style={{ width: isOpen ? "250px" : "50px" }} className="sidebar">
-            <div className="top-section">
+          <div style={{ width: isOpen ? "300px" : "50px" }} className="sidebar">
+            <div className="top-section" onClick={() => toggle()}>
               <h1
                 style={{ display: isOpen ? "block" : "none" }}
                 className="logo"
@@ -115,47 +97,288 @@ const Sidebar = (props) => {
                 style={{ marginLeft: isOpen ? "50px" : "0px" }}
                 className="bars"
               >
-                <FaBars onClick={toggle} />
+                <FaBars />
               </div>
             </div>
-
+            <hr />
             <div>
-              <div
-                className="user-section"
+              <h6
                 style={{
+                  display: isOpen ? "block" : "none",
+                  marginLeft: "10px",
                   marginTop: "10px",
                   marginBottom: "10px",
-                  display: loginStatus ? "flex" : "none",
                 }}
               >
-                <h6
-                  style={{
-                    display: isOpen ? "block" : "none",
-                    marginLeft: "10px",
-                  }}
+                {role == 2 && <>Welcome, Admin</>}
+                {role == 3 && <>Welcome, Super Admin</>}
+              </h6>
+            </div>
+            <hr />
+            <div className="menu-content">
+              <div>
+                <NavLink
+                  to="/admin"
+                  className="link"
+                  style={{ display: roleAdmin ? "flex" : "none" }}
                 >
-                  {role == 2 && <>Welcome, Admin</>}
-                  {role == 3 && <>Welcome, Super Admin</>}
-                </h6>
+                  <FaTh />
+                  <div
+                    style={{ display: isOpen ? "block" : "none" }}
+                    className="link_text"
+                  >
+                    Dashboard
+                  </div>
+                </NavLink>
+                <NavLink
+                  to="/adminuserlist"
+                  className="link"
+                  style={{ display: roleSuperAdmin ? "flex" : "none" }}
+                >
+                  <FaUserAlt />
+                  <div
+                    style={{ display: isOpen ? "block" : "none" }}
+                    className="link_text"
+                  >
+                    Manage User
+                  </div>
+                </NavLink>
+                <div style={{ display: roleSuperAdmin ? "block" : "none" }}>
+                  <div
+                    className={isOpenPromo ? "linkselected" : "link"}
+                    onClick={() => togglePromo()}
+                  >
+                    <FaMoneyBillWave />
+                    <div style={{ display: isOpen ? "block" : "none" }}>
+                      Promo
+                    </div>
+                    {!isOpenPromo && (
+                      <FaChevronRight
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                    {isOpenPromo && (
+                      <FaChevronDown
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className="dropdown"
+                    style={{ display: isOpenPromo ? "block" : "none" }}
+                  >
+                    <NavLink
+                      to="/admin/newpromo"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleSuperAdmin ? "flex" : "none" }}
+                    >
+                      <FaPlus />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Add Promo
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin/promo"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleSuperAdmin ? "flex" : "none" }}
+                    >
+                      <FaMoneyBillWave />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Promo List
+                      </div>
+                    </NavLink>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    className={isOpenProduct ? "linkselected" : "link"}
+                    onClick={() => toggleProduct()}
+                  >
+                    <FaShoppingBag />
+                    <div style={{ display: isOpen ? "block" : "none" }}>
+                      Product Management
+                    </div>
+                    {!isOpenProduct && (
+                      <FaChevronRight
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                    {isOpenProduct && (
+                      <FaChevronDown
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className="dropdown"
+                    style={{ display: isOpenProduct ? "block" : "none" }}
+                  >
+                    <NavLink
+                      to="/admin/newproduct"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleSuperAdmin ? "flex" : "none" }}
+                    >
+                      <FaPlus />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Add Product
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin/products"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleAdmin ? "flex" : "none" }}
+                    >
+                      <FaShoppingBag />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Product List
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin/category"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleAdmin ? "flex" : "none" }}
+                    >
+                      <FaIcons />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Categories
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin/requeststock"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleAdmin ? "flex" : "none" }}
+                    >
+                      <FaHandHolding />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Stock Request
+                      </div>
+                    </NavLink>
+                  </div>
+                </div>
+                <div style={{ display: roleSuperAdmin ? "block" : "none" }}>
+                  <div
+                    className={isOpenWarehouse ? "linkselected" : "link"}
+                    onClick={() => toggleWarehouse()}
+                  >
+                    <FaHome />
+                    <div style={{ display: isOpen ? "block" : "none" }}>
+                      Warehouse
+                    </div>
+                    {!isOpenWarehouse && (
+                      <FaChevronRight
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                    {isOpenWarehouse && (
+                      <FaChevronDown
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className="dropdown"
+                    style={{ display: isOpenWarehouse ? "block" : "none" }}
+                  >
+                    <NavLink
+                      to="/admin/newwarehouse"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleSuperAdmin ? "flex" : "none" }}
+                    >
+                      <FaPlus />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Add Warehouse
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin/warehouse"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleSuperAdmin ? "flex" : "none" }}
+                    >
+                      <FaHome />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Warehouse List
+                      </div>
+                    </NavLink>
+                  </div>
+                </div>
+                <div>
+                  <div
+                    className={isOpenReport ? "linkselected" : "link"}
+                    onClick={() => toggleReport()}
+                  >
+                    <FaFolder />
+                    <div style={{ display: isOpen ? "block" : "none" }}>
+                      Report
+                    </div>
+                    {!isOpenReport && (
+                      <FaChevronRight
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                    {isOpenReport && (
+                      <FaChevronDown
+                        style={{ display: isOpen ? "block" : "none" }}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className="dropdown"
+                    style={{ display: isOpenReport ? "block" : "none" }}
+                  >
+                    <NavLink
+                      to="/admin/salesreport"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleAdmin ? "flex" : "none" }}
+                    >
+                      <FaFileAlt />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Sales Report
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin/stockhistory"
+                      className={isOpen ? "link dropdowncontent" : "link"}
+                      style={{ display: roleAdmin ? "flex" : "none" }}
+                    >
+                      <FaServer />
+                      <div
+                        style={{ display: isOpen ? "block" : "none" }}
+                        className="link_text"
+                      >
+                        Stock History
+                      </div>
+                    </NavLink>
+                  </div>
+                </div>
               </div>
             </div>
-            {menuItem.map((item, index) => (
-              <NavLink
-                to={item.path}
-                key={index}
-                className="link"
-                activeclassName="active"
-                style={{ display: item.show ? "flex" : "none" }}
-              >
-                <div className="icon">{item.icon}</div>
-                <div
-                  style={{ display: isOpen ? "block" : "none" }}
-                  className="link_text"
-                >
-                  {item.name}
-                </div>
-              </NavLink>
-            ))}
           </div>
         )}
         <main>{props.children}</main>

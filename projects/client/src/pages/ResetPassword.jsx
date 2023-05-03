@@ -1,25 +1,39 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Axios from "axios";
-import { Button, Text } from "@chakra-ui/react";
-import { useLocation } from "react-router-dom";
+import {
+  Button,
+  Text,
+  Input,
+  InputGroup,
+  InputRightElement,
+} from "@chakra-ui/react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../helper";
+import { useFormik } from "formik";
+import { basicSchema } from "../schemas";
 
 const ResetPassword = (props) => {
+  const navigate = useNavigate();
   const location = useLocation();
   let token = location.search.split("=")[1];
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [check, setCheck] = React.useState("");
-  const [visible, setVisible] = React.useState("password");
-  const [visible2, setVisible2] = React.useState("password");
+  const [visible, setVisible] = useState("password");
+  const [visible2, setVisible2] = useState("password");
 
-  const onRegis = () => {
+  const { values, errors, touched, handleBlur, handleChange } = useFormik({
+    initialValues: {
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: basicSchema,
+  });
+
+  const onReset = () => {
     Axios.patch(
       API_URL + `/apis/user/resetpassword`,
       {
-        password,
+        password: values.password,
       },
       {
         headers: {
@@ -28,7 +42,7 @@ const ResetPassword = (props) => {
       }
     )
       .then((response) => {
-        alert("Verify Success ✅");
+        alert("Reset Password Success Success ✅");
       })
       .catch((error) => {
         console.log(error);
@@ -51,6 +65,23 @@ const ResetPassword = (props) => {
     }
   }, [visible2]);
 
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [firstLaunch, setFirstLaunch] = useState(true);
+
+  useEffect(() => {
+    if (errors.password || errors.confirmPassword) {
+      setButtonDisabled(true);
+    } else {
+      setButtonDisabled(false);
+    }
+  }, [errors]);
+
+  useEffect(() => {
+    if (touched.password || touched.confirmPassword) {
+      setFirstLaunch(false);
+    }
+  }, [touched]);
+
   //use callback & use memorize
 
   return (
@@ -67,24 +98,27 @@ const ResetPassword = (props) => {
           <div className="col-12 col-md-4 p-5 shadow">
             <h6 className="fw-bold muted-color">Click N Collect</h6>
             <Text className="fw-bold" fontSize="4xl">
-              {" "}
               Reset Password
             </Text>
-
             <div id="form">
               <div className="my-3 ">
                 <label className="form-label fw-bold text-muted">
                   Kata Sandi Baru
                 </label>
-                <div className="input-group border rounded">
-                  <input
+                <InputGroup className="input-group border rounded">
+                  <Input
+                    id="password"
                     type={visible}
-                    className="form-control p-3 border-0"
-                    placeholder="8+ character"
-                    onChange={(e) => setPassword(e.target.value)}
+                    className={
+                      errors.password && touched.password ? "input-error" : ""
+                    }
+                    placeholder="8-16 character"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.password}
                   />
-                  <span
-                    onClick={onVisibility}
+                  <InputRightElement
+                    onClick={() => onVisibility()}
                     className="input-group-text bg-transparent border-0"
                     id="basic-addon2"
                   >
@@ -93,22 +127,34 @@ const ResetPassword = (props) => {
                     ) : (
                       <AiOutlineEyeInvisible size={26} />
                     )}
-                  </span>
-                </div>
+                  </InputRightElement>
+                </InputGroup>
+                {errors.password && touched.password && (
+                  <Text fontSize="small" className="error">
+                    {errors.password}
+                  </Text>
+                )}
               </div>
               <div className="my-3 ">
                 <label className="form-label fw-bold text-muted">
                   Masukan ulang kata sandi
                 </label>
-                <div className="input-group border rounded">
-                  <input
-                    type={visible}
-                    className="form-control p-3 border-0"
+                <InputGroup className="input-group border rounded">
+                  <Input
+                    id="confirmPassword"
+                    type={visible2}
                     placeholder="8+ character"
-                    onChange={(e) => setCheck(e.target.value)}
+                    value={values.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={
+                      errors.confirmPassword && touched.confirmPassword
+                        ? "input-error"
+                        : ""
+                    }
                   />
-                  <span
-                    onClick={onVisibility2}
+                  <InputRightElement
+                    onClick={() => onVisibility2()}
                     className="input-group-text bg-transparent border-0"
                     id="basic-addon2"
                   >
@@ -117,16 +163,22 @@ const ResetPassword = (props) => {
                     ) : (
                       <AiOutlineEyeInvisible size={26} />
                     )}
-                  </span>
-                </div>
+                  </InputRightElement>
+                </InputGroup>
+                {errors.confirmPassword && touched.confirmPassword && (
+                  <Text fontSize="small" className="error">
+                    {errors.confirmPassword}
+                  </Text>
+                )}
               </div>
             </div>
             <Button
               type="button"
               width="full"
               colorScheme="orange"
-              variant="solid"
-              onClick={onRegis}
+              variant={firstLaunch || buttonDisabled ? "outline" : "solid"}
+              onClick={() => onReset()}
+              isDisabled={firstLaunch || buttonDisabled}
             >
               Reset Password
             </Button>

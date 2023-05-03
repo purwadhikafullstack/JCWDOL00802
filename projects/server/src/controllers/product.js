@@ -10,6 +10,8 @@ const CategoryModel = require("../model/Category");
 const { Op } = require("sequelize");
 const StockHistoryModel = require("../model/stock_history");
 const StockHistoryTypeModel = require("../model/stock_history_type");
+const { WarehouseMutationModel } = require("../model");
+const WarehouseMutationStatusModel = require("../model/warehouse_mutation_status");
 
 module.exports = {
   getProductSales: async (req, res) => {
@@ -170,10 +172,54 @@ module.exports = {
       let warehouse = req.body.warehouse;
       let search = req.body.search;
       let category = req.body.category;
+      let urut = req.body.order;
+
+      let limit = parseInt(req.body.limit);
+      let minPrice = req.body.minPrice;
+      let maxPrice = req.body.maxPrice;
+      let page = req.body.page;
+      let result = [];
+      let offset = page * limit;
 
       let filterCategory = {};
       let filterName = {};
       let filterWarehouse = {};
+
+      let order = [["id_product"]];
+
+      if (urut == 0) {
+        order = [["id_product"]];
+      } else if (urut == 1) {
+        order = [["name", "ASC"]];
+      } else if (urut == 2) {
+        order = [["name", "DESC"]];
+      } else if (urut == 3) {
+        order = [["price", "ASC"]];
+      } else if (urut == 4) {
+        order = [["price", "DESC"]];
+      }
+
+      if (
+        minPrice !== "" &&
+        typeof minPrice !== "undefined" &&
+        maxPrice !== "" &&
+        typeof maxPrice !== "undefined"
+      ) {
+        filterName.price = {
+          [Op.and]: {
+            [Op.gte]: parseInt(minPrice),
+            [Op.lte]: parseInt(maxPrice),
+          },
+        };
+      } else if (minPrice !== "" && typeof minPrice !== "undefined") {
+        filterName.price = {
+          [Op.gte]: parseInt(minPrice),
+        };
+      } else if (maxPrice !== "" && typeof maxPrice !== "undefined") {
+        filterName.price = {
+          [Op.lte]: parseInt(maxPrice),
+        };
+      }
 
       if (warehouse !== "" && typeof warehouse !== "undefined") {
         filterWarehouse.id_warehouse = warehouse;
@@ -195,32 +241,65 @@ module.exports = {
         filterWarehouse.id_warehouse = warehouse;
       }
 
-      const data = await ProductModel.findAll({
+      const count = await ProductModel.findAndCountAll({
         where: filterName,
-
-        group: ["id_product", "Category_Products.id_category_product"],
-        attributes: [
-          "id_product",
-          "name",
-          "price",
-          "status",
-          [sequelize.fn("sum", sequelize.col("stocks.stock")), "total_stock"],
-        ],
+        limit,
+        page,
+        offset,
+        order,
+        raw: true,
         include: [
           {
             model: CategoryProductModel,
             where: filterCategory,
             attributes: [],
           },
-          {
-            model: StockModel,
-            as: "stocks",
-            where: filterWarehouse,
-            attributes: [],
-          },
         ],
       });
-      return res.status(201).send(data);
+
+      const total_page = Math.ceil(count.count / limit);
+
+      for (let i = 0; i < count.rows.length; i++) {
+        let tempt = {};
+        let id = count.rows[i].id_product;
+
+        const data = await ProductModel.findOne({
+          where: { id_product: id },
+          group: ["id_product", "Category_Products.id_category_product"],
+          attributes: [
+            "id_product",
+            "name",
+            "price",
+            "status",
+            "product_picture",
+            [sequelize.fn("sum", sequelize.col("stock")), "total_stock"],
+          ],
+          include: [
+            {
+              model: CategoryProductModel,
+              where: filterCategory,
+              attributes: [],
+            },
+            {
+              model: StockModel,
+              as: "stocks",
+              where: filterWarehouse,
+              attributes: [],
+            },
+          ],
+        });
+
+        tempt.id_product = data.dataValues.id_product;
+        tempt.name = data.dataValues.name;
+        tempt.price = data.dataValues.price;
+        tempt.status = data.dataValues.status;
+        tempt.product_picture = data.dataValues.product_picture;
+        tempt.total_stock = data.dataValues.total_stock;
+
+        result.push(tempt);
+      }
+
+      return res.status(201).send({ data: result, total_page, page });
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
@@ -229,22 +308,49 @@ module.exports = {
 
   getDetailProductsAdmin: async (req, res) => {
     try {
-      let { id_product } = req.query;
+      let { id_product, warehouse } = req.query;
       let role = req.decript.role;
+      let id_user = req.decript.id_user;
       let edit = true;
+      let filterWarehouse = {};
+
+      if (warehouse !== "" && typeof warehouse !== "undefined") {
+        filterWarehouse.id_warehouse = warehouse;
+      }
 
       if (role == 2) {
         edit = false;
+
+        let getWarehouse = await WarehouseAdminModel.findOne({
+          where: id_user,
+        });
+        filterWarehouse.id_warehouse = getWarehouse.id_warehouse;
       }
 
       let data = await ProductModel.findOne({
         where: {
           id_product,
         },
+        group: ["id_product"],
+        attributes: [
+          "id_product",
+          "name",
+          "price",
+          "description",
+          "weight",
+          "product_picture",
+          [sequelize.fn("sum", sequelize.col("stocks.stock")), "stock"],
+        ],
         include: [
           {
             model: CategoryProductModel,
             attributes: ["id_category"],
+          },
+          {
+            model: StockModel,
+            where: filterWarehouse,
+            as: "stocks",
+            attributes: [],
           },
         ],
       });
@@ -271,7 +377,7 @@ module.exports = {
       }
       let data = await ProductModel.findAll({
         where: {
-          [Op.or]: [{ name, id_product: !id_product }],
+          [Op.and]: [{ name, id_product: { [Op.ne]: id_product } }],
         },
       });
       if (data.length > 0) {
@@ -315,7 +421,7 @@ module.exports = {
 
       res.status(200).send({
         success: true,
-        msg: "Edit Data Success",
+        msg: "Delete Data Success",
       });
     } catch (error) {
       console.log(error);
@@ -324,8 +430,15 @@ module.exports = {
   },
   newProducts: async (req, res) => {
     try {
-      let { name, description, price, weight, product_picture, id_category } =
-        req.body;
+      let {
+        name,
+        description,
+        price,
+        weight,
+        product_picture,
+        id_category,
+        date,
+      } = req.body;
       if (req.file) {
         product_picture = req.file.filename;
       }
@@ -362,7 +475,17 @@ module.exports = {
             id_product: results.id_product,
             stock: 0,
           });
+
+          let newStockHistory = StockHistoryModel.create({
+            id_warehouse: val.dataValues.id_warehouse,
+            id_product: results.id_product,
+            date,
+            type: 8,
+            amount: 0,
+            total: 0,
+          });
         });
+
         res.status(200).send({
           success: true,
           msg: "Add Product Success",
@@ -376,25 +499,33 @@ module.exports = {
   getCategoryList: async (req, res) => {
     try {
       let { search } = req.body;
-      let limit = parseInt(req.query.limit);
-      let page = parseInt(req.query.page);
+      let limit = parseInt(req.body.limit);
+      let page = parseInt(req.body.page);
       let filterName = {};
       let result = [];
       let offset = page * limit;
-      // let orderFilter = ["id_category", "asc"];
+      let urut = req.body.order;
+
+      let order = [["id_category"]];
+
+      if (urut == 0) {
+        order = [["id_category"]];
+      } else if (urut == 1) {
+        order = [["category", "ASC"]];
+      } else if (urut == 2) {
+        order = [["category", "DESC"]];
+      }
 
       if (search !== "" && typeof search !== "undefined") {
         filterName.category = {
-          [sequelize.Op.like]: [`%${search}%`],
+          [Op.like]: [`%${search}%`],
         };
       }
-      // if (order !== "" && typeof order !== "undefined") {
-      //   orderFilter = order;
-      // }
+
       let getData = await CategoryModel.findAndCountAll({
         where: filterName,
         limit,
-        // order: [orderFilter],
+        order,
         page,
         offset,
         raw: true,
@@ -459,7 +590,7 @@ module.exports = {
       }
       let check = await CategoryModel.findAll({
         where: {
-          [Op.or]: [{ category, id_category: !id_category }],
+          [Op.and]: [{ category, id_category: { [Op.ne]: id_category } }],
         },
       });
 
@@ -771,6 +902,617 @@ module.exports = {
       res.json(response);
     } catch (error) {
       console.log(error);
+    }
+  },
+
+  editStock: async (req, res) => {
+    try {
+      let id = req.decript.id_user;
+      let role = req.decript.role;
+
+      let { input, id_product, id_warehouse, type, note, date } = req.body;
+
+      if (role == 3) {
+        res.status(400).send({
+          success: false,
+          msg: "Super Admin tidak punya kewenangan untuk melakukan ini",
+        });
+      } else {
+        let check = [];
+        if (role == 2) {
+          let search = await WarehouseAdminModel.findOne({
+            where: { id_user: id },
+            raw: true,
+          });
+          check.push(search);
+        }
+
+        if (check[0].id_warehouse == id_warehouse) {
+          if (type == "increment") {
+            let inputItem = await StockModel.increment(
+              { stock: input },
+              {
+                where: {
+                  [Op.and]: [{ id_product }, { id_warehouse }],
+                },
+              }
+            );
+            let findLast = await StockHistoryModel.findOne({
+              where: {
+                [Op.and]: [{ id_product }, { id_warehouse }],
+              },
+              order: [["date", "DESC"]],
+            });
+            let hasil = findLast.dataValues.total + input;
+            let stockHistory = await StockHistoryModel.create({
+              id_warehouse,
+              id_product,
+              date,
+              type: 1,
+              amount: input,
+              note,
+              total: hasil,
+            });
+            res.status(200).send("done");
+          } else if (type == "decrement") {
+            let buangItem = await StockModel.decrement(
+              { stock: input },
+              {
+                where: {
+                  [Op.and]: [{ id_product }, { id_warehouse }],
+                },
+              }
+            );
+            let findLast = await StockHistoryModel.findOne({
+              where: {
+                [Op.and]: [{ id_product }, { id_warehouse }],
+              },
+              order: [["date", "DESC"]],
+            });
+            let hasil = findLast.dataValues.total - input;
+            let amount = `-${input}`;
+            let stockHistory = await StockHistoryModel.create({
+              id_warehouse,
+              id_product,
+              date,
+              type: 1,
+              amount,
+              note,
+              total: hasil,
+            });
+            res.status(200).send("done");
+          }
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Anda tidak punya kewenangan untuk melakukan ini",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  getWarehouseRequestFrom: async (req, res) => {
+    try {
+      let id = parseInt(req.query.id);
+      let filterWarehouse = {};
+
+      filterWarehouse.id_warehouse = {
+        [Op.ne]: [id],
+      };
+
+      let getData = await WarehouseModel.findAll({
+        where: filterWarehouse,
+      }).then((response) => {
+        return res.status(201).send(response);
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+
+  getStockFrom: async (req, res) => {
+    try {
+      let id_warehouse = parseInt(req.query.warehouse);
+      let id_product = parseInt(req.query.product);
+      let data = await StockModel.findOne({
+        where: { id_warehouse, id_product },
+      });
+
+      res.status(200).send(data);
+    } catch (error) {
+      return res.status(500).send(error);
+    }
+  },
+  requestMoveStock: async (req, res) => {
+    try {
+      let {
+        input,
+        id_product,
+        from_id_warehouse,
+        to_id_warehouse,
+        date,
+        note,
+      } = req.body;
+
+      let id = req.decript.id_user;
+      let role = req.decript.role;
+
+      if (role == 3) {
+        res.status(400).send({
+          success: false,
+          msg: "Super Admin tidak punya kewenangan untuk melakukan ini",
+        });
+      } else {
+        let check = [];
+        if (role == 2) {
+          let search = await WarehouseAdminModel.findOne({
+            where: { id_user: id },
+            raw: true,
+          });
+          check.push(search);
+        }
+        if (check.id_warehouse == to_id_warehouse) {
+          //STOK BARANG DI GUDANG SBLH DI HOLD DULU (stok dan stok histori)
+          let holdItem = await StockModel.decrement(
+            { stock: input },
+            {
+              where: {
+                [Op.and]: [{ id_product }, { id_warehouse: from_id_warehouse }],
+              },
+            }
+          );
+          let findLast = await StockHistoryModel.findOne({
+            where: {
+              [Op.and]: [{ id_product }, { id_warehouse: from_id_warehouse }],
+            },
+            order: [["date", "DESC"]],
+          });
+          let hasil = findLast.dataValues.total - input;
+          let amount = `-${input}`;
+          let stockHistory = await StockHistoryModel.create({
+            id_warehouse: from_id_warehouse,
+            id_product,
+            date,
+            type: 4,
+            amount,
+            note,
+            total: hasil,
+          });
+
+          let warehouseMutationRequest = await WarehouseMutationModel.create({
+            id_product,
+            id_warehouse_sender: from_id_warehouse,
+            id_warehouse_receiver: to_id_warehouse,
+            date,
+            total_item: input,
+            status: 2,
+            notes: note,
+          });
+
+          res.status(200).send("request sent");
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Anda tidak punya kewenangan untuk mengirim request ini",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+  getMutation: async (req, res) => {
+    try {
+      let warehouseReceive = req.body.warehouseReceive;
+      let warehouseSend = req.body.warehouseSend;
+      let search = req.body.search;
+      let category = req.body.category;
+      let urut = req.body.order;
+      let status = req.body.status;
+
+      let limit = 5;
+      // let page = 0;
+      let page = parseInt(req.body.page);
+      let result = [];
+      let offset = page * limit;
+
+      let filterCategory = {};
+      let filterName = {};
+      let filterWarehouse = {};
+
+      let order = [["id_mutation"]];
+
+      if (urut == 0) {
+        order = [["date", "DESC"]];
+      } else if (urut == 1) {
+        order = [["date", "ASC"]];
+      } else if (urut == 2) {
+        order = [["date", "DESC"]];
+      }
+
+      if (warehouseReceive !== "" && typeof warehouseReceive !== "undefined") {
+        filterWarehouse.id_warehouse_receiver = warehouseReceive;
+      }
+      if (warehouseSend !== "" && typeof warehouseSend !== "undefined") {
+        filterWarehouse.id_warehouse_sender = warehouseSend;
+      }
+      if (category !== "" && typeof category !== "undefined") {
+        filterCategory.id_category = category;
+      }
+
+      if (search !== "" && typeof search !== "undefined") {
+        filterName.name = {
+          [Op.like]: [`%${search}%`],
+        };
+      }
+
+      if (status !== "" && typeof status !== "undefined") {
+        filterWarehouse.status = status;
+      }
+
+      let count = await WarehouseMutationModel.findAndCountAll({
+        where: filterWarehouse,
+        subQuery: false,
+        limit,
+        page,
+        offset,
+        order,
+        raw: true,
+        include: [
+          {
+            model: ProductModel,
+            where: filterName,
+            attributes: [],
+            include: [
+              {
+                model: CategoryProductModel,
+                where: filterCategory,
+                attributes: [],
+              },
+            ],
+          },
+        ],
+      });
+      const total_page = Math.ceil(count.count / limit);
+
+      for (let i = 0; i < count.rows.length; i++) {
+        let tempt = {
+          Product: {},
+          sender: {},
+          receiver: {},
+          warehouse_mutation_status: {},
+        };
+        let id = count.rows[i].id_mutation;
+
+        let get = await WarehouseMutationModel.findOne({
+          where: { id_mutation: id },
+          attributes: [
+            "id_mutation",
+            "total_item",
+            "status",
+            "resi",
+            "courier",
+            "notes",
+          ],
+          include: [
+            {
+              model: ProductModel,
+              where: filterName,
+              attributes: ["name", "product_picture", "id_product"],
+            },
+            {
+              model: WarehouseModel,
+              as: "sender",
+              attributes: [
+                "warehouse_branch_name",
+                "detail_address",
+                "id_warehouse",
+              ],
+            },
+            {
+              model: WarehouseModel,
+              as: "receiver",
+              attributes: [
+                "warehouse_branch_name",
+                "detail_address",
+                "id_warehouse",
+              ],
+            },
+            {
+              model: WarehouseMutationStatusModel,
+              attributes: ["description"],
+            },
+          ],
+        });
+
+        tempt.id_mutation = get.dataValues.id_mutation;
+        tempt.total_item = get.dataValues.total_item;
+        tempt.status = get.dataValues.status;
+        tempt.resi = get.dataValues.resi;
+        tempt.courier = get.dataValues.courier;
+        tempt.notes = get.dataValues.notes;
+        tempt.Product.name = get.dataValues.Product.dataValues.name;
+        tempt.Product.id_product = get.dataValues.Product.dataValues.id_product;
+        tempt.Product.product_picture =
+          get.dataValues.Product.dataValues.product_picture;
+        tempt.sender.warehouse_branch_name =
+          get.dataValues.sender.dataValues.warehouse_branch_name;
+        tempt.sender.detail_address =
+          get.dataValues.sender.dataValues.detail_address;
+        tempt.sender.id_warehouse =
+          get.dataValues.sender.dataValues.id_warehouse;
+        tempt.receiver.warehouse_branch_name =
+          get.dataValues.receiver.dataValues.warehouse_branch_name;
+        tempt.receiver.detail_address =
+          get.dataValues.receiver.dataValues.detail_address;
+        tempt.receiver.id_warehouse =
+          get.dataValues.receiver.dataValues.id_warehouse;
+        tempt.warehouse_mutation_status.description =
+          get.dataValues.warehouse_mutation_status.dataValues.description;
+
+        result.push(tempt);
+      }
+
+      res.status(200).send({
+        data: result,
+        total_page,
+        page,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+
+  getWarehouseMutationStatus: async (req, res) => {
+    try {
+      let getData = await WarehouseMutationStatusModel.findAll().then(
+        (response) => {
+          return res.status(201).send(response);
+        }
+      );
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+
+  approveStockMove: async (req, res) => {
+    try {
+      //ubah status mutation warehouse dr 2 jadi 4
+      let id_mutation = req.body.id_mutation;
+      let from_id_warehouse = req.body.from_id_warehouse;
+
+      let id = req.decript.id_user;
+      let role = req.decript.role;
+
+      if (role == 3) {
+        res.status(400).send({
+          success: false,
+          msg: "Super Admin tidak punya kewenangan untuk melakukan ini",
+        });
+      } else {
+        let check = [];
+        if (role == 2) {
+          let search = await WarehouseAdminModel.findOne({
+            where: { id_user: id },
+            raw: true,
+          });
+          check.push(search);
+        }
+
+        if (check[0].id_warehouse == from_id_warehouse) {
+          let updateStatus = await WarehouseMutationModel.update(
+            { status: 4 },
+            {
+              where: { id_mutation },
+            }
+          );
+          res.status(200).send("success");
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Anda tidak punya kewenangan untuk melakukan ini",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+
+  rejectStockMove: async (req, res) => {
+    try {
+      //ubah status mutation warehouse dr 2 jadi 8
+      let { id_mutation, input, id_product, id_warehouse, date } = req.body;
+
+      let id = req.decript.id_user;
+      let role = req.decript.role;
+
+      if (role == 3) {
+        res.status(400).send({
+          success: false,
+          msg: "Super Admin tidak punya kewenangan untuk melakukan ini",
+        });
+      } else {
+        let check = [];
+        if (role == 2) {
+          let search = await WarehouseAdminModel.findOne({
+            where: { id_user: id },
+            raw: true,
+          });
+          check.push(search);
+        }
+
+        if (check[0].id_warehouse == id_warehouse) {
+          let updateStatus = await WarehouseMutationModel.update(
+            { status: 8 },
+            {
+              where: { id_mutation },
+            }
+          );
+          //penambahan stok yang sblmnya on hold kembali ke gudang pengirim(stok dan stok histori)
+
+          let inputItem = await StockModel.increment(
+            { stock: input },
+            {
+              where: {
+                [sequelize.Op.and]: [{ id_product }, { id_warehouse }],
+              },
+            }
+          );
+          let findLast = await StockHistoryModel.findOne({
+            where: {
+              [sequelize.Op.and]: [{ id_product }, { id_warehouse }],
+            },
+            order: [["date", "DESC"]],
+          });
+          let hasil = findLast.dataValues.total + input;
+          let stockHistory = await StockHistoryModel.create({
+            id_warehouse,
+            id_product,
+            date,
+            type: 6,
+            amount: input,
+            note,
+            total: hasil,
+          });
+          res.status(200).send("success");
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Anda tidak punya kewenangan untuk melakukan ini",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+
+  sendStockMove: async (req, res) => {
+    try {
+      //ubah status mutation warehouse dr 3 atau 4 jadi 5
+      let id_mutation = req.body.id_mutation;
+      let resi = req.body.resi;
+      let courier = req.body.courier;
+      let from_id_warehouse = req.body.from_id_warehouse;
+
+      let id = req.decript.id_user;
+      let role = req.decript.role;
+
+      if (role == 3) {
+        res.status(400).send({
+          success: false,
+          msg: "Super Admin tidak punya kewenangan untuk melakukan ini",
+        });
+      } else {
+        let check = [];
+        if (role == 2) {
+          let search = await WarehouseAdminModel.findOne({
+            where: { id_user: id },
+            raw: true,
+          });
+          check.push(search);
+        }
+
+        if (check[0].id_warehouse == from_id_warehouse) {
+          let updateStatus = await WarehouseMutationModel.update(
+            { status: 5, resi, courier },
+            {
+              where: { id_mutation },
+            }
+          );
+
+          res.status(200).send("success");
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Anda tidak punya kewenangan untuk melakukan ini",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+  acceptedStockMove: async (req, res) => {
+    try {
+      //ubah status mutation warehouse dr 5 jadi 6
+      let { id_mutation, input, id_product, id_warehouse, date } = req.body;
+
+      let id = req.decript.id_user;
+      let role = req.decript.role;
+
+      if (role == 3) {
+        res.status(400).send({
+          success: false,
+          msg: "Super Admin tidak punya kewenangan untuk melakukan ini",
+        });
+      } else {
+        let check = [];
+
+        if (role == 2) {
+          let search = await WarehouseAdminModel.findOne({
+            where: { id_user: id },
+            raw: true,
+          });
+          check.push(search);
+        }
+
+        if (check[0].id_warehouse == id_warehouse) {
+          let updateStatus = await WarehouseMutationModel.update(
+            { status: 6 },
+            {
+              where: { id_mutation },
+            }
+          );
+          //penambahan jumlah stok item yang on hold ke dalam stok dan stok history
+
+          let inputItem = await StockModel.increment(
+            { stock: input },
+            {
+              where: {
+                [Op.and]: [{ id_product }, { id_warehouse }],
+              },
+            }
+          );
+          let findLast = await StockHistoryModel.findOne({
+            where: {
+              [Op.and]: [{ id_product }, { id_warehouse }],
+            },
+            order: [["date", "DESC"]],
+          });
+          let hasil = findLast.dataValues.total + input;
+          let stockHistory = await StockHistoryModel.create({
+            id_warehouse,
+            id_product,
+            date,
+            type: 3,
+            amount: input,
+            note,
+            total: hasil,
+          });
+
+          res.status(200).send("success");
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Anda tidak punya kewenangan untuk melakukan ini",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
     }
   },
 };

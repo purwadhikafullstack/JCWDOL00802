@@ -16,19 +16,20 @@ import {
 } from "@chakra-ui/react";
 import { SmallCloseIcon } from "@chakra-ui/icons";
 import { API_URL } from "../helper";
-import { useSelector } from 'react-redux'
+import { useSelector } from "react-redux";
 
 const Profile = (props) => {
-  const { id, username, email, phone_number, profile_picture, full_name } = useSelector((state) => {
-    return {
-      id: state.userReducer.id_user,
-      email: state.userReducer.email,
-      username: state.userReducer.username,
-      phone_number: state.userReducer.phone_number,
-      profile_picture: state.userReducer.profile_picture,
-      full_name: state.userReducer.full_name,
-    };
-  });
+  const { id, username, email, phone_number, profile_picture, full_name } =
+    useSelector((state) => {
+      return {
+        id: state.userReducer.id_user,
+        email: state.userReducer.email,
+        username: state.userReducer.username,
+        phone_number: state.userReducer.phone_number,
+        profile_picture: state.userReducer.profile_picture,
+        full_name: state.userReducer.full_name,
+      };
+    });
 
   const [usernameEdit, setUsernameEdit] = React.useState(username);
   const [emailEdit, setEmailEdit] = React.useState(email);
@@ -53,7 +54,6 @@ const Profile = (props) => {
     setProfilePictureEdit(image);
     setPreview(URL.createObjectURL(image));
   };
-
 
   const onRegis = () => {
     if (window.confirm("Are you sure you want to edit your profile?")) {
@@ -98,7 +98,7 @@ const Profile = (props) => {
       });
   };
 
-   return (
+  return (
     <Flex
       minH={"100vh"}
       align={"center"}
@@ -143,7 +143,7 @@ const Profile = (props) => {
             </Center>
           </Stack>
         </FormControl>
-        <FormControl id="userName" >
+        <FormControl id="userName">
           <FormLabel>User name</FormLabel>
           <Input
             placeholder="UserName"
@@ -153,7 +153,7 @@ const Profile = (props) => {
             onChange={(e) => setUsernameEdit(e.target.value)}
           />
         </FormControl>
-        <FormControl id="FullName" >
+        <FormControl id="FullName">
           <FormLabel>Full Name</FormLabel>
           <Input
             placeholder="FullName"
@@ -163,7 +163,7 @@ const Profile = (props) => {
             onChange={(e) => setFullNameEdit(e.target.value)}
           />
         </FormControl>
-        <FormControl id="PhoneNumber" >
+        <FormControl id="PhoneNumber">
           <FormLabel>Phone Number</FormLabel>
           <Input
             placeholder="Phone Number"
@@ -173,7 +173,7 @@ const Profile = (props) => {
             onChange={(e) => setPhoneEdit(e.target.value)}
           />
         </FormControl>
-        <FormControl id="password" >
+        <FormControl id="password">
           <FormLabel>Password</FormLabel>
           <Input
             placeholder="password"
@@ -181,7 +181,7 @@ const Profile = (props) => {
             type="password"
           />
         </FormControl>
-        <FormControl id="newPassword" >
+        <FormControl id="newPassword">
           <FormLabel>New Password</FormLabel>
           <Input
             placeholder="New Password"
@@ -191,7 +191,7 @@ const Profile = (props) => {
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </FormControl>
-        <FormControl id="confirmPassword" >
+        <FormControl id="confirmPassword">
           <FormLabel>Confirm Password</FormLabel>
           <Input
             placeholder="Confirm Password"
@@ -209,7 +209,7 @@ const Profile = (props) => {
             _hover={{
               bg: "red.500",
             }}
-            onClick={onReset}
+            onClick={() => onReset()}
           >
             Change Password
           </Button>
@@ -220,7 +220,7 @@ const Profile = (props) => {
             _hover={{
               bg: "blue.500",
             }}
-            onClick={onRegis}
+            onClick={() => onRegis()}
           >
             Approve Change
           </Button>

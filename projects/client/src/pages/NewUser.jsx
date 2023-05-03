@@ -1,26 +1,49 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import Axios from "axios";
-import { Button, Text } from "@chakra-ui/react";
+import {
+  Button,
+  Text,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Checkbox,
+  CheckboxGroup,
+  Stack,
+} from "@chakra-ui/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../helper";
+import { useFormik } from "formik";
+import { basicSchema } from "../schemas";
 
 const NewUser = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   let token = location.search.split("=")[1];
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [check, setCheck] = React.useState("");
-  const [visible, setVisible] = React.useState("password");
-  const [visible2, setVisible2] = React.useState("password");
+  const [visible, setVisible] = useState("password");
+  const [visible2, setVisible2] = useState("password");
+
+  const { values, errors, touched, handleBlur, handleChange } = useFormik({
+    initialValues: {
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: basicSchema,
+  });
 
   const onRegis = () => {
+    let num = 0;
+    if (subs) {
+      num = 1;
+    } else {
+      num = 0;
+    }
     Axios.post(
       API_URL + `/apis/user/verify`,
       {
-        password,
+        password: values.password,
+        subs: num,
       },
       {
         headers: {
@@ -29,7 +52,7 @@ const NewUser = (props) => {
       }
     )
       .then((response) => {
-        alert("Verify Success ✅");
+        alert("Input Password Success ✅");
         navigate("/");
       })
       .catch((error) => {
@@ -53,6 +76,26 @@ const NewUser = (props) => {
     }
   }, [visible2]);
 
+  const [agree, setAgree] = useState(false);
+  const [subs, setSubs] = useState(false);
+
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [firstLaunch, setFirstLaunch] = useState(true);
+
+  useEffect(() => {
+    if (errors.password || errors.confirmPassword || !agree) {
+      setButtonDisabled(true);
+    } else {
+      setButtonDisabled(false);
+    }
+  }, [errors, agree]);
+
+  useEffect(() => {
+    if (touched.password || touched.confirmPassword) {
+      setFirstLaunch(false);
+    }
+  }, [touched]);
+
   //use callback & use memorize
 
   return (
@@ -69,24 +112,27 @@ const NewUser = (props) => {
           <div className="col-12 col-md-4 p-5 shadow">
             <h6 className="fw-bold muted-color">Click N Collect</h6>
             <Text className="fw-bold" fontSize="4xl">
-              {" "}
               Daftar dengan Email
             </Text>
-
             <div id="form">
               <div className="my-3 ">
                 <label className="form-label fw-bold text-muted">
                   Kata Sandi
                 </label>
-                <div className="input-group border rounded">
-                  <input
+                <InputGroup className="input-group border rounded">
+                  <Input
+                    id="password"
                     type={visible}
-                    className="form-control p-3 border-0"
-                    placeholder="8+ character"
-                    onChange={(e) => setPassword(e.target.value)}
+                    className={
+                      errors.password && touched.password ? "input-error" : ""
+                    }
+                    placeholder="8-16 character"
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    value={values.password}
                   />
-                  <span
-                    onClick={onVisibility}
+                  <InputRightElement
+                    onClick={() => onVisibility()}
                     className="input-group-text bg-transparent border-0"
                     id="basic-addon2"
                   >
@@ -95,22 +141,34 @@ const NewUser = (props) => {
                     ) : (
                       <AiOutlineEyeInvisible size={26} />
                     )}
-                  </span>
-                </div>
+                  </InputRightElement>
+                </InputGroup>
+                {errors.password && touched.password && (
+                  <Text fontSize="small" className="error">
+                    {errors.password}
+                  </Text>
+                )}
               </div>
               <div className="my-3 ">
                 <label className="form-label fw-bold text-muted">
                   Masukan ulang kata sandi
                 </label>
-                <div className="input-group border rounded">
-                  <input
+                <InputGroup className="input-group border rounded">
+                  <Input
+                    id="confirmPassword"
                     type={visible2}
-                    className="form-control p-3 border-0"
                     placeholder="8+ character"
-                    onChange={(e) => setCheck(e.target.value)}
+                    value={values.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={
+                      errors.confirmPassword && touched.confirmPassword
+                        ? "input-error"
+                        : ""
+                    }
                   />
-                  <span
-                    onClick={onVisibility2}
+                  <InputRightElement
+                    onClick={() => onVisibility2()}
                     className="input-group-text bg-transparent border-0"
                     id="basic-addon2"
                   >
@@ -119,16 +177,40 @@ const NewUser = (props) => {
                     ) : (
                       <AiOutlineEyeInvisible size={26} />
                     )}
-                  </span>
-                </div>
+                  </InputRightElement>
+                </InputGroup>
+                {errors.confirmPassword && touched.confirmPassword && (
+                  <Text fontSize="small" className="error">
+                    {errors.confirmPassword}
+                  </Text>
+                )}
               </div>
+            </div>
+            <div>
+              <CheckboxGroup colorScheme="orange" size="sm">
+                <Checkbox
+                  onChange={(e) => {
+                    setAgree(e.target.checked);
+                  }}
+                >
+                  I agree to the terms and condition
+                </Checkbox>
+                <Checkbox
+                  onChange={(e) => {
+                    setSubs(e.target.checked);
+                  }}
+                >
+                  I want to subscibe to CNC newsletter
+                </Checkbox>
+              </CheckboxGroup>
             </div>
             <Button
               type="button"
               width="full"
               colorScheme="orange"
-              variant="solid"
-              onClick={onRegis}
+              variant={firstLaunch || buttonDisabled ? "outline" : "solid"}
+              onClick={() => onRegis()}
+              isDisabled={firstLaunch || buttonDisabled}
             >
               Selesai
             </Button>
