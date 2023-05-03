@@ -32,6 +32,8 @@ import StockHistoryDetail from "./pages/StockHistoryDetail";
 import Cart from "./pages/CartPage";
 import CheckOut from "./pages/CheckOutPage";
 import DetailPage from "./pages/DetailProduct";
+import Address from "./pages/Address";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -103,11 +105,13 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/transaction" element={<OrderPage />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/address" element={<Address />} />
             </>
           )}
           {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}
           {admin.includes(role) && (
             <>
+              <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/salesreport" element={<ReportSales />} />
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route

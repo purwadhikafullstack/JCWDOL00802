@@ -3,7 +3,7 @@ const { dbSequelize } = require("../config/db");
 const { DataTypes } = Sequelize;
 const CartModel = require("./Cart");
 const StockModel = require("./stock");
-const WarehouseModel = require("./warehouse");
+const { WarehouseModel, associateWarehouseModel } = require("./warehouse");
 const CategoryProductModel = require("./Category_Product");
 const StockHistoryModel = require("./stock_history");
 

@@ -21,16 +21,26 @@ const Login = (props) => {
       email: inputEmail,
       pass: inputPass,
     })
-      .then((response) => {
-        dispatch(loginAction(response.data));
-        localStorage.setItem("cnc_login", response.data.token);
-        navigate("/", { replace: true });
-      })
-      .catch((error) => {
-        console.log(error);
-        alert("Wrong Password");
-      });
-  };
+    .then((response) => {
+      const { data } = response;
+      const { role } = data;
+      localStorage.setItem("cnc_login", data.token);
+      dispatch(loginAction(data));
+      if (role === 2 || role === 3) {
+        setTimeout(() => {
+          navigate("/admin/dashboard", { replace: true });
+        }, 100); 
+      } else {
+        setTimeout(() => {
+          navigate("/", { replace: true });
+        }, 100); 
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      alert("Wrong Password");
+    });
+};
 
   const onBtnVisible = () => {
     if (inputType === "password") {

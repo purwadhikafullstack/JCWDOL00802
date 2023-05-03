@@ -84,4 +84,12 @@ module.exports = {
       console.log(error);
     }
   },
+
+  getCityAddress: async (req, res) => {
+    let result = await Axios.get("https://api.rajaongkir.com/starter/city", {
+      headers: { key: `${process.env.RAJAONGKIR_API_KEY}` },
+    });
+    let city = result.data.rajaongkir.results;
+    res.status(200).send(city);
+  },
 };
