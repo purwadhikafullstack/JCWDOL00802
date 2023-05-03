@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Sidebar from "./components/Sidebar";
 
 import Landing from "./pages/Landing";
 import Register from "./pages/Register";
@@ -87,49 +88,54 @@ function App() {
   return (
     <div>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/regis" element={<Register />} />
-        <Route path="/newuser" element={<NewUser />} />
-        <Route path="/resetPassword" element={<ResetPassword />} />
-        <Route path="/product/detail/:id" element={<DetailPage />} />
-        {/* semua yang butuh login user taruh dalam <></> bawah ini */}
-        {role == 1 && (
-          <>
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/transaction" element={<OrderPage />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout/" element={<CheckOut />} />
-          </>
-        )}
-        {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}
-        {admin.includes(role) && (
-          <>
-            <Route path="/admin/salesreport" element={<ReportSales />} />
-            <Route path="/admin/products" element={<AdminProducts />} />
-            <Route path="/admin/category" element={<AdminCategoryProduct />} />
+      <Sidebar>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/regis" element={<Register />} />
+          <Route path="/newuser" element={<NewUser />} />
+          <Route path="/resetPassword" element={<ResetPassword />} />
+          <Route path="/checkout/" element={<CheckOut />} />
+          <Route path="/product/detail/:id" element={<DetailPage />} />
+          {/* semua yang butuh login user taruh dalam <></> bawah ini */}
+          {role == 1 && (
+            <>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/transaction" element={<OrderPage />} />
+              <Route path="/cart" element={<Cart />} />
+            </>
+          )}
+          {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}
+          {admin.includes(role) && (
+            <>
+              <Route path="/admin/salesreport" element={<ReportSales />} />
+              <Route path="/admin/products" element={<AdminProducts />} />
+              <Route
+                path="/admin/category"
+                element={<AdminCategoryProduct />}
+              />
 
-            <Route path="/admin/editproduct" element={<EditProduct />} />
-            <Route path="/admin/stockhistory" element={<StockHistory />} />
-            <Route
-              path="/admin/stockhistory/:id"
-              element={<StockHistoryDetail />}
-            />
-          </>
-        )}
+              <Route path="/admin/editproduct" element={<EditProduct />} />
+              <Route path="/admin/stockhistory" element={<StockHistory />} />
+              <Route
+                path="/admin/stockhistory/:id"
+                element={<StockHistoryDetail />}
+              />
+            </>
+          )}
 
-        {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
-        {role == 3 && (
-          <>
-            <Route path="/admin/warehouse" element={<AdminWarehouse />} />
-            <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
-            <Route path="/admin/newproduct" element={<NewProduct />} />
-            <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
-          </>
-        )}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
+          {role == 3 && (
+            <>
+              <Route path="/admin/warehouse" element={<AdminWarehouse />} />
+              <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
+              <Route path="/admin/newproduct" element={<NewProduct />} />
+              <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
+            </>
+          )}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Sidebar>
       <Footer />
     </div>
   );

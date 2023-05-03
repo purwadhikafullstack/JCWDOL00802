@@ -19,5 +19,9 @@
   },
   "workspaces": [
     "projects/*"
-  ]
+  ],
+  "dependencies": {
+    "@bramus/pagination-sequence": "^1.2.0",
+    "@bramus/range": "^1.1.2"
+  }
 }

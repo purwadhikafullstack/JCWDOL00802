@@ -6,7 +6,9 @@ import { Text, NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
-  NumberDecrementStepper,Button, ButtonGroup,Link} from "@chakra-ui/react"
+  NumberDecrementStepper,Button, ButtonGroup,Link, Box, Flex,Card,Image,IconButton, HStack, Checkbox,Spacer} from "@chakra-ui/react"
+import { FaTrash } from 'react-icons/fa'
+
 import { useNavigate,useParams  } from "react-router-dom"
 
 
@@ -20,7 +22,9 @@ const Cart = (props) => {
   const [dataExist,setDataExist]= useState(false)
   const [productData, setProductData] = React.useState(null);
   const [totalPrice,setTotalPrice]= useState(0)
-  
+  const [totalBarang,setTotalBarang]= useState(0)
+  const [selectedAll,setSelectedAll]= useState(false)
+  const navigate = useNavigate()
   const getCart = async ()=>{
     
             await Axios.get(`${API_URL}/apis/cart/getcart`,{
@@ -51,13 +55,34 @@ const {status} = useSelector((state) => {
   useEffect(() => {
         getCart()
     }, []);
-  useEffect(() => {
-        unselectAll()
-    }, []);
+  // useEffect(() => {
+  //       unselectAll()
+  //   }, []);
   useEffect(() => {
         getTotalPrice()
     }, [cartData]);
+    useEffect(() => {
+      selectedChecker()
+  }, [cartData]);
 
+    useEffect(() => {
+      document.title = "Cnc || keranjang";
+      window.addEventListener('beforeunload', resetPageTitle);
+      return () => {
+        window.removeEventListener('beforeunload', resetPageTitle());
+      }
+    }, []);
+
+    const resetPageTitle = () => {
+      
+      document.title = "Cnc-ecommerce";
+    }
+const selectedChecker =()=>{
+  let checker = cartData.filter((e)=>e.selected == 1)
+  if (checker.length == cartData.length) {
+    setSelectedAll(true)
+  } else {setSelectedAll(false)}
+}
 const onDec = async (arg,arg2)=>{
   let id_cart = arg
   if(arg2>1){
@@ -88,14 +113,17 @@ await Axios.delete(`${API_URL}/apis/cart/delete?id=${arg}`, ).then((response)=>
   }).catch((error)=>{alert(error)})
 }}
 
-const selectAll = async ()=>{
-  
+const selectAll = async (checked)=>{
+  if(checked){
   let result = await Axios.get(`${API_URL}/apis/cart/allcartselect`,{
               headers: {
           Authorization: `Bearer ${userToken}`,
         },
             })
-  getCart()
+    setSelectedAll(true)
+  getCart()} else {
+    unselectAll()
+  setSelectedAll(false)}
 }
 const unselectAll = async ()=>{
   
@@ -109,28 +137,36 @@ const unselectAll = async ()=>{
 
 const getTotalPrice = ()=>{
   
-  if(dataExist){
+  if(cartData.length > 0){
+    setTotalPrice(0)
+    setTotalBarang(0)
   let data = cartData.filter((e)=>{return e.selected == 1})
+  let temptBar= 0
   let tempt = 0
   for (let i=0; i<data.length;i++){
     let priceHere= data[i].Product.price * data[i].total_item
-    tempt += priceHere
-    setTotalPrice(tempt)
+    temptBar += data[i].total_item
+    tempt += priceHere  
   }
+  setTotalPrice(tempt)
+  setTotalBarang(temptBar)
 }
 }
 
-const onSelect = async (id_cart,checker) =>{
-  try{
-    if( checker == 0){
-      let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: "1", id_cart })
-      getCart()
-      
-    }else{
-    let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: "0" , id_cart})
-      getCart()
-  } 
-  } catch (error){console.log(error);}
+const onSelect = async (id_cart, checked) => {
+  
+  try {
+    let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: checked ? '1' : '0', id_cart });
+    getCart();
+    
+  } catch (error) {
+    console.log(error);
+  }
+}
+const handleBuyClick = () => {
+  if (totalPrice !== 0) {
+    navigate('/checkout');
+  }
 }
     
     const printData = () => {
@@ -138,92 +174,150 @@ const onSelect = async (id_cart,checker) =>{
         
         
         return data.map((val, idx) => {
-            if(val?.selected ==1){
-              
-              return <div className='col-12 col-sm-6 col-lg-4 '
-                key={val.id_cart}>
-                <div className='card shadow bg-success  my-2 mx-2 text-center px-2 ' style={{ width: '80%', top: '-45px' }}>
-                    <input type="checkbox" checked={val?.selected == 1 ? true : false} defaultChecked={val?.selected}></input>
-                    <Text fontSize="lg" className='text-white'>id product :{val?.id_product}</Text>
-                    
-                    <Text fontSize="lg" className='text-white'>user :{val?.id_user}</Text>
-                    <Text fontSize="lg" className='text-white'>nama product : {val?.Product.name}</Text>
-                    <Text fontSize="lg" className='text-white'>harga : {val?.Product.price}</Text>
-                    <Text fontSize="lg" className='text-white'>total item :{val?.total_item}</Text>
-                    
-                    
-
-                    <div>
-                    <button className="fs-4 btn btn-warning " onClick={()=>onInc(val?.id_cart,val?.total_item, val?.Product.stock)} >+</button>
-                    <button className="fs-4 btn btn-warning" onClick={()=>onDec(val?.id_cart,val?.total_item)}>-</button>
-                    </div>
-                    <Text fontSize="lg" className='text-white'>total harga : {val?.Product.price * val?.total_item}</Text>
-                    <button type="button" className="btn btn-danger"  onClick={()=>delCart(val?.id_cart)} >Delete</button>
-                    <button type="button" className="btn btn-danger"  onClick={()=>onSelect(val?.id_cart,val?.selected)} >unselect</button>
-                    
-                </div>
-                
-            </div>
-            } else if(val?.selected == 0){
-              return <div className='col-12 col-sm-6 col-lg-4 '
-                key={val?.id_cart}>
-                <div className='card shadow bg-primary my-2 mx-2  text-center px-2 ' style={{ width: '80%', top: '-45px' }}>
-                    <input type="checkbox" checked={val?.selected == 1 ? true : false} defaultChecked={val?.selected}></input>
-                    <Text fontSize="lg" className='text-white'>id product :{val?.id_product}</Text>
-                    
-                    <Text fontSize="lg" className='text-white'>user :{val?.id_user}</Text>
-                    <Text fontSize="lg" className='text-white'>nama product : {val?.Product.name}</Text>
-                    <Text fontSize="lg" className='text-white'>harga : {val?.Product.price}</Text>
-                    <Text fontSize="lg" className='text-white'>total item :{val?.total_item}</Text>
-                    
-                    
-
-                    <div>
-                    <button className="fs-4 btn btn-warning " onClick={()=>onInc(val?.id_cart,val?.total_item, val?.Product.stock)} >+</button>
-                    <button className="fs-4 btn btn-warning" onClick={()=>onDec(val?.id_cart,val?.total_item)}>-</button>
-                    
-                    </div>
-                    <Text fontSize="lg" className='text-white'>total harga : {val?.Product.price * val?.total_item}</Text>
-                    <button type="button" className="btn btn-danger"  onClick={()=>delCart(val?.id_cart)} >Delete</button>
-                    <button type="button" className="btn btn-danger"  onClick={()=>onSelect(val?.id_cart,val?.selected)} >select</button>
-                    
-                </div>
-                
-            </div>
-            }
+            let image = `${API_URL}/img/product/${val.Product.product_picture}`
+            return <Box
+            key={val?.id_cart}
+            borderWidth="1px"
+            borderRadius="md"
+            overflow="hidden"
+            m={2}
+            boxShadow="sm"
+            width={{ base: '100%' }}
+          >
+            <Flex alignItems="center">
+              <Checkbox
+                size="lg"
+                name={val?.id_cart}
+                isChecked={val?.selected == 1}
+                bg="gray.50"
+                colorScheme="orange"
+                onChange={(event) => onSelect(event.target.name,event.target.checked)}
+                mr={2}
+                ml= {2}
+              />
+              <Image
+                src={image}
+                alt={val?.Product.name}
+                objectFit="cover"
+                height="8rem"
+                width="8rem"
+              />
+              <Box p={4}>
+                <Text fontSize="md" fontWeight="semibold" mb={2}>
+                  {val?.Product.name}
+                </Text>
+                <Text fontSize="lg" fontWeight="bold" mb={4}>
+                  Rp{val?.Product.price.toLocaleString()},-
+                </Text>
+              </Box>
+              <Spacer />
+              <Box display="flex" alignItems="center" pr={4}>
+                <IconButton
+                  aria-label="decrement"
+                  icon={<Text fontSize="2xl">-</Text>}
+                  colorScheme="orange"
+                  isRound
+                  size="sm"
+                  onClick={() => onDec(val?.id_cart, val?.total_item)}
+                  mr={2}
+                />
+                <Text fontSize="lg" fontWeight="bold" mr={2}>
+                  {val.total_item}
+                </Text>
+                <IconButton
+                  aria-label="increment"
+                  icon={<Text fontSize="2xl">+</Text>}
+                  colorScheme="orange"
+                  isRound
+                  size="sm"
+                  onClick={() => onInc(val?.id_cart, val?.total_item, val?.Product.stock)}
+                  mr={2}
+                />
+                <IconButton
+                  aria-label="delete"
+                  icon={<FaTrash />}
+                  colorScheme="orange"
+                  isRound
+                  size="sm"
+                  onClick={() => delCart(val?.id_cart)}
+                />
+              </Box>
+            </Flex>
+          </Box>
+          
+        
+            
         })
     }
-   if(status == 2){
-    return <div>
-    {cartData.length >0 &&
-    <div className="row p-3 mx-3 my-3">
-      <div className="col-auto mx-1 my-1"><button type="button" className="btn btn-danger" onClick={()=>selectAll()}>selectAll</button></div>
-      <div className="col-auto mx-1 my-1"><button type="button" className="btn btn-danger" onClick={()=>unselectAll()}>unselectAll</button></div>
-    </div>
-   }
+   
+    return <div className="container-fluid pt-3 ">
+      <div className="row">
+        {/* jarak kiri */}
+        <div className="col-2"></div>
+        {/* bagian tengah */}
+        <div className="row col-6  mx-1 pb-2">
+          <h1 className="ms-2 mt-2 fs-2">
+            <strong>Keranjang</strong>
+          </h1>
+          <div>
+          {cartData.length > 0 &&
+          <Checkbox
+          mt={4}
+          size="lg"
+          isChecked = {selectedAll}
+                bg="gray.50"
+                colorScheme="orange"
+          onChange={(e) => selectAll(e.target.checked)}
+        >
+          Select All
+        </Checkbox>
+          }
+          <div className="col-12">
+          {printData()}
+          </div>
+          </div>
+        </div>
+        {/* bagian kanan */}
+            <div className="col-3 mx-2 py-2 rounded-lg border border-gray-200">
+                <div className="col-auto pb-2 rounded-lg border border-gray-200 bg-white">
+                <Button
+                colorScheme={totalBarang === 0 ? "gray" : "orange"}
+                variant="outline"
+                isDisabled={totalBarang === 0}
+                rounded="lg"
+                width="100%"
+                mt={2}
+              >
+                Makin Hemat Pake Promo
+              </Button>
+                </div>
+                <div className="row col-auto py-3">
+                  <h2 className="col-12 font-weight-bold">Ringkasan Belanja</h2>
+                  <div className="row col-12">
+                    <h3 className="col-8">Total harga ({totalBarang} barang)</h3>
+                    <h3 className="col-4 text-right">Rp.{totalPrice.toLocaleString()}</h3>
+                  </div>
+                  <div className="row col-12 py-2">
+                    <h2 className="col-7 font-weight-bold">Total Harga</h2>
+                    <h2 className="col-5 d-flex justify-content-end"><strong>{totalPrice === 0 ? "-" : `Rp.${totalPrice.toLocaleString()}`}</strong></h2>
+                  </div>
+                  <div className="col-12 d-flex justify-content-center">
+                    <Button
+                      colorScheme={totalBarang === 0 ? "gray" : "orange"}
+                      isDisabled={totalBarang === 0}
+                      onClick={handleBuyClick}
+                      mt={4}
+                      size="lg"
+                      width="100%">
+                      Beli ({totalBarang})
+                    </Button>
+                  </div>
+                </div>
+            </div>
 
-    <div className="p-3 mx-3 my-2">
-       {printData()}
-    </div>
-    
-    <div>
-      {totalPrice !== 0 &&
-      <div>{totalPrice}</div>
-      }
-      {cartData.length> 0 &&
-      <Link href ="/checkout"><button type="button" className="btn btn-danger">CheckOut</button></Link>
-    }
-    </div>
+      </div>
     
     
-</div>} else{
-  return <div>
-    <a href="/">
-    <div class="d-grid gap-2">
-  <button className="btn btn-primary" type="button">Back To home </button>
-  
-</div></a>
-  </div>
-}
+</div>
 }
 export default Cart

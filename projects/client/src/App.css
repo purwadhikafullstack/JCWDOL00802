@@ -27,6 +27,41 @@
 .App-link {
   color: #61dafb;
 }
+.sidebar {
+  background: #ffe5b4;
+  color: #f96c08;
+  height: 100vh;
+  width: 200px;
+  transition: all 0.5s;
+  font-size: 20px;
+}
+
+.top-section {
+  display: flex;
+  align-items: center;
+  padding: 20px 15px;
+}
+
+.link {
+  display: flex;
+  color: #f96c08;
+  padding: 10px 15px;
+  gap: 15px;
+  transition: all 0.5s;
+  align-items: center;
+}
+.link:hover {
+  background: #f96c08;
+  color: white;
+  transition: all 0.5s;
+}
+.link_text {
+  font-size: 20px;
+}
+main {
+  width: 100%;
+  padding: 20px;
+}
 
 @keyframes App-logo-spin {
   from {

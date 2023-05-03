@@ -18,24 +18,35 @@ module.exports = {
       let warehouse = req.query.warehouse;
       let search = req.query.search;
       let category = req.query.category;
-      let bulan = parseInt(req.query.bulan);
-      let tahun = parseInt(req.query.tahun);
-      let startDate = new Date(`2023-${bulan}-01`);
-      let endDate =
-        bulan < 12
-          ? new Date(`${tahun}-${bulan + 1}-01`)
-          : new Date(`${tahun + 1}-1-31`);
+      let month = req.query.bulan;
+
+      let year = req.query.tahun;
+
       let filterWarehouse = {
-        date: {
-          [sequelize.Op.and]: {
-            [sequelize.Op.gte]: startDate,
-            [sequelize.Op.lt]: endDate,
-          },
-        },
         transaction_status: {
           [sequelize.Op.eq]: 7,
         },
       };
+      if (
+        year !== "" &&
+        typeof year !== "undefined" &&
+        month !== "" &&
+        typeof month !== "undefined"
+      ) {
+        let bulan = parseInt(month);
+        let tahun = parseInt(year);
+        let startDate = new Date(`2023-${bulan}-01`);
+        let endDate =
+          bulan < 12
+            ? new Date(`${tahun}-${bulan + 1}-01`)
+            : new Date(`${tahun + 1}-1-01`);
+        filterWarehouse.date = {
+          [sequelize.Op.and]: {
+            [sequelize.Op.gte]: startDate,
+            [sequelize.Op.lt]: endDate,
+          },
+        };
+      }
       let filterCategory = {};
       let filterName = {};
 
@@ -61,6 +72,7 @@ module.exports = {
 
       const data = await ProductModel.findAll({
         where: filterName,
+
         group: ["id_product", "Category_Products.id_category_product"],
         attributes: [
           "id_product",
@@ -107,9 +119,16 @@ module.exports = {
             attributes: [],
           },
         ],
-      }).then((response) => {
-        return res.status(201).send(response);
       });
+      let jumlah = 0;
+      let total_biaya = 0;
+      let total_pesanan = 0;
+      for (let i = 0; i < data.length; i++) {
+        jumlah += parseInt(data[i].dataValues.jumlah);
+        total_biaya += parseInt(data[i].dataValues.total_biaya);
+        total_pesanan += parseInt(data[i].dataValues.total_pesanan);
+      }
+      return res.status(201).send({ data, jumlah, total_biaya, total_pesanan });
     } catch (error) {
       console.log(error);
     }
@@ -565,14 +584,26 @@ module.exports = {
       let limit = parseInt(req.query.limit);
       let page = parseInt(req.query.page);
       let offset = page * limit;
-      let bulan = parseInt(req.body.bulan);
-      let tahun = parseInt(req.body.tahun);
+      let month = req.body.bulan;
+      let year = req.body.tahun;
       let filterCategory = {};
-      let startDate = new Date(`2023-${bulan}-01`);
-      let endDate =
-        bulan < 12
-          ? new Date(`${tahun}-${bulan + 1}-01`)
-          : new Date(`${tahun + 1}-1-01`);
+
+      let startDate = new Date();
+      let endDate = new Date(`2010-10-01`);
+      if (
+        year !== "" &&
+        typeof year !== "undefined" &&
+        month !== "" &&
+        typeof month !== "undefined"
+      ) {
+        let bulan = parseInt(month);
+        let tahun = parseInt(year);
+        startDate = new Date(`2023-${bulan}-01`);
+        endDate =
+          bulan < 12
+            ? new Date(`${tahun}-${bulan + 1}-01`)
+            : new Date(`${tahun + 1}-1-01`);
+      }
       let filterProduct = {};
       let orderFilter = ["id_product", "asc"];
       if (search !== "" && typeof search !== "undefined") {

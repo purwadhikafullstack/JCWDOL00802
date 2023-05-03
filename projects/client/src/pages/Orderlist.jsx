@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import React, { useState, useEffect, componentDidMount } from "react";
 import Axios from "axios";
 import { API_URL } from "../helper";
+import { generate } from '@bramus/pagination-sequence'
 import {
   Text,
   Button,
@@ -18,16 +19,37 @@ import {
 import { format } from "date-fns";
 import { CgProfile } from "react-icons/cg";
 import DetailTrans from "../components/DetailTransaksi";
+import FilterOrderList from "../components/OrderComponent/FilterOrderComponent";
+import PaginationOrder from "../components/OrderComponent/OrderPagination";
+import SidebarOrder from "../components/OrderComponent/SidebarOrderComponent";
 
 const OrderPage = (props) => {
   const [orderData, setOrderData] = useState(null);
   const [statusData, setStatusData] = useState(null);
   const [dataSelected, setDataSelected] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [page,setPage] = useState(1)
+  const[totalPage,setTotalPage]= useState(0)
+  const[isFirstPage,setIsFirtsPage]= useState(false)
+  const [isLastPage, setIsLastPage]=useState(false)
+  const [limit,Setlimit]=useState(5)
+  const [month,setMonth]=useState("")
+  const [year,setYear]= useState("")
+  const [search,setSearch]=useState("")
+  const [status,setStatus]=useState ("")
+  const [pageNumber,setPageNumber]=useState([])
+   
+  useEffect(() => {
+    if(page === 1){
+        setIsFirtsPage(true)
+    }else{setIsFirtsPage(false)}
+  if (page === totalPage){
+    setIsLastPage(true)
+  }else{setIsLastPage(false)}
+  }, [orderData])
+  
 
-  // const {data:orderDataNew,getOrder:refetchOrder}=useGetOrder()
-  // const {data:test}=useGetTest()
-  // console.log("nama",test);
+
 
   const { id_user, username } = useSelector((state) => {
     return {
@@ -38,14 +60,21 @@ const OrderPage = (props) => {
 
   const getOrder = async () => {
     let getLocalStorage = localStorage.getItem("cnc_login");
-    await Axios.get(`${API_URL}/apis/trans/list`, {
+    await Axios.post(`${API_URL}/apis/trans/list?limit=${limit}&page=${page-1}`,{
+      month : month,
+      year : year,
+      search : search,
+      status: status
+
+    }, {
       headers: {
         Authorization: `Bearer ${getLocalStorage}`,
       },
     })
       .then((response) => {
+        setTotalPage(response.data.total_page)
         
-        setOrderData(response.data);
+        setOrderData(response.data.data);
       })
       .catch((error) => {
         console.log(error);
@@ -78,15 +107,53 @@ const OrderPage = (props) => {
 
   useEffect(() => {
     getOrder();
+  }, [year,month,page,limit,status,]);
+  useEffect(() => {
+    document.title = "Cnc || Pesanan";
+    window.addEventListener('beforeunload', resetPageTitle);
+    return () => {
+      window.removeEventListener('beforeunload', resetPageTitle());
+    }
   }, []);
 
-  const menunggu = () => {
-    let data = orderData.filter((e) => {
-      return e.transaction_status == 1;
-    });
-    setOrderData(data);
-  };
+  const resetPageTitle = () => {
+    
+    document.title = "Cnc-ecommerce";
+  }
 
+  const handleMonthFilter = (event) => {
+    setMonth(event.target.value);
+    if(year !=="" && typeof year !== "undefined" ){
+      setPage(1)
+    }
+    ;
+  };
+  const handleYearFilter = (event) => {
+    setYear(event.target.value);
+    if(month !=="" && typeof month !== "undefined" ){
+      setPage(1)
+    }
+  };
+  const handleSearch = (event) => {
+    setPage(1)
+    getOrder()
+  }
+  const handleKey = (event) => {
+    if (event.key === 'Enter') {
+      setPage(1)
+      getOrder()
+    }
+  }
+  const handleLimit =(limit)=>{
+    setPage(1)
+    Setlimit(limit)
+  }
+  const handleStatus = (status)=>{
+    setPage(1)
+    setStatus(status)
+  }
+  
+  
   const PrintOrder = () => {
     let data = orderData;
     if (data !== null) {
@@ -150,6 +217,9 @@ const OrderPage = (props) => {
                       </Text>
                       <Spacer />
                       <Button
+                        position="absolute"
+                        right = "20"
+                        bottom="5"
                         variant="solid"
                         colorScheme="orange"
                         mx="1"
@@ -161,7 +231,7 @@ const OrderPage = (props) => {
                         check detail
                       </Button>
                       {val.transaction_status == 1 && (
-                        <div>
+                        <div >
                           <Button variant="solid" colorScheme="orange" mx="1"onClick={()=>changeStatus(val.id_transaction,9)}>
                             cancel
                           </Button>
@@ -199,89 +269,14 @@ const OrderPage = (props) => {
   return (
     <div className="container-fluid pt-3 ">
       <div className="row">
-        {/* side bar kanan */}
-        <div className="col-2">
-          <div className="row border border-top-0 border-start-0 border-end-0 border-primary mx-2">
-            <div className="col-1">
-              <CgProfile />
-            </div>
-            <div className="col-4">{username}</div>
-          </div>
-          <div className="mx-2 mt-2">
-            <div className="accordion mt-16px ">
-              <div className="accordion-item ">
-                <h4 className="accordion-header">
-                  <button
-                    class="accordion-button"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapseOne"
-                    aria-expanded="true"
-                    aria-controls="collapseOne"
-                  >
-                    <strong colorScheme="orange">Pembelian</strong>
-                  </button>
-                </h4>
-                <div
-                  id="collapseOne"
-                  class="accordion-collapse collapse show"
-                  aria-labelledby="headingOne"
-                  data-bs-parent="#accordionExample"
-                >
-                  <div class="accordion-body ">
-                    <Link href="/transaction/">
-                      <div className="">Daftar Transaksi</div>
-                    </Link>
-                    <div className="" onClick={() => menunggu()}>
-                      Menunggu pembayaran
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className=" mt-2 mx-2">
-            <div className="accordion mt-16px ">
-              <div className="accordion-item ">
-                <h4 className="accordion-header">
-                  <button
-                    class="accordion-button"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapseTwo"
-                    aria-expanded="true"
-                    aria-controls="collapseTwo"
-                  >
-                    <strong>Profile</strong>
-                  </button>
-                </h4>
-                <div
-                  id="collapseTwo"
-                  class="accordion-collapse collapse show"
-                  aria-labelledby="headingTwo"
-                  data-bs-parent="#accordionExample"
-                >
-                  <div class="accordion-body ">
-                    <Link href="/cart/">
-                      <div className="">Halaman Profile</div>
-                    </Link>
-                    <Link href="/wishlist/">
-                      <div className="">Wishlist</div>
-                    </Link>
-                    <Link href="/cart/">
-                      <div className="">Keranjang Belanja</div>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* side bar kiri */}
+        <SidebarOrder  />
         {/* side tengah */}
         <div className="col-8  mx-1 pb-2">
           <h1 className="ms-2 mt-2 fs-2">
             <strong>Daftar Transaksi</strong>
           </h1>
+          <FilterOrderList data={orderData} statusFilter={status} handleStatusFilter={handleStatus} monthFilter={month} yearFilter={year} handleMonthFilter={handleMonthFilter} handleYearFilter={handleYearFilter} handleSearch={handleSearch} setSearchText={setSearch} searchText={search} handleKey={handleKey}/>
           <div className=" ms-4 mt-2">
             {orderData !== null && (
               <div className="row">
@@ -291,10 +286,12 @@ const OrderPage = (props) => {
               </div>
             )}
           </div>
+          
+          <PaginationOrder pageNumbers={pageNumber} currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} isLastPage={isLastPage} isFirstPage={isFirstPage} onLimitChange={handleLimit}/>
         </div>
 
-        {/* side kiri */}
-        <div className="col mx-1"></div>
+        {/* side kanan*/}
+        <div className="col-2 mx-1"></div>
       </div>
 
       {/* <button type="button" className="btn btn-danger" onClick={()=>checkresponse()} >check</button> */}

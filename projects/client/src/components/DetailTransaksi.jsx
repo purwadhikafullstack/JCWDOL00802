@@ -1,5 +1,5 @@
-
-import React from 'react'
+import Axios from "axios";
+import React, { useEffect, useState } from 'react'
 import {
   Modal,
   ModalOverlay,
@@ -9,8 +9,20 @@ import {
   ModalBody,
   ModalCloseButton,Button
 } from '@chakra-ui/react'
+import { API_URL } from "../helper"
 
 const DetailTransaksi = ({isOpen,onClose,data}) => {
+  const [dataDetails,setDataDetails]=useState([])
+  const getDataDetail = async () => {
+    let getLocalStorage = localStorage.getItem("cnc_login");
+    if(data){
+    let dataList= await Axios.get(`${API_URL}/apis/trans/detail?id=${data.id_transaction}`)
+    setDataDetails(dataList.data)
+    console.log(dataList);}
+  }
+  useEffect(() => {
+    getDataDetail()
+   }, [data])
   return (
      <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
@@ -18,14 +30,14 @@ const DetailTransaksi = ({isOpen,onClose,data}) => {
           <ModalHeader>Modal Title</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            {data?.id_transaction}
+            
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
+            <Button colorScheme='orange' mr={3} onClick={onClose}>
               Close
             </Button>
-            <Button variant='ghost'>Secondary Action</Button>
+            
           </ModalFooter>
         </ModalContent>
       </Modal>
