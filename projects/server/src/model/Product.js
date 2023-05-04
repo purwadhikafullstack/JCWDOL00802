@@ -107,4 +107,9 @@ WarehouseMutationModel.hasOne(WarehouseMutationStatusModel, {
   foreignKey: "warehouse_mutation_statuses",
   sourceKey: "status",
 });
+StockHistoryModel.hasOne(ProductModel, {
+  foreignKey: "id_product",
+  sourceKey: "id_product",
+  targetKey: "id_product",
+});
 module.exports = ProductModel;

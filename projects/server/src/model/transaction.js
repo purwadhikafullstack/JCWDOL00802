@@ -3,6 +3,7 @@ const { dbSequelize } = require("../config/db");
 const ProductModel = require("./Product");
 const TransactionDetailModel = require("./transaction_detail");
 const TransactionStatusModel = require("./transaction_status");
+const AddressModel = require("./address");
 const { DataTypes } = Sequelize;
 
 const TransactionModel = dbSequelize.define(
@@ -49,6 +50,9 @@ const TransactionModel = dbSequelize.define(
     resi: {
       type: DataTypes.STRING,
     },
+    number_item: {
+      type: DataTypes.INTEGER,
+    },
   },
   { timestamps: false }
 );
@@ -86,5 +90,10 @@ TransactionModel.belongsToMany(ProductModel, {
   through: TransactionDetailModel,
   foreignKey: "id_transaction",
   sourceKey: "id_transaction",
+});
+TransactionModel.hasOne(AddressModel, {
+  foreignKey: "id_address",
+  as: "alamat_pengiriman",
+  sourceKey: "address",
 });
 module.exports = TransactionModel;

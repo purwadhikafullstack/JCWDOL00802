@@ -17,12 +17,14 @@ module.exports = {
   getProductSales: async (req, res) => {
     try {
       let role = req.decript.role;
-      let warehouse = req.query.warehouse;
-      let search = req.query.search;
-      let category = req.query.category;
-      let month = req.query.bulan;
-
-      let year = req.query.tahun;
+      let warehouse = req.body.warehouse;
+      let search = req.body.search;
+      let category = req.body.category;
+      let month = req.body.bulan;
+      let year = req.body.tahun;
+      let limit = parseInt(req.query.limit);
+      let page = parseInt(req.query.page);
+      let offset = page * limit;
 
       let filterWarehouse = {
         transaction_status: {
@@ -71,33 +73,15 @@ module.exports = {
         warehouse = find[0].dataValues.id_warehouse;
         filterWarehouse.warehouse_sender = warehouse;
       }
-
-      const data = await ProductModel.findAll({
+      const counter = await ProductModel.findAndCountAll({
         where: filterName,
+        limit,
+        page,
+        offset,
+        group: ["id_product"],
 
-        group: ["id_product", "Category_Products.id_category_product"],
-        attributes: [
-          "id_product",
-          "name",
-          [
-            sequelize.fn("sum", sequelize.col("prodtrans.total_item")),
-            "jumlah",
-          ],
-          [
-            sequelize.fn(
-              "sum",
-              sequelize.col("prodtrans.total_purchased_price")
-            ),
-            "total_biaya",
-          ],
-          [
-            sequelize.fn(
-              "count",
-              sequelize.col("prodtrans.Transaction.id_transaction")
-            ),
-            "total_pesanan",
-          ],
-        ],
+        subQuery: false,
+
         include: [
           {
             model: TransactionDetailModel,
@@ -122,15 +106,75 @@ module.exports = {
           },
         ],
       });
+
+      const total_item = counter.count.length;
+      const total_page = Math.ceil(total_item / limit);
+      let result = [];
+      for (let i = 0; i < counter.rows.length; i++) {
+        filterName.id_product = counter.rows[i].dataValues.id_product;
+        const data = await ProductModel.findOne({
+          where: filterName,
+
+          group: ["id_product", "Category_Products.id_category_product"],
+          attributes: [
+            "id_product",
+            "name",
+            [
+              sequelize.fn("sum", sequelize.col("prodtrans.total_item")),
+              "jumlah",
+            ],
+            [
+              sequelize.fn(
+                "sum",
+                sequelize.col("prodtrans.total_purchased_price")
+              ),
+              "total_biaya",
+            ],
+            [
+              sequelize.fn(
+                "count",
+                sequelize.col("prodtrans.Transaction.id_transaction")
+              ),
+              "total_pesanan",
+            ],
+          ],
+          include: [
+            {
+              model: TransactionDetailModel,
+              as: "prodtrans",
+              where: {
+                total_item: { [sequelize.Op.gt]: 0 },
+              },
+              attributes: [],
+              include: [
+                {
+                  model: TransactionModel,
+                  where: filterWarehouse,
+
+                  attributes: [],
+                },
+              ],
+            },
+            {
+              model: CategoryProductModel,
+              where: filterCategory,
+              attributes: [],
+            },
+          ],
+        });
+        result.push(data);
+      }
       let jumlah = 0;
       let total_biaya = 0;
       let total_pesanan = 0;
-      for (let i = 0; i < data.length; i++) {
-        jumlah += parseInt(data[i].dataValues.jumlah);
-        total_biaya += parseInt(data[i].dataValues.total_biaya);
-        total_pesanan += parseInt(data[i].dataValues.total_pesanan);
+      for (let i = 0; i < result.length; i++) {
+        jumlah += parseInt(result[i].dataValues.jumlah);
+        total_biaya += parseInt(result[i].dataValues.total_biaya);
+        total_pesanan += parseInt(result[i].dataValues.total_pesanan);
       }
-      return res.status(201).send({ data, jumlah, total_biaya, total_pesanan });
+      return res
+        .status(201)
+        .send({ result, jumlah, total_biaya, total_pesanan, total_page });
     } catch (error) {
       console.log(error);
     }
@@ -649,13 +693,27 @@ module.exports = {
       let id_user = req.decript.id_user;
       let id_product = req.query.id_product;
       let warehouse = req.body.warehouse;
-      let bulan = parseInt(req.body.bulan);
-      let tahun = parseInt(req.body.tahun);
-      let startDate = new Date(`2023-${bulan}-01`);
-      let endDate =
-        bulan < 12
-          ? new Date(`${tahun}-${bulan + 1}-01`)
-          : new Date(`${tahun + 1}-1-31`);
+      let month = req.body.bulan;
+      let year = req.body.tahun;
+
+      let defaultBulan = new Date().getMonth();
+      let defaultYear = new Date().getFullYear();
+      let startDate = new Date(`${defaultYear}-${defaultBulan + 1}-01`);
+      let endDate = new Date();
+      if (
+        year !== "" &&
+        typeof year !== "undefined" &&
+        month !== "" &&
+        typeof month !== "undefined"
+      ) {
+        let bulan = parseInt(month);
+        let tahun = parseInt(year);
+        startDate = new Date(`${tahun}-${bulan}-01`);
+        endDate =
+          bulan < 12
+            ? new Date(`${tahun}-${bulan + 1}-01`)
+            : new Date(`${tahun + 1}-1-01`);
+      }
       let type = req.body.type;
       let filterhistory = {
         date: {
@@ -694,12 +752,15 @@ module.exports = {
         limit,
         offset,
         page,
-        include: [{ model: StockHistoryTypeModel }],
+        include: [{ model: StockHistoryTypeModel }, { model: ProductModel }],
       });
+      let stockType = await StockHistoryTypeModel.findAll({ raw: true });
       let result = data.rows;
       let total_item = data.count;
       let total_page = Math.ceil(total_item / limit);
-      return res.status(201).send({ data: result, total_page, page });
+      return res
+        .status(201)
+        .send({ data: result, total_page, page, stockType });
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
@@ -714,13 +775,15 @@ module.exports = {
       let result = [];
       let limit = parseInt(req.query.limit);
       let page = parseInt(req.query.page);
+      let filterCategory = {};
       let offset = page * limit;
       let month = req.body.bulan;
       let year = req.body.tahun;
-      let filterCategory = {};
 
-      let startDate = new Date();
-      let endDate = new Date(`2010-10-01`);
+      let defaultBulan = new Date().getMonth();
+      let defaultYear = new Date().getFullYear();
+      let startDate = new Date(`${defaultYear}-${defaultBulan + 1}-01`);
+      let endDate = new Date();
       if (
         year !== "" &&
         typeof year !== "undefined" &&
@@ -729,7 +792,7 @@ module.exports = {
       ) {
         let bulan = parseInt(month);
         let tahun = parseInt(year);
-        startDate = new Date(`2023-${bulan}-01`);
+        startDate = new Date(`${tahun}-${bulan}-01`);
         endDate =
           bulan < 12
             ? new Date(`${tahun}-${bulan + 1}-01`)

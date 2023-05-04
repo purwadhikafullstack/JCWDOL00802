@@ -2,6 +2,8 @@ const INITIAL_STATE = {
   id_user: 0,
   email: "",
   role: 0,
+  status: 0,
+  profile_picture: "",
 };
 
 export const userReducer = (state = INITIAL_STATE, action) => {

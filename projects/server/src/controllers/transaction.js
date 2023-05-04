@@ -343,6 +343,7 @@ module.exports = {
           address,
           id_user,
           warehouse_sender: id_warehouse,
+          number_item: cartfind.length,
         });
         let transId = await TransactionModel.findAll({
           limit: 1,
@@ -382,91 +383,102 @@ module.exports = {
     }
   },
   changeStatusTrans: async (req, res) => {
-    let id_transaction = req.query.id;
-    let transaction_status = req.query.stat;
-    let acc = await TransactionModel.update(
-      { transaction_status },
-      {
-        where: {
-          id_transaction,
-        },
-      }
-    );
-    if (transaction_status == 9) {
-      let getTrans = await TransactionModel.findAll({
-        where: { id_transaction },
-      });
-      let id = getTrans[0].warehouse_sender;
-      let getdetail = await TransactionDetailModel.findAll({
-        where: { id_transaction: req.query.id },
-      });
-      for (let i = 0; i < getdetail.length; i++) {
-        let total = getdetail[i].total_item;
-        let id_product = getdetail[i].id_product;
-        let date = new Date();
-        let findMutation = await WarehouseMutationModel.findAll({
-          where: { status: 1, reference: id_transaction },
-          raw: true,
-        });
-        if (findMutation.length > 0) {
-          for (let i = 0; i < findMutation.length; i++) {
-            let id_mutation = findMutation[i].id_mutation;
-            let id_warehouse = findMutation[i].id_warehouse_sender;
-            let amount = findMutation[i].total_item;
+    try {
+      let text = " ";
 
-            let updateMutation = await WarehouseMutationModel.update(
-              { status: 7 },
-              { where: { id_mutation } }
-            );
-            let totalCek = await StockHistoryModel.findAll({
-              limit: 1,
-              order: [["date", "desc"]],
-              where: { id_product, id_warehouse },
-            });
-            let newTotal = totalCek[0].total + amount;
-            let updateStockHistory = await StockHistoryModel.create({
-              id_product,
-              id_warehouse,
-              amount,
-              total: newTotal,
-              date,
-              type: 6,
-            });
-            let updateStock = await StockModel.increment(
-              { stock: amount },
-              {
-                where: { id_product, id_warehouse },
-              }
-            );
-            total -= amount;
-          }
+      let id_transaction = req.query.id;
+      let transaction_status = req.query.stat;
+      let acc = await TransactionModel.update(
+        { transaction_status },
+        {
+          where: {
+            id_transaction,
+          },
         }
-        let totalCek = await StockHistoryModel.findAll({
-          limit: 1,
-          order: [["date", "desc"]],
-          where: { id_product, id_warehouse: id },
-        });
-        let newTotal = totalCek[0].total + total;
-        let updateStockWarehouseSender = await StockHistoryModel.create({
-          id_product,
-          id_warehouse: id,
-          amount: total,
-          total: newTotal,
-          date,
-          type: 7,
-        });
-        let updateStock = await StockModel.increment(
-          { stock: total },
-          {
-            where: { id_product, id_warehouse: id },
-          }
-        );
+      );
+      if (transaction_status == 7) {
+        text = "status pesanan berubah menjadi diterima";
       }
-    }
-    return res.status(200).send({
-      success: true,
-      message: "done",
-    });
+      if (transaction_status == 8) {
+        text = "komplain page telah dibuat";
+      }
+      if (transaction_status == 9) {
+        let getTrans = await TransactionModel.findAll({
+          where: { id_transaction },
+        });
+        let id = getTrans[0].warehouse_sender;
+        let getdetail = await TransactionDetailModel.findAll({
+          where: { id_transaction: req.query.id },
+        });
+        for (let i = 0; i < getdetail.length; i++) {
+          let total = getdetail[i].total_item;
+          let id_product = getdetail[i].id_product;
+          let date = new Date();
+          let findMutation = await WarehouseMutationModel.findAll({
+            where: { status: 1, reference: id_transaction },
+            raw: true,
+          });
+          if (findMutation.length > 0) {
+            for (let i = 0; i < findMutation.length; i++) {
+              let id_mutation = findMutation[i].id_mutation;
+              let id_warehouse = findMutation[i].id_warehouse_sender;
+              let amount = findMutation[i].total_item;
+
+              let updateMutation = await WarehouseMutationModel.update(
+                { status: 7 },
+                { where: { id_mutation } }
+              );
+              let totalCek = await StockHistoryModel.findAll({
+                limit: 1,
+                order: [["date", "desc"]],
+                where: { id_product, id_warehouse },
+              });
+              let newTotal = totalCek[0].total + amount;
+              let updateStockHistory = await StockHistoryModel.create({
+                id_product,
+                id_warehouse,
+                amount,
+                total: newTotal,
+                date,
+                type: 6,
+              });
+              let updateStock = await StockModel.increment(
+                { stock: amount },
+                {
+                  where: { id_product, id_warehouse },
+                }
+              );
+              total -= amount;
+            }
+          }
+          let totalCek = await StockHistoryModel.findAll({
+            limit: 1,
+            order: [["date", "desc"]],
+            where: { id_product, id_warehouse: id },
+          });
+          let newTotal = totalCek[0].total + total;
+          let updateStockWarehouseSender = await StockHistoryModel.create({
+            id_product,
+            id_warehouse: id,
+            amount: total,
+            total: newTotal,
+            date,
+            type: 7,
+          });
+          let updateStock = await StockModel.increment(
+            { stock: total },
+            {
+              where: { id_product, id_warehouse: id },
+            }
+          );
+        }
+        text = "berhasil membatalkan pesanan";
+      }
+      return res.status(200).send({
+        success: true,
+        message: text,
+      });
+    } catch (error) {}
   },
   getWarehouse: async (req, res) => {
     const closestLocation = (targetLocation, locationData) => {
@@ -507,9 +519,25 @@ module.exports = {
   getTransDetail: async (req, res) => {
     try {
       let id_transaction = req.query.id;
-      let trans = await TransactionModel.findOne({ where: { id_transaction } });
+      let trans = await TransactionModel.findOne({
+        where: { id_transaction },
+        include: [
+          {
+            model: TransactionStatusModel,
+          },
+          {
+            model: AddressModel,
+            as: "alamat_pengiriman",
+          },
+        ],
+      });
       let transDetail = await TransactionDetailModel.findAll({
         where: { id_transaction },
+        include: [
+          {
+            model: ProductModel,
+          },
+        ],
       });
       res.status(200).send({
         transaction: trans,

@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const TransactionModel = require("../model/transaction");
+const CartModel = require("../model/Cart");
 
 module.exports = {
   authUser: (req, res, next) => {
@@ -58,6 +60,86 @@ module.exports = {
           return res.status(401).send({
             success: false,
             message: "bukan super admin",
+          });
+        }
+      }
+    );
+  },
+  authUserTrans: (req, res, next) => {
+    jwt.verify(
+      req.headers.authorization.split(" ")[1],
+      "cnc!",
+      async (err, decript) => {
+        if (err) {
+          return res.status(401).send({
+            success: false,
+            message: "Authenticate token failed",
+          });
+        }
+        let usercheck = await TransactionModel.findOne({
+          id_transaction: req.query.id,
+        });
+        req.decript = decript;
+        console.log(decript.id_user);
+        console.log(usercheck.id_user);
+        if (usercheck.id_user == decript.id_user) {
+          next();
+        } else if (usercheck.id_user !== decript.id_user) {
+          return res.status(401).send({
+            success: false,
+            message: "Not Your Transaction",
+          });
+        }
+      }
+    );
+  },
+  authUserCart: (req, res, next) => {
+    jwt.verify(
+      req.headers.authorization.split(" ")[1],
+      "cnc!",
+      async (err, decript) => {
+        if (err) {
+          return res.status(401).send({
+            success: false,
+            message: "Authenticate token failed",
+          });
+        }
+        let usercheck = await CartModel.findOne({
+          id_cart: req.body.id_cart,
+        });
+        req.decript = decript;
+        if (usercheck.id_user == decript.id_user) {
+          next();
+        } else if (usercheck.id_user !== decript.id_user) {
+          return res.status(401).send({
+            success: false,
+            message: "Not Your Transaction",
+          });
+        }
+      }
+    );
+  },
+  authUserCartDel: (req, res, next) => {
+    jwt.verify(
+      req.headers.authorization.split(" ")[1],
+      "cnc!",
+      async (err, decript) => {
+        if (err) {
+          return res.status(401).send({
+            success: false,
+            message: "Authenticate token failed",
+          });
+        }
+        let usercheck = await CartModel.findOne({
+          id_cart: req.query.id,
+        });
+        req.decript = decript;
+        if (usercheck.id_user == decript.id_user) {
+          next();
+        } else if (usercheck.id_user !== decript.id_user) {
+          return res.status(401).send({
+            success: false,
+            message: "Not Your Transaction",
           });
         }
       }

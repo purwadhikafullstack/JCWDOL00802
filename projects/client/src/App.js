@@ -102,12 +102,12 @@ function App() {
           <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/checkout/" element={<CheckOut />} />
           <Route path="/product/detail/:id" element={<DetailPage />} />
+          <Route path="/transaction" element={<OrderPage />} />
+          <Route path="/cart" element={<Cart />} />
           {/* semua yang butuh login user taruh dalam <></> bawah ini */}
           {role == 1 && (
             <>
               <Route path="/profile" element={<Profile />} />
-              <Route path="/transaction" element={<OrderPage />} />
-              <Route path="/cart" element={<Cart />} />
               <Route path="/address" element={<Address />} />
             </>
           )}

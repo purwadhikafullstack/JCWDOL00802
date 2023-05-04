@@ -186,8 +186,10 @@ const CheckOut = (props) => {
     }
     if (!getLocalStorage) {
       navigate("/login");
+    } if(status && status == 1){
+      navigate("/")
     }
-  }, [cartData, getLocalStorage]);
+  }, [cartData, getLocalStorage,status]);
 
   useEffect(() => {
     getCost();
@@ -259,6 +261,7 @@ const CheckOut = (props) => {
         },
       }
     );
+    navigate("/transaction")
   };
 
   const printData = () => {
