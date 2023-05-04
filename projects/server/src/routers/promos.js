@@ -18,4 +18,17 @@ route.post(
   PromosController.getPromoList
 );
 
+route.get(
+  "/detailpromo",
+  authorizeController.authSuperAdmin,
+  PromosController.getIdPromo
+);
+
+route.post(
+  "/editpromo",
+  authorizeController.authSuperAdmin,
+  uploader("/promo").single("promo_picture"),
+  PromosController.editPromo
+);
+
 module.exports = route;

@@ -119,4 +119,59 @@ module.exports = {
       return res.status(500).send(error);
     }
   },
+  getIdPromo: async (req, res) => {
+    try {
+      let id_promo = req.query.id_promo;
+      let data = await PromosModel.findAll({
+        where: { id_promo },
+      });
+      res.status(200).send(data);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
+    }
+  },
+  editPromo: async (req, res) => {
+    try {
+      let { promo_code, description, promo_picture, expire_date } = req.body;
+      let id_promo = parseInt(req.body.id_promo);
+      let max_count = parseInt(req.body.max_count);
+      let limitation = parseInt(req.body.limitation);
+      let status = parseInt(req.body.status);
+
+      let filterCheck = {};
+      filterCheck.promo_code = promo_code;
+      filterCheck.id_promo = { [Op.ne]: [id_promo] };
+
+      if (req.file) {
+        promo_picture = req.file.filename;
+      }
+      //
+      let data = await PromosModel.findAll({
+        where: filterCheck,
+      });
+      if (data.length > 1) {
+        res.status(400).send({
+          success: false,
+          msg: "code already registered",
+        });
+      } else {
+        let editPromo = await PromosModel.update(
+          {
+            promo_code,
+            description,
+            max_count,
+            promo_picture,
+            expire_date,
+            limitation,
+            status,
+          },
+          { where: { id_promo } }
+        );
+        return res.status(200).send("done");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
 };
