@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { API_URL } from "../helper";
 import Axios from "axios";
 import {
@@ -9,19 +8,18 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
   TableContainer,
   Button,
   ButtonGroup,
+  Input,
+  Select,
 } from "@chakra-ui/react";
+import Paging from "../components/Pagination";
 
 function AdminProducts() {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
   // STATE
   const [dataProduct, setDataProduct] = useState(null);
   const [dataWarehouse, setDataWarehouse] = useState();
@@ -29,9 +27,14 @@ function AdminProducts() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState("");
   const [search, setSearch] = useState("");
-  const { id_user, role } = useSelector((state) => {
+  const [order, setOrder] = useState(0);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const { role } = useSelector((state) => {
     return {
-      id_user: state.userReducer.id_user,
       role: state.userReducer.role,
     };
   });
@@ -48,7 +51,6 @@ function AdminProducts() {
   };
 
   const getCategory = async () => {
-    let getLocalStorage = localStorage.getItem("cnc_login");
     Axios.get(`${API_URL}/apis/product/category`).then((response) => {
       setDataCategory(response.data);
     });
@@ -63,10 +65,17 @@ function AdminProducts() {
           search,
           warehouse: selectedWarehouse,
           category: selectedCategory,
+          order,
+          limit,
+          page: parseInt(page) - 1,
+          minPrice,
+          maxPrice,
         },
         { headers: { Authorization: `Bearer ${getLocalStorage}` } }
       );
-      setDataProduct(products.data);
+      setPage(products.data.page + 1);
+      setDataProduct(products.data.data);
+      setLastPage(products.data.total_page);
     } catch (error) {
       console.log(error);
     }
@@ -79,18 +88,43 @@ function AdminProducts() {
     dataProductExist = true;
   }
 
+  const [onFilter, setOnFilter] = useState(false);
+
+  const onSetFilter = () => {
+    if (
+      search != "" ||
+      selectedCategory != "" ||
+      order != 0 ||
+      minPrice != "" ||
+      maxPrice != ""
+    ) {
+      setPage(1);
+      setOnFilter(true);
+      getProduct();
+    }
+  };
+
+  const onResetFilter = () => {
+    setSearch("");
+    setSelectedCategory("");
+    setOrder(0);
+    setMinPrice("");
+    setMaxPrice("");
+    setOnFilter(false);
+  };
+
   //USE EFFECT
   useEffect(() => {
     getWarehouse();
-  }, [id_user]);
+  }, []);
 
   useEffect(() => {
     getCategory();
-  }, [id_user]);
+  }, []);
 
   useEffect(() => {
     getProduct();
-  }, [selectedCategory, selectedWarehouse, search]);
+  }, [selectedWarehouse, page, limit, onFilter]);
 
   //PRINT DATA
   const printSelectWarehouse = () => {
@@ -110,6 +144,7 @@ function AdminProducts() {
       });
     }
   };
+
   const printCategory = () => {
     let data = dataCategory;
     if (dataCategory) {
@@ -130,10 +165,16 @@ function AdminProducts() {
     let data = dataProductExist ? dataProduct : [];
     return data.map((val, idx) => {
       let editpage = `/admin/editproduct?id_product=${val.id_product}`;
-      let requestpage = `/admin/requeststock?id_product=${val.id_product}`;
       return (
         <Tr>
-          <Td>{val.id_product}</Td>
+          <Td>
+            <img
+              src={`${API_URL}/img/product/${val.product_picture}`}
+              className="img-thumbnail"
+              alt=""
+              style={{ height: "100px", width: "100px", objectFit: "cover" }}
+            />
+          </Td>
           <Td>{val.name}</Td>
           <Td>{val.price}</Td>
           <Td>{val.total_stock}</Td>
@@ -144,11 +185,6 @@ function AdminProducts() {
                   Detail Produk
                 </Button>
               </Link>
-              <Link to={requestpage}>
-                <Button type="button" colorScheme="orange" variant="solid">
-                  Request Stok
-                </Button>
-              </Link>
             </ButtonGroup>
           </Td>
         </Tr>
@@ -157,79 +193,145 @@ function AdminProducts() {
   };
 
   return (
-    <div className="bg-white  w-100 p-5 m-auto">
-      <div className="d-flex">
-        <div className="align-center col-4">
-          <Text className="ps-4 pt-3" fontSize="4xl">
-            {" "}
-            Products Page
-          </Text>
-        </div>
-        <div className="col-8 flex d-flex row">
-          <div className="col-4">
-            <input
-              type="text"
-              className="form-control p-3"
-              placeholder="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+    <div className="bg-white w-100 m-auto">
+      <div>
+        <Text fontSize="2xl">Daftar Produk</Text>
+      </div>
+      <div className=" d-flex">
+        <div className="col-9 rounded p-3 tablebox">
+          <TableContainer className="rounded">
+            <Table size="sm">
+              <Thead>
+                <Tr className="tablehead">
+                  <Th color="#ffffff">Info Produk</Th>
+                  <Th color="#ffffff"></Th>
+                  <Th color="#ffffff">Harga</Th>
+                  <Th color="#ffffff">Stok</Th>
+                  <Th></Th>
+                </Tr>
+              </Thead>
+              <Tbody className="tablebody">{printData()}</Tbody>
+            </Table>
+          </TableContainer>
+          <div
+            className="d-flex my-5"
+            style={{ alignContent: "center", justifyContent: "center" }}
+          >
+            <Paging first={page} second={lastPage} third={setPage} />
+            <div
+              className="d-flex mx-5"
+              style={{ alignItems: "center", justifyContent: "center" }}
+            >
+              menampilkan
+              <Input
+                type="text"
+                className="form-control"
+                placeholder="limit"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                style={{ width: "60px" }}
+              />
+              barang
+            </div>
           </div>
-          <div className="col-4">
-            <select
+        </div>
+        <div className="col-3 rounded shadow mt-3 p-3 filterbox">
+          <div>Gudang</div>
+          <div className="inputfilter">
+            <Select
               onChange={(e) => setSelectedWarehouse(e.target.value)}
               className="form-control form-control-lg mt-3
           "
             >
               {role == 3 && <option value="">all warehouse</option>}
               {printSelectWarehouse()}
-            </select>
+            </Select>
           </div>
-          <div className="col-4">
-            <select
+          <br />
+          <hr />
+          <br />
+          <div>Filter</div>
+          <div className="inputfilter">
+            <Input
+              type="text"
+              className="form-control mt-3"
+              placeholder="Cari nama produk"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="inputfilter">
+            <Select
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="form-control form-control-lg mt-3
           "
             >
-              <option value="">all category</option>
-              <option value={0}>No Category</option>
+              <option value="">Semua Kategori</option>
+              <option value={0}>Kategori Nihil</option>
               {printCategory()}
-            </select>
+            </Select>
           </div>
+          <div className="inputfilter">
+            <Select
+              onChange={(e) => setOrder(e.target.value)}
+              className="form-control form-control-lg mt-3
+          "
+            >
+              <option value={0}>Urutkan</option>
+              <option value={1} selected={order == 1}>
+                Nama:A-Z
+              </option>
+              <option value={2} selected={order == 2}>
+                Nama:Z-A
+              </option>
+              <option value={3} selected={order == 3}>
+                Harga Terendah
+              </option>
+              <option value={4} selected={order == 4}>
+                Harga Tertinggi
+              </option>
+            </Select>
+          </div>
+          <div className="inputfilter">
+            <Input
+              type="text"
+              placeholder="harga min"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="form-control form-control-lg mt-3"
+            />
+          </div>
+          <div className="inputfilter">
+            <Input
+              type="text"
+              placeholder="harga max"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="form-control form-control-lg mt-3"
+            />
+          </div>
+          <br />
+          <ButtonGroup>
+            <Button
+              type="button"
+              colorScheme="orange"
+              variant="solid"
+              onClick={() => onSetFilter()}
+            >
+              Set Filter
+            </Button>
+            <Button
+              type="button"
+              colorScheme="orange"
+              variant={onFilter ? "solid" : "outline"}
+              onClick={() => onResetFilter()}
+              isDisabled={!onFilter}
+            >
+              Reset Filter
+            </Button>
+          </ButtonGroup>
         </div>
       </div>
-      <TableContainer>
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>id</Th>
-              <Th>Product Name</Th>
-              <Th>Harga</Th>
-              <Th>Stok</Th>
-              <Th>
-                {role == 3 && (
-                  <Link to="/admin/newproduct">
-                    <Button type="button" colorScheme="orange" variant="solid">
-                      Tambah Produk Baru
-                    </Button>
-                  </Link>
-                )}
-              </Th>
-            </Tr>
-          </Thead>
-          <Tbody>{printData()}</Tbody>
-          <Tfoot>
-            <Tr>
-              <Th></Th>
-              <Th></Th>
-              <Th></Th>
-              <Th></Th>
-              <Th></Th>
-              <Th></Th>
-            </Tr>
-          </Tfoot>
-        </Table>
-      </TableContainer>
     </div>
   );
 }

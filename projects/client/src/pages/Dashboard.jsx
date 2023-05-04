@@ -85,7 +85,6 @@ const Dashboard = () => {
 
           // Check for result.success property
           if (result.success === false) {
-            console.log(`No permission for ${endpoint.key}`);
             continue;
           }
 
@@ -140,7 +139,7 @@ const Dashboard = () => {
           }
         }
       }
-      console.log("Data:", data);
+
       setData(data);
     };
 

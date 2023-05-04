@@ -1,18 +1,24 @@
-import { Button, Flex, Stack, Text,Select, Spacer } from "@chakra-ui/react";
+import { Button, Flex, Stack, Text, Select, Spacer } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-function PaginationOrder({ currentPage, totalPages, onPageChange,isFirstPage,isLastPage, limit, onLimitChange,pageNumbers}) {
-    
-  
-  console.log(pageNumbers);
+function PaginationOrder({
+  currentPage,
+  totalPages,
+  onPageChange,
+  isFirstPage,
+  isLastPage,
+  limit,
+  onLimitChange,
+}) {
   const handlePrevPage = () => {
-    if(!isFirstPage){
-    onPageChange(currentPage - 1);}
+    if (!isFirstPage) {
+      onPageChange(currentPage - 1);
+    }
   };
 
   const handleNextPage = () => {
-    if(!isLastPage){
-    onPageChange(currentPage + 1);
+    if (!isLastPage) {
+      onPageChange(currentPage + 1);
     }
   };
 
@@ -24,15 +30,12 @@ function PaginationOrder({ currentPage, totalPages, onPageChange,isFirstPage,isL
     onPageChange(totalPages);
   };
 
-  
-  
-
   return (
     <Flex justify="center" align="center" my={6}>
       <Stack direction="row" spacing={4}>
         <Button
           isDisabled={isFirstPage}
-          variant={isFirstPage ? 'subtle' : 'outline'}
+          variant={isFirstPage ? "subtle" : "outline"}
           onClick={handleFirstPage}
           colorScheme="orange"
           size="sm"
@@ -42,7 +45,7 @@ function PaginationOrder({ currentPage, totalPages, onPageChange,isFirstPage,isL
         <Button
           isDisabled={isFirstPage}
           onClick={handlePrevPage}
-          variant={isFirstPage ? 'subtle' : 'outline'}
+          variant={isFirstPage ? "subtle" : "outline"}
           colorScheme="orange"
           size="sm"
         >
@@ -50,25 +53,23 @@ function PaginationOrder({ currentPage, totalPages, onPageChange,isFirstPage,isL
         </Button>
         <Button
           key={1}
-          onClick={() => onPageChange(currentPage-2)}
-          isDisabled={currentPage-2 <=0}
-          variant={currentPage-2 <= 0 ? "subtle" : "outline"}
+          onClick={() => onPageChange(currentPage - 2)}
+          isDisabled={currentPage - 2 <= 0}
+          variant={currentPage - 2 <= 0 ? "subtle" : "outline"}
           colorScheme="orange"
           size="sm"
         >
-          {currentPage-2 <=0? "...": currentPage-2
-          }
+          {currentPage - 2 <= 0 ? "..." : currentPage - 2}
         </Button>
         <Button
           key={2}
-          onClick={() => onPageChange(currentPage-1)}
-          isDisabled={currentPage-1 <=0}
-          variant={ currentPage-1 <=0? "subtle" : "outline"}
+          onClick={() => onPageChange(currentPage - 1)}
+          isDisabled={currentPage - 1 <= 0}
+          variant={currentPage - 1 <= 0 ? "subtle" : "outline"}
           colorScheme="orange"
           size="sm"
         >
-          {currentPage-1 <=0? "...": currentPage-1
-          }
+          {currentPage - 1 <= 0 ? "..." : currentPage - 1}
         </Button>
         <Button
           key={3}
@@ -82,37 +83,45 @@ function PaginationOrder({ currentPage, totalPages, onPageChange,isFirstPage,isL
         </Button>
         <Button
           key={4}
-          onClick={() => onPageChange(currentPage+1)}
-          isDisabled={currentPage+1>totalPages}
-          variant={currentPage+1>totalPages? "subtle" : "outline"}
+          onClick={() => onPageChange(currentPage + 1)}
+          isDisabled={currentPage + 1 > totalPages}
+          variant={currentPage + 1 > totalPages ? "subtle" : "outline"}
           colorScheme="orange"
           size="sm"
         >
-          {currentPage+1>totalPages? "...": currentPage+1
-          }
+          {currentPage + 1 > totalPages ? "..." : currentPage + 1}
         </Button>
         <Button
           key={5}
-          onClick={() => onPageChange(currentPage+2)}
-          isDisabled={currentPage+2>totalPages}
-          variant={currentPage+2>totalPages? "subtle" : "outline"}
+          onClick={() => onPageChange(currentPage + 2)}
+          isDisabled={currentPage + 2 > totalPages}
+          variant={currentPage + 2 > totalPages ? "subtle" : "outline"}
           colorScheme="orange"
           size="sm"
         >
-          {currentPage+2>totalPages? "...": currentPage+2
-          }
+          {currentPage + 2 > totalPages ? "..." : currentPage + 2}
         </Button>
-        
-        <Button onClick={handleNextPage} colorScheme="orange" size="sm" isDisabled={isLastPage}variant={isLastPage ? 'subtle' : 'outline'}>
+
+        <Button
+          onClick={handleNextPage}
+          colorScheme="orange"
+          size="sm"
+          isDisabled={isLastPage}
+          variant={isLastPage ? "subtle" : "outline"}
+        >
           Next
         </Button>
-        <Button onClick={handleLastPage} colorScheme="orange" size="sm"isDisabled={isLastPage}variant={isLastPage ? 'subtle' : 'outline'}>
-              Last
-        </Button>    
-         
-        
+        <Button
+          onClick={handleLastPage}
+          colorScheme="orange"
+          size="sm"
+          isDisabled={isLastPage}
+          variant={isLastPage ? "subtle" : "outline"}
+        >
+          Last
+        </Button>
       </Stack>
-      <Flex align="center" justify="flex-end" position="relative" >
+      <Flex align="center" justify="flex-end" position="relative">
         <Text mx={2}>Show:</Text>
         <Select
           value={limit}
@@ -128,7 +137,6 @@ function PaginationOrder({ currentPage, totalPages, onPageChange,isFirstPage,isL
         <Text mx={2}>entries</Text>
       </Flex>
     </Flex>
-
   );
 }
-export default PaginationOrder
+export default PaginationOrder;

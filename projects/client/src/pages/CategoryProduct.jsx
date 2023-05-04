@@ -15,13 +15,11 @@ import {
   Button,
   ButtonGroup,
   Input,
-  HStack,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
+  Select,
 } from "@chakra-ui/react";
+import { useFormik } from "formik";
+import { basicSchema } from "../schemas";
+import Paging from "../components/Pagination";
 
 function AdminCategoryProduct() {
   // AMBIL DATA ROLE UTK DISABLE BUTTON EDIT KALO BUKAN SUPERADMIN
@@ -42,17 +40,18 @@ function AdminCategoryProduct() {
   }, [role]);
 
   // STATE
+
   const [dataCategory, setDataCategory] = useState(null);
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [totalPage, setTotalPage] = useState(1);
+  const [order, setOrder] = useState(0);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(0);
   const [limit, setLimit] = useState(5);
 
   //STATE BUAT KATEGORI BARU
-  const [newCategory, setNewCategory] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [preview, setPreview] = useState(`${API_URL}/img/category/default.png`);
-  const [categoryPicture, setCategoryPicture] = useState("default.png");
+  const [categoryPicture, setCategoryPicture] = useState("");
 
   //STATE BUAT EDIT KATEGORI
   const [idEdit, setIdEdit] = useState(0);
@@ -63,19 +62,33 @@ function AdminCategoryProduct() {
   );
   const [categoryPictureEdit, setCategoryPictureEdit] = useState("");
 
+  //button
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [buttonDisabledEdit, setButtonDisabledEdit] = useState(false);
+  const [firstLaunch, setFirstLaunch] = useState(true);
+
+  const { values, errors, touched, handleBlur, handleChange } = useFormik({
+    initialValues: {
+      categoryName: categoryEdit,
+    },
+    enableReinitialize: true,
+    validationSchema: basicSchema,
+  });
+
   // GET DATA
   const getCategory = async () => {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
       let category = await Axios.post(
-        API_URL + `/apis/product/categorylist?page=${page}&limit=5`,
-        { search },
+        API_URL + `/apis/product/categorylist`,
+        { search, page: parseInt(page) - 1, limit, order },
         {
           headers: { Authorization: `Bearer ${getLocalStorage}` },
         }
       );
+      setPage(category.data.page + 1);
       setDataCategory(category.data.data);
-      setTotalPage(category.data.total_page);
+      setLastPage(category.data.total_page);
     } catch (error) {
       console.log(error);
     }
@@ -99,10 +112,11 @@ function AdminCategoryProduct() {
     }
   };
   const resetNew = () => {
-    if (showNew == false) {
-      setNewCategory("");
+    if (showNew == false && idEdit == 0) {
       setPreview(`${API_URL}/img/category/default.png`);
-      setCategoryPicture("default.png");
+      setCategoryPicture("");
+      setCategoryEdit("");
+      setFirstLaunch(true);
     }
   };
 
@@ -112,6 +126,7 @@ function AdminCategoryProduct() {
     } else if (showNew == false) {
       setShowNew(true);
       setShowEdit(false);
+      // setFirstLaunch(true);
     }
   };
 
@@ -142,7 +157,7 @@ function AdminCategoryProduct() {
     Axios.post(
       API_URL + `/apis/product/categoryadd`,
       {
-        category: newCategory,
+        category: values.categoryName,
         category_picture: categoryPicture,
       },
       {
@@ -154,7 +169,7 @@ function AdminCategoryProduct() {
     )
       .then((response) => {
         alert("Add Category Success ✅");
-        setNewCategory("");
+        setCategoryEdit("");
         setPreview(`${API_URL}/img/category/default.png`);
         setCategoryPicture("default.png");
         getCategory();
@@ -170,7 +185,7 @@ function AdminCategoryProduct() {
       API_URL + `/apis/product/categoryedit`,
       {
         id_category: idEdit,
-        category: categoryEdit,
+        category: values.categoryName,
         category_picture: categoryPictureEdit,
       },
       {
@@ -190,6 +205,7 @@ function AdminCategoryProduct() {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
@@ -217,13 +233,20 @@ function AdminCategoryProduct() {
         })
         .catch((error) => {
           console.log(error);
+          alert(error.response.data.msg);
         });
     }
   };
 
   useEffect(() => {
     getCategory();
-  }, [search, page]); //KALO SEARCH BERUBAH
+    setShowEdit(false);
+    setShowNew(false);
+  }, [search, page, order, limit]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, order, limit]);
 
   useEffect(() => {
     resetEdit();
@@ -232,6 +255,28 @@ function AdminCategoryProduct() {
   useEffect(() => {
     resetNew();
   }, [showNew]);
+
+  useEffect(() => {
+    if (errors.categoryName || categoryPicture == "") {
+      setButtonDisabled(true);
+    } else {
+      setButtonDisabled(false);
+    }
+  }, [errors, categoryPicture]);
+
+  useEffect(() => {
+    if (errors.categoryName || categoryPictureEdit == "") {
+      setButtonDisabledEdit(true);
+    } else {
+      setButtonDisabledEdit(false);
+    }
+  }, [errors, categoryPicture]);
+
+  useEffect(() => {
+    if (touched.categoryName) {
+      setFirstLaunch(false);
+    }
+  }, [touched]);
 
   //PRINT DATA
 
@@ -267,51 +312,44 @@ function AdminCategoryProduct() {
     });
   };
 
-  //page
-  function pageButton() {
-    return (
-      <NumberInput
-        size="xs"
-        maxW={16}
-        defaultValue={1}
-        min={1}
-        max={totalPage}
-        onChange={(e) => setPage(parseInt(e) - 1)}
-      >
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
-    );
-  }
-
   return (
-    <div className="bg-white  w-100 p-5 m-auto ">
-      <div className="d-flex my-2">
-        <div className="col-4">
-          <Text className="ps-4 " fontSize="4xl">
-            Kategori Produk
-          </Text>
-        </div>
-        <div className="col-4">
+    <div className="bg-white  w-100 p-2 m-auto ">
+      <div className="col-4">
+        <Text fontSize="2xl">Kategori Produk</Text>
+      </div>
+      <div
+        className="d-flex my-2"
+        style={{ alignItems: "center", justifyContent: "center" }}
+      >
+        <div className="col-3">
           <Input
             type="text"
-            className="form-control p-3"
+            className="form-control mt-3"
             placeholder="search kategori"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="col-4 mx-5">
+        <div className="col-3">
+          <Select
+            onChange={(e) => setOrder(e.target.value)}
+            className="form-control form-control-lg mt-3
+          "
+          >
+            <option value={0}>Paling Sesuai </option>
+            <option value={1}>Nama Ascending </option>
+            <option value={2}>Nama Descending</option>
+          </Select>
+        </div>
+        <div className="col-3"></div>
+        <div className="col-3">
           <ButtonGroup>
             {isEdit && (
               <Button
                 type="button"
                 colorScheme="orange"
                 variant="solid"
-                onClick={showTabNew}
+                onClick={() => showTabNew()}
               >
                 Kategori Baru
               </Button>
@@ -321,29 +359,40 @@ function AdminCategoryProduct() {
       </div>
       <div className="my-5 row">
         <div className="col-6">
-          <TableContainer>
-            <Table>
+          <TableContainer className="rounded">
+            <Table size="sm">
               <Thead>
-                <Tr>
-                  <Th>No.</Th>
-                  <Th>Kategori</Th>
-                  <Th></Th>
-                  <Th>{pageButton()}</Th>
+                <Tr className="tablehead">
+                  <Th color="#ffffff">No.</Th>
+                  <Th color="#ffffff">Kategori</Th>
+                  <Th color="#ffffff"></Th>
+                  <Th color="#ffffff"></Th>
                 </Tr>
               </Thead>
-              <Tbody>{printData()}</Tbody>
-              <Tfoot>
-                <Tr>
-                  <Th></Th>
-                  <Th></Th>
-                  <Th></Th>
-                  <Th></Th>
-                  <Th></Th>
-                  <Th></Th>
-                </Tr>
-              </Tfoot>
+              <Tbody className="tablebody">{printData()}</Tbody>
             </Table>
           </TableContainer>
+          <div
+            className="d-flex my-5"
+            style={{ alignItems: "center", justifyContent: "center" }}
+          >
+            <Paging first={page} second={lastPage} third={setPage} />
+            <div
+              className="d-flex mx-5"
+              style={{ alignItems: "center", justifyContent: "center" }}
+            >
+              menampilkan
+              <Input
+                type="text"
+                className="form-control"
+                placeholder="limit"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                style={{ width: "60px" }}
+              />
+              Kategori
+            </div>
+          </div>
         </div>
         <div className="col-6 row">
           {showNew && (
@@ -351,25 +400,44 @@ function AdminCategoryProduct() {
               <Text>Add Kategori</Text>
               <div className="row">
                 <div className="col-6">
-                  <input
+                  <Input
+                    id="categoryName"
                     type="text"
-                    className="form-control p-6 "
+                    className={
+                      errors.categoryName && touched.categoryName
+                        ? "input-error"
+                        : ""
+                    }
                     placeholder="Nama Kategori Baru"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
+                    value={values.categoryName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
                   />
+                  {errors.categoryName && touched.categoryName && (
+                    <Text fontSize="small" className="error">
+                      {errors.categoryName}
+                    </Text>
+                  )}
                 </div>
                 <div className="col-6">
                   <ButtonGroup>
                     <Button
                       type="button"
                       colorScheme="orange"
-                      variant="solid"
-                      onClick={onAdd}
+                      variant={
+                        firstLaunch || buttonDisabled ? "outline" : "solid"
+                      }
+                      onClick={() => onAdd()}
+                      isDisabled={firstLaunch || buttonDisabled}
                     >
                       Tambah Kategori
                     </Button>
                   </ButtonGroup>
+                  {buttonDisabled && (
+                    <Text fontSize="small" className="error">
+                      Please complete the form
+                    </Text>
+                  )}
                 </div>
 
                 <div>
@@ -422,14 +490,24 @@ function AdminCategoryProduct() {
               <Text>Detail Kategori</Text>
               <div className="row">
                 <div className="col-6">
-                  <input
+                  <Input
+                    id="categoryName"
                     type="text"
-                    className="form-control p-6 "
+                    className={
+                      errors.categoryName && touched.categoryName
+                        ? "input-error"
+                        : ""
+                    }
                     placeholder="Nama Kategori Baru"
-                    value={categoryEdit}
-                    onChange={(e) => setCategoryEdit(e.target.value)}
-                    disabled={!isEdit}
+                    value={values.categoryName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
                   />
+                  {errors.categoryName && touched.categoryName && (
+                    <Text fontSize="small" className="error">
+                      {errors.categoryName}
+                    </Text>
+                  )}
                 </div>
                 <div className="col-6">
                   {isEdit && (
@@ -438,7 +516,8 @@ function AdminCategoryProduct() {
                         type="button"
                         colorScheme="orange"
                         variant="solid"
-                        onClick={onEdit}
+                        onClick={() => onEdit()}
+                        isDisabled={buttonDisabledEdit}
                       >
                         Edit Kategori
                       </Button>

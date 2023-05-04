@@ -7,8 +7,7 @@ const { cetakToken } = require("../config/encript");
 const jwt = require("jsonwebtoken");
 const REACT_URL = "http://localhost:3000";
 const { transporter } = require("../config/nodemailer");
-const protocol = 'http://localhost';
-
+const protocol = "http://localhost";
 
 module.exports = {
   getDataUser: async (req, res) => {
@@ -65,10 +64,10 @@ module.exports = {
   verify: async (req, res) => {
     try {
       let email = req.decript.email;
-      let { password } = req.body;
+      let { password, subs } = req.body;
       //patch disini
       let newUser = await UserModel.update(
-        { password: hashPassword(password), status: 2 },
+        { password: hashPassword(password), status: 2, subs },
         {
           where: { email },
         }
@@ -235,7 +234,6 @@ module.exports = {
       const updateProfile = await UserModel.update(updateData, {
         where: { id_user },
       });
-      console.log(req.file);
       res.status(201).json({
         message: "Success",
         data: updateProfile,
@@ -271,5 +269,4 @@ module.exports = {
       res.status(500).json({ success: false, message: "Server error" });
     }
   },
-
 };

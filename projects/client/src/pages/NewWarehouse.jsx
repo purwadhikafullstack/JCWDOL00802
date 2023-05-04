@@ -1,20 +1,29 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Axios from "axios";
-import { Button, ButtonGroup, Text, Textarea } from "@chakra-ui/react";
+import { Button, ButtonGroup, Text, Textarea, Input } from "@chakra-ui/react";
 import { API_URL } from "../helper";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { useFormik } from "formik";
+import { basicSchema } from "../schemas";
 
 const NewWarehouse = (props) => {
   const navigate = useNavigate();
 
   //STATE
-  const [nameEdit, setNameEdit] = React.useState("");
-  const [detailAddressEdit, setDetailAddressEdit] = React.useState("");
-  const [phoneNumberEdit, setPhoneNumberEdit] = React.useState("");
-  const [keyProvinceEdit, setKeyProvinceEdit] = React.useState("");
-  const [selectedCity, setSelectedCity] = React.useState(null);
-  const [provinceList, setProvinceList] = React.useState(null);
-  const [cityList, setCityList] = React.useState(null);
+  const { values, errors, touched, handleBlur, handleChange } = useFormik({
+    initialValues: {
+      warehouseName: "",
+      warehouseAddress: "",
+      phone: "",
+    },
+    validationSchema: basicSchema,
+  });
+
+  const [keyProvinceEdit, setKeyProvinceEdit] = useState("");
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [provinceList, setProvinceList] = useState(null);
+  const [cityList, setCityList] = useState(null);
 
   //GET DATA
   let onGetProvince = async () => {
@@ -45,10 +54,32 @@ const NewWarehouse = (props) => {
     }
   };
 
-  //USE EFFECT
+  // USE EFFECT
   useEffect(() => {
     onGetProvince();
   }, []);
+
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [firstLaunch, setFirstLaunch] = useState(true);
+
+  useEffect(() => {
+    if (
+      errors.warehouseName ||
+      errors.warehouseAddress ||
+      errors.phone ||
+      selectedCity == null
+    ) {
+      setButtonDisabled(true);
+    } else {
+      setButtonDisabled(false);
+    }
+  }, [errors, selectedCity]);
+
+  useEffect(() => {
+    if (touched.warehouseName || touched.warehouseAddress || touched.phone) {
+      setFirstLaunch(false);
+    }
+  }, [touched]);
 
   //PRINT DATA
   let dataProvinceExist = false;
@@ -97,16 +128,23 @@ const NewWarehouse = (props) => {
 
   //FUNCTION BUTTON
   const onAdd = () => {
-    Axios.post(API_URL + `/apis/warehouse/addwarehouse`, {
-      warehouse_branch_name: nameEdit,
-      phone_number: phoneNumberEdit,
-      city: selectedCity?.city_name,
-      province: selectedCity?.province,
-      postal_code: selectedCity?.postal_code,
-      detail_address: detailAddressEdit,
-      key_city: selectedCity?.city_id,
-      key_province: selectedCity?.province_id,
-    })
+    let getLocalStorage = localStorage.getItem("cnc_login");
+    let tanggal = format(new Date(), "yyyy-MM-dd H:m:s");
+    Axios.post(
+      API_URL + `/apis/warehouse/addwarehouse`,
+      {
+        warehouse_branch_name: values.warehouseName,
+        phone_number: values.phone,
+        city: selectedCity?.city_name,
+        province: selectedCity?.province,
+        postal_code: selectedCity?.postal_code,
+        detail_address: values.warehouseAddress,
+        key_city: selectedCity?.city_id,
+        key_province: selectedCity?.province_id,
+        date: tanggal,
+      },
+      { headers: { Authorization: `Bearer ${getLocalStorage}` } }
+    )
       .then((response) => {
         alert("Add Warehouse Success ✅");
         navigate("/admin/warehouse");
@@ -117,112 +155,139 @@ const NewWarehouse = (props) => {
   };
 
   return (
-    <div className="bg-white  w-100 p-5 m-auto ">
-      <Text className="ps-4 pt-3" fontSize="4xl">
-        {" "}
-        Add Warehouse
-      </Text>
-      <div id="regispage" className="row">
-        <div className="col-6 px-5">
+    <div className="bg-white w-100 p-3 m-auto ">
+      <div>
+        <Text fontSize="2xl">Add Warehouse</Text>
+      </div>
+      <div className="d-flex">
+        <div className="col-6 p-3">
           <div className="my-3">
             <label className="form-label fw-bold text-muted">
               Nama Warehouse
             </label>
-            <input
+            <Input
               type="text"
-              className="form-control p-3"
-              placeholder="Nama Warehouse"
-              value={nameEdit}
-              onChange={(e) => setNameEdit(e.target.value)}
+              id="warehouseName"
+              placeholder="Nama Gudang"
+              value={values.warehouseName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={
+                errors.warehouseName && touched.warehouseName
+                  ? "input-error"
+                  : ""
+              }
             />
+            {errors.warehouseName && touched.warehouseName && (
+              <Text fontSize="small" className="error">
+                {errors.warehouseName}
+              </Text>
+            )}
           </div>
           <div className="my-3">
             <label className="form-label fw-bold text-muted">
               Nomor Telepon
             </label>
-            <input
+            <Input
               type="text"
-              className="form-control p-3"
-              placeholder="Nomor telepon"
-              value={phoneNumberEdit}
-              onChange={(e) => setPhoneNumberEdit(e.target.value)}
+              id="phone"
+              placeholder="Nomor Telepon"
+              value={values.phone}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={errors.phone && touched.phone ? "input-error" : ""}
             />
+            {errors.phone && touched.phone && (
+              <Text fontSize="small" className="error">
+                {errors.phone}
+              </Text>
+            )}
           </div>
           <div className="my-3">
             <label className="form-label fw-bold text-muted">
               Alamat Warehouse
             </label>
             <Textarea
+              id="warehouseAddress"
               type="text"
-              className="form-control p-3"
-              placeholder="DESC"
+              className={
+                errors.warehouseAddress && touched.warehouseAddress
+                  ? "input-error"
+                  : ""
+              }
+              placeholder="Alamat Lengkap"
               style={{
                 resize: "none",
-                height: "250px",
+                height: "150px",
               }}
-              value={detailAddressEdit}
-              onChange={(e) => setDetailAddressEdit(e.target.value)}
+              value={values.warehouseAddress}
+              onChange={handleChange}
+              onBlur={handleBlur}
             />
+            {errors.warehouseAddress && touched.warehouseAddress && (
+              <Text fontSize="small" className="error">
+                {errors.warehouseAddress}
+              </Text>
+            )}
           </div>
         </div>
-        <div className="col-6 px-5">
-          <div className="row bg-white">
-            <div className="my-3 ">
-              <label className="form-label fw-bold text-muted">Propinsi</label>
-              <select
-                onChange={(e) => onGetCity(e.target.value)}
-                className="form-control form-control-lg mt-3"
-              >
-                <option>Pilih Propinsi</option>
-                {printDataProvince()}
-              </select>
-            </div>
-            <div className="my-3 ">
-              <label className="form-label fw-bold text-muted">Kota</label>
-              <select
-                onChange={(e) => onGetPostal(e.target.value)}
-                className="form-control form-control-lg mt-3"
-              >
-                <option>Pilih Kota</option>
-                {printDataCity()}
-              </select>
-            </div>
-            <div className="my-3 ">
-              <label className="form-label fw-bold text-muted">
-                Postal Code
-              </label>
-              {selectedCity !== null && (
-                <input
-                  type="text"
-                  className="form-control p-3"
-                  placeholder="Kode pos"
-                  value={selectedCity.postal_code}
-                  disabled
-                />
-              )}
-              {selectedCity == null && (
-                <input
-                  type="text"
-                  className="form-control p-3"
-                  placeholder="Kode pos"
-                  disabled
-                />
-              )}
-            </div>
-          </div>
-          <ButtonGroup>
-            <Button
-              type="button"
-              width="full"
-              colorScheme="orange"
-              variant="solid"
-              onClick={() => {
-                onAdd();
-              }}
+        <div className="col-6 p-3">
+          <div className="my-3 ">
+            <label className="form-label fw-bold text-muted">Propinsi</label>
+            <select
+              onChange={(e) => onGetCity(e.target.value)}
+              className="form-control form-control-lg"
             >
-              Tambah Gudang
-            </Button>
-          </ButtonGroup>
+              <option>Pilih Propinsi</option>
+              {printDataProvince()}
+            </select>
+          </div>
+          <div className="my-3 ">
+            <label className="form-label fw-bold text-muted">Kota</label>
+            <select
+              onChange={(e) => onGetPostal(e.target.value)}
+              className="form-control form-control-lg"
+            >
+              <option>Pilih Kota</option>
+              {printDataCity()}
+            </select>
+          </div>
+          <div className="my-3 ">
+            <label className="form-label fw-bold text-muted">Postal Code</label>
+            {selectedCity !== null && (
+              <input
+                type="text"
+                className="form-control  p-3"
+                placeholder="Kode pos"
+                value={selectedCity.postal_code}
+                disabled
+              />
+            )}
+            {selectedCity == null && (
+              <input
+                type="text"
+                className="form-control p-3"
+                placeholder="Kode pos"
+                disabled
+              />
+            )}
+          </div>
+          <Button
+            type="button"
+            colorScheme="orange"
+            variant={firstLaunch || buttonDisabled ? "outline" : "solid"}
+            isDisabled={firstLaunch || buttonDisabled}
+            onClick={() => {
+              onAdd();
+            }}
+          >
+            Tambah Gudang
+          </Button>
+          {buttonDisabled && (
+            <Text fontSize="small" className="error">
+              Please complete the form
+            </Text>
+          )}
         </div>
       </div>
     </div>

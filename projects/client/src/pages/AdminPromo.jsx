@@ -18,33 +18,34 @@ import {
 } from "@chakra-ui/react";
 import Paging from "../components/Pagination";
 
-function AdminWarehouse() {
+function AdminPromo() {
   // STATE
-  const [dataWarehouse, setDataWarehouse] = useState(null);
+  const [dataPromo, setDataPromo] = useState(null);
   const [search, setSearch] = useState("");
   const [order, setOrder] = useState(0);
+  const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(0);
   const [limit, setLimit] = useState(10);
   // GET DATA
-  const getWarehouse = async () => {
+  const getPromo = async () => {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
-      let warehouse = await Axios.post(
-        API_URL + `/apis/warehouse/list`,
-        { search, order, limit, page: parseInt(page) - 1 },
+      let promo = await Axios.post(
+        API_URL + `/apis/promo/getpromolist`,
+        { search, order, limit, page: parseInt(page) - 1, status },
         { headers: { Authorization: `Bearer ${getLocalStorage}` } }
       );
-      setPage(warehouse.data.page + 1);
-      setDataWarehouse(warehouse.data.data);
-      setLastPage(warehouse.data.total_page);
+      setPage(promo.data.page + 1);
+      setDataPromo(promo.data.data);
+      setLastPage(promo.data.total_page);
     } catch (error) {
       console.log(error);
     }
   };
 
   let dataExist = false;
-  if (dataWarehouse == null) {
+  if (dataPromo == null) {
     dataExist = false;
   } else {
     dataExist = true;
@@ -53,66 +54,64 @@ function AdminWarehouse() {
   const [onFilter, setOnFilter] = useState(false);
 
   const onSetFilter = () => {
-    if (search != "" || order != 0) {
+    if (search != "" || order != 0 || status != "") {
       setPage(1);
       setOnFilter(true);
-      getWarehouse();
+      getPromo();
     }
   };
 
   const onResetFilter = () => {
     setSearch("");
     setOrder(0);
+    setStatus("");
     setOnFilter(false);
   };
 
   //   USE EFFECT
   useEffect(() => {
-    getWarehouse();
+    getPromo();
   }, [page, limit, onFilter]);
 
   //PRINT DATA
   const printData = () => {
-    let data = dataExist ? dataWarehouse : [];
+    let data = dataExist ? dataPromo : [];
     // let num = 0;
     return data.map((val, idx) => {
-      let editpage = `/admin/editwarehouse?id_warehouse=${val.id_warehouse}`;
-      if (val.status == 1 || val.status == 2) {
-        // num++;
-        let admin = "⚠️ NO ADMIN";
-        if (val.status == 2) {
-          admin = "✅ ACTIVE";
-        } else {
-          admin = "⚠️NO ADMIN";
-        }
-        return (
-          <Tr>
-            {/* <Td>{num}</Td> */}
-            <Td>{val.warehouse_branch_name}</Td>
-            <Td>{val.detail_address.substring(0, 30)}</Td>
-            <Td>{admin}</Td>
-            <Td>
-              <Link to={editpage}>
-                <Button
-                  size="sm"
-                  type="button"
-                  colorScheme="orange"
-                  variant="solid"
-                >
-                  Edit Gudang
-                </Button>
-              </Link>
-            </Td>
-          </Tr>
-        );
+      let editpage = `/admin/editpromo?id_promo=${val.id_promo}`;
+      let stat = "⚠️ INACTIVE";
+      if (val.status == 1) {
+        stat = "✅ ACTIVE";
+      } else {
+        stat = "⚠️INACTIVE";
       }
+      return (
+        <Tr>
+          {/* <Td>{num}</Td> */}
+          <Td>{val.promo_code}</Td>
+          <Td>{val.description.substring(0, 30)}</Td>
+          <Td>{stat}</Td>
+          <Td>
+            <Link to={editpage}>
+              <Button
+                size="sm"
+                type="button"
+                colorScheme="orange"
+                variant="solid"
+              >
+                Edit Promo
+              </Button>
+            </Link>
+          </Td>
+        </Tr>
+      );
     });
   };
 
   return (
     <div className="bg-white w-100 m-auto ">
       <div>
-        <Text fontSize="2xl">Pengelolaan Gudang </Text>
+        <Text fontSize="2xl">Pengelolaan Promo </Text>
       </div>
       <div className="d-flex">
         <div className="col-9 rounded p-3 tablebox">
@@ -120,9 +119,9 @@ function AdminWarehouse() {
             <Table>
               <Thead>
                 <Tr className="tablehead">
-                  <Th color="#ffffff">Cabang Gudang</Th>
-                  <Th color="#ffffff">Alamat</Th>
-                  <Th color="#ffffff">Admin</Th>
+                  <Th color="#ffffff">Kode Promo</Th>
+                  <Th color="#ffffff">Deskripsi</Th>
+                  <Th color="#ffffff">Status</Th>
                   <Th></Th>
                 </Tr>
               </Thead>
@@ -146,7 +145,7 @@ function AdminWarehouse() {
                 onChange={(e) => setLimit(e.target.value)}
                 style={{ width: "60px" }}
               />
-              gudang
+              promo
             </div>
           </div>
         </div>
@@ -168,10 +167,32 @@ function AdminWarehouse() {
             >
               <option value={0}>Urutkan</option>
               <option value={1} selected={order == 1}>
-                Nama:A-Z
+                Kode Promo:A-Z
               </option>
               <option value={2} selected={order == 2}>
-                Nama:Z-A
+                Kode Promo:Z-A
+              </option>
+              <option value={3} selected={order == 3}>
+                Expired tercepat
+              </option>
+              <option value={4} selected={order == 4}>
+                Expired terlama
+              </option>
+            </Select>
+          </div>
+          <div className="inputfilter">
+            <Select
+              onChange={(e) => setStatus(e.target.value)}
+              className="form-control form-control-lg mt-3"
+            >
+              <option value={""} selected={status == 1}>
+                Semua Status
+              </option>
+              <option value={1} selected={status == 1}>
+                Aktif
+              </option>
+              <option value={2} selected={status == 2}>
+                Tidak Aktif
               </option>
             </Select>
           </div>
@@ -201,4 +222,4 @@ function AdminWarehouse() {
   );
 }
 
-export default AdminWarehouse;
+export default AdminPromo;

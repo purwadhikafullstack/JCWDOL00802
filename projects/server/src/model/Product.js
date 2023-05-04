@@ -3,9 +3,11 @@ const { dbSequelize } = require("../config/db");
 const { DataTypes } = Sequelize;
 const CartModel = require("./Cart");
 const StockModel = require("./stock");
-const { WarehouseModel, associateWarehouseModel } = require("./warehouse");
+const WarehouseModel = require("./warehouse");
 const CategoryProductModel = require("./Category_Product");
 const StockHistoryModel = require("./stock_history");
+const WarehouseMutationModel = require("./warehouse_mutation");
+const WarehouseMutationStatusModel = require("./warehouse_mutation_status");
 
 const ProductModel = dbSequelize.define(
   "Product",
@@ -71,5 +73,38 @@ ProductModel.hasMany(CategoryProductModel, {
 ProductModel.hasMany(StockHistoryModel, {
   foreignKey: "id_product",
   as: "stockprod",
+});
+WarehouseMutationModel.hasOne(ProductModel, {
+  foreignKey: "id_product",
+  sourceKey: "id_product",
+});
+ProductModel.hasMany(WarehouseMutationModel, {
+  foreignKey: "id_product",
+  targetKey: "id_product",
+});
+
+WarehouseMutationModel.hasOne(WarehouseModel, {
+  foreignKey: "id_warehouse",
+  sourceKey: "id_warehouse_sender",
+  as: "sender",
+});
+WarehouseModel.hasMany(WarehouseMutationModel, {
+  foreignKey: "id_warehouse_sender",
+  targetKey: "id_warehouse",
+  as: "sender",
+});
+WarehouseMutationModel.hasOne(WarehouseModel, {
+  foreignKey: "id_warehouse",
+  sourceKey: "id_warehouse_receiver",
+  as: "receiver",
+});
+WarehouseModel.hasMany(WarehouseMutationModel, {
+  foreignKey: "id_warehouse_receiver",
+  targetKey: "id_warehouse",
+  as: "receiver",
+});
+WarehouseMutationModel.hasOne(WarehouseMutationStatusModel, {
+  foreignKey: "warehouse_mutation_statuses",
+  sourceKey: "status",
 });
 module.exports = ProductModel;

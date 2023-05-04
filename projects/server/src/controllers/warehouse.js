@@ -3,9 +3,9 @@ const {
   PostalCodeModel,
   ProductModel,
   StockModel,
+  StockHistoryModel,
 } = require("../model");
 const Axios = require("axios");
-const sequelize = require("sequelize");
 const { Op } = require("sequelize");
 
 module.exports = {
@@ -13,9 +13,23 @@ module.exports = {
   getDataWarehouse: async (req, res) => {
     try {
       // KALO SUDAH MASUK SINI SUDAH SUPER ADMIN
-      let search = req.query.search;
+      let search = req.body.search;
+      let urut = req.body.order;
+      let limit = parseInt(req.body.limit);
+      let page = req.body.page;
+      let offset = page * limit;
       //
       let filterName = {};
+      //
+      let order = [["id_warehouse"]];
+
+      if (urut == 0) {
+        order = [["id_warehouse"]];
+      } else if (urut == 1) {
+        order = [["warehouse_branch_name", "ASC"]];
+      } else if (urut == 2) {
+        order = [["warehouse_branch_name", "DESC"]];
+      }
       //
       if (search !== "" && typeof search !== "undefined") {
         filterName.warehouse_branch_name = {
@@ -23,10 +37,18 @@ module.exports = {
         };
       }
       //
-      let data = await WarehouseModel.findAll({
+      let data = await WarehouseModel.findAndCountAll({
         where: filterName,
+        limit,
+        page,
+        offset,
+        order,
+        raw: true,
       });
-      res.status(200).send(data);
+
+      const total_page = Math.ceil(data.count / limit);
+
+      res.status(200).send({ data: data.rows, total_page, page });
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
@@ -69,6 +91,7 @@ module.exports = {
         detail_address,
         key_province,
         key_city,
+        date,
       } = req.body;
 
       let data = await WarehouseModel.findAll({
@@ -111,6 +134,15 @@ module.exports = {
             id_product: val.dataValues.id_product,
             stock: 0,
           });
+
+          let newStockHistory = StockHistoryModel.create({
+            id_warehouse: newWarehouse.id_warehouse,
+            id_product: val.dataValues.id_product,
+            date,
+            type: 8,
+            amount: 0,
+            total: 0,
+          });
         });
 
         let encoded_city = city.replace(" ", "+");
@@ -123,7 +155,7 @@ module.exports = {
             { coordinate_lat: response.data.results[0].geometry.lat },
             {
               where: {
-                [sequelize.Op.and]: [
+                [Op.and]: [
                   { warehouse_branch_name },
                   { postal_code },
                   { detail_address },
@@ -135,7 +167,7 @@ module.exports = {
             { coordinate_long: response.data.results[0].geometry.lng },
             {
               where: {
-                [sequelize.Op.and]: [
+                [Op.and]: [
                   { warehouse_branch_name },
                   { postal_code },
                   { detail_address },
@@ -166,7 +198,10 @@ module.exports = {
       //
       let data = await WarehouseModel.findAll({
         where: {
-          [Op.or]: [{ warehouse_branch_name }],
+          [Op.and]: [
+            id_warehouse,
+            { warehouse_branch_name: { [Op.ne]: warehouse_branch_name } },
+          ],
         },
       });
       if (data.length > 1) {
@@ -208,7 +243,7 @@ module.exports = {
             { coordinate_lat: response.data.results[0].geometry.lat },
             {
               where: {
-                [sequelize.Op.and]: [
+                [Op.and]: [
                   { warehouse_branch_name },
                   { postal_code },
                   { detail_address },
@@ -220,7 +255,7 @@ module.exports = {
             { coordinate_long: response.data.results[0].geometry.lng },
             {
               where: {
-                [sequelize.Op.and]: [
+                [Op.and]: [
                   { warehouse_branch_name },
                   { postal_code },
                   { detail_address },

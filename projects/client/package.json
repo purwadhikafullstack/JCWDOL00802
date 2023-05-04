@@ -32,6 +32,7 @@
     "react-router-dom": "^6.8.2",
     "react-scripts": "5.0.1",
     "react-strap": "^0.0.1",
+    "reactstrap": "^9.1.9",
     "redux-thunk": "^2.4.2",
     "web-vitals": "^2.1.4",
     "yup": "^1.1.1"

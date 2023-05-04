@@ -1,20 +1,37 @@
 import React, { useState, useEffect } from "react";
 import Axios from "axios";
-import { Button, ButtonGroup, Text, Textarea } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonGroup,
+  Text,
+  Textarea,
+  Input,
+  Image,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-
+import { format } from "date-fns";
+import { useFormik } from "formik";
 import { API_URL } from "../helper";
+import { basicSchema } from "../schemas";
+
 const NewProduct = (props) => {
   const navigate = useNavigate();
   // STATE
-  const [nameEdit, setNameEdit] = useState("");
-  const [descriptionEdit, setDescriptionEdit] = useState("");
-  const [priceEdit, setPriceEdit] = useState("");
-  const [weightEdit, setWeightEdit] = useState("");
+
+  const { values, errors, touched, handleBlur, handleChange } = useFormik({
+    initialValues: {
+      productName: "",
+      productDescription: "",
+      price: "",
+      weight: "",
+    },
+    validationSchema: basicSchema,
+  });
+
   const [preview, setPreview] = useState("https://fakeimg.pl/350x200/");
   const [productPicture, setProductPicture] = useState("");
   const [dataCategory, setDataCategory] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(0);
 
   const getCategory = async () => {
     Axios.get(`${API_URL}/apis/product/category`).then((response) => {
@@ -23,7 +40,7 @@ const NewProduct = (props) => {
   };
 
   //GAMBAR
-  const loadProfilePictureEdit = (e) => {
+  const loadProductPictureEdit = (e) => {
     const image = e.target.files[0];
     setProductPicture(image);
     setPreview(URL.createObjectURL(image));
@@ -31,15 +48,17 @@ const NewProduct = (props) => {
 
   //AXIOS FUNCTION
   const onAdd = () => {
+    let tanggal = format(new Date(), "yyyy-MM-dd H:m:s");
     Axios.post(
       API_URL + `/apis/product/addproduct`,
       {
-        name: nameEdit,
-        description: descriptionEdit,
-        price: priceEdit,
-        weight: weightEdit,
+        name: values.productName,
+        description: values.productDescription,
+        price: values.price,
+        weight: values.weight,
         product_picture: productPicture,
         id_category: selectedCategory,
+        date: tanggal,
       },
       {
         headers: {
@@ -54,7 +73,7 @@ const NewProduct = (props) => {
       })
       .catch((error) => {
         console.log(error);
-        // alert(error.response.data.msg);
+        alert("Add Product Fail");
       });
   };
 
@@ -81,63 +100,123 @@ const NewProduct = (props) => {
     }
   };
 
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [firstLaunch, setFirstLaunch] = useState(true);
+
+  useEffect(() => {
+    if (
+      errors.productName ||
+      errors.productDescription ||
+      errors.price ||
+      errors.weight ||
+      productPicture == ""
+    ) {
+      setButtonDisabled(true);
+    } else {
+      setButtonDisabled(false);
+    }
+  }, [errors, productPicture]);
+
+  useEffect(() => {
+    if (
+      touched.productName ||
+      touched.productDescription ||
+      touched.price ||
+      touched.weight
+    ) {
+      setFirstLaunch(false);
+    }
+  }, [touched]);
+
   return (
     <div>
-      <Text className="ps-4 pt-3" fontSize="4xl">
-        Add Product
-      </Text>
-      <div id="regispage" className="row">
+      <Text fontSize="2xl">Add Product</Text>
+      <div className="d-flex">
         <div className="col-6 px-5">
           <div className="my-3">
             <label className="form-label fw-bold text-muted">Nama</label>
-            <input
+            <Input
               type="text"
-              className="form-control p-3"
-              placeholder="NAMA PRODUK"
-              value={nameEdit}
-              onChange={(e) => setNameEdit(e.target.value)}
+              id="productName"
+              placeholder="Nama Produk"
+              value={values.productName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              className={
+                errors.productName && touched.productName ? "input-error" : ""
+              }
             />
+            {errors.productName && touched.productName && (
+              <Text fontSize="small" className="error">
+                {errors.productName}
+              </Text>
+            )}
           </div>
           <div className="my-3">
             <label className="form-label fw-bold text-muted">Description</label>
             <Textarea
+              id="productDescription"
               type="text"
-              className="form-control p-3"
+              className={
+                errors.productDescription && touched.productDescription
+                  ? "input-error"
+                  : ""
+              }
               placeholder="DESC"
               style={{
                 resize: "none",
                 height: "250px",
               }}
-              value={descriptionEdit}
-              onChange={(e) => setDescriptionEdit(e.target.value)}
+              value={values.productDescription}
+              onChange={handleChange}
+              onBlur={handleBlur}
             />
+            {errors.productDescription && touched.productDescription && (
+              <Text fontSize="small" className="error">
+                {errors.productDescription}
+              </Text>
+            )}
           </div>
           <div className="my-3 row">
             <div className="col-3 ">
               <label className="form-label fw-bold text-muted">Harga</label>
-              <input
-                type="text"
-                className="form-control p-3"
+              <Input
+                id="price"
+                type="number"
+                className={errors.price && touched.price ? "input-error" : ""}
                 placeholder="Rp."
-                onChange={(e) => setPriceEdit(e.target.value)}
-                value={priceEdit}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.price}
               />
+              {errors.price && touched.price && (
+                <Text fontSize="small" className="error">
+                  {errors.price}
+                </Text>
+              )}
             </div>
             <div className="col-3 ">
               <label className="form-label fw-bold text-muted">Berat</label>
-              <input
-                type="text"
-                className="form-control p-3"
+              <Input
+                id="weight"
+                type="number"
+                className={errors.weight && touched.weight ? "input-error" : ""}
                 placeholder="Berat Barang (gram)"
-                onChange={(e) => setWeightEdit(e.target.value)}
-                value={weightEdit}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.weight}
               />
+              {errors.weight && touched.weight && (
+                <Text fontSize="small" className="error">
+                  {errors.weight}
+                </Text>
+              )}
             </div>
             <div className=" col-6">
               <label className="form-label fw-bold text-muted">Kategori</label>
               <select
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="form-control form-control-lg mt-3"
+                className="form-control form-control-lg"
               >
                 <option value={0}>Select Category</option>
                 {printCategory()}
@@ -146,42 +225,61 @@ const NewProduct = (props) => {
           </div>
         </div>
         <div className="col-6 px-5">
-          <div className="row bg-white">
+          <div>
+            <label className="form-label fw-bold text-muted">
+              Gambar Produk
+            </label>
             <div>
-              <label className="form-label fw-bold text-muted">
-                Gambar Produk
-              </label>
-              <div>
-                {preview ? (
-                  <img className="img-thumbnail" src={preview} alt="" />
-                ) : (
-                  <img src={productPicture} className="img-thumbnail" alt="" />
-                )}
-              </div>
-              <div className="my-3">
-                <label htmlFor="formFile" className="form-label">
-                  Upload image here
-                </label>
-                <input
-                  onChange={loadProfilePictureEdit}
-                  className="form-control"
-                  type="file"
-                  id="formFile"
+              {preview ? (
+                <Image
+                  className="img-thumbnail"
+                  src={preview}
+                  alt=""
+                  style={{
+                    height: "200px",
+                    width: "200px",
+                    objectFit: "cover",
+                  }}
                 />
-              </div>
+              ) : (
+                <img
+                  src={productPicture}
+                  className="img-thumbnail"
+                  alt=""
+                  style={{
+                    height: "200px",
+                    width: "200px",
+                    objectFit: "cover",
+                  }}
+                />
+              )}
             </div>
-          </div>
-          <ButtonGroup>
+            <div className="my-3">
+              <label htmlFor="formFile" className="form-label">
+                Upload image here
+              </label>
+              <input
+                onChange={loadProductPictureEdit}
+                className="form-control"
+                type="file"
+                id="formFile"
+              />
+            </div>
             <Button
               type="button"
-              width="full"
               colorScheme="orange"
-              variant="solid"
-              onClick={onAdd}
+              variant={firstLaunch || buttonDisabled ? "outline" : "solid"}
+              isDisabled={firstLaunch || buttonDisabled}
+              onClick={() => onAdd()}
             >
               Add Product
             </Button>
-          </ButtonGroup>
+            {buttonDisabled && (
+              <Text fontSize="small" className="error">
+                Please complete the form
+              </Text>
+            )}
+          </div>
         </div>
       </div>
     </div>

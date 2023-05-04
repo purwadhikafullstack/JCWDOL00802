@@ -42,8 +42,6 @@ module.exports = {
           parseInt(month) < 12
             ? new Date(`${parseInt(year)}-${parseInt(month) + 1}-01`)
             : new Date(`${parseInt(year) + 1}-1-01`);
-        console.log("enddate", endDate);
-        console.log("start", startDate);
         filterTransaction.date = {
           [sequelize.Op.and]: {
             [sequelize.Op.gte]: startDate,
