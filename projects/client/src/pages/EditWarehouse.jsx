@@ -36,9 +36,16 @@ const EditWarehouse = (props) => {
 
   // GET DATA
   const getWarehouse = async () => {
+    let getLocalStorage = localStorage.getItem("cnc_login");
     try {
       let warehouse = await Axios.get(
-        API_URL + `/apis/warehouse/detailwarehouse?id_warehouse=${idWarehouse}`
+        API_URL + `/apis/warehouse/detailwarehouse`,
+        {
+          params: { id_warehouse: idWarehouse },
+          headers: {
+            Authorization: `Bearer ${getLocalStorage}`,
+          },
+        }
       );
       setWarehouseData(warehouse.data[0]);
       setNameEdit(warehouse.data[0].warehouse_branch_name);

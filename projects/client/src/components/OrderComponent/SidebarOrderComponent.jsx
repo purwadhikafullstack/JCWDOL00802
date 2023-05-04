@@ -57,7 +57,7 @@ function SidebarOrder({  onWaitClick }) {
                     <strong>Daftar Transaksi</strong>
                   </div>
                 </Link>
-                <div className="" onClick={onWaitClick}>
+                <div className="" onClick={()=>{onWaitClick(1)}}>
                   <strong>Menunggu pembayaran</strong>
                 </div>
               </div>

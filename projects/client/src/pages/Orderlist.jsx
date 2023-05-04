@@ -2,7 +2,6 @@ import { useDispatch, useSelector } from "react-redux";
 import React, { useState, useEffect, componentDidMount } from "react";
 import Axios from "axios";
 import { API_URL } from "../helper";
-import { generate } from '@bramus/pagination-sequence'
 import {
   Text,
   Button,
@@ -15,6 +14,7 @@ import {
   Heading,
   Spacer,
   useDisclosure,
+  useToast
 } from "@chakra-ui/react";
 import { format } from "date-fns";
 import { CgProfile } from "react-icons/cg";
@@ -22,6 +22,7 @@ import DetailTrans from "../components/DetailTransaksi";
 import FilterOrderList from "../components/OrderComponent/FilterOrderComponent";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
 import SidebarOrder from "../components/OrderComponent/SidebarOrderComponent";
+import { useNavigate } from "react-router-dom"
 
 const OrderPage = (props) => {
   const [orderData, setOrderData] = useState(null);
@@ -38,28 +39,21 @@ const OrderPage = (props) => {
   const [search,setSearch]=useState("")
   const [status,setStatus]=useState ("")
   const [pageNumber,setPageNumber]=useState([])
-   
-  useEffect(() => {
-    if(page === 1){
-        setIsFirtsPage(true)
-    }else{setIsFirtsPage(false)}
-  if (page === totalPage){
-    setIsLastPage(true)
-  }else{setIsLastPage(false)}
-  }, [orderData])
+  let toast = useToast() 
+  let userToken =localStorage.getItem("cnc_login")
+  let navigate=useNavigate()
   
-
-
-
-  const { id_user, username } = useSelector((state) => {
+  
+  const { id_user, username,role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
       username: state.userReducer.username,
+      role: state.userReducer.role
     };
   });
 
   const getOrder = async () => {
-    let getLocalStorage = localStorage.getItem("cnc_login");
+    
     await Axios.post(`${API_URL}/apis/trans/list?limit=${limit}&page=${page-1}`,{
       month : month,
       year : year,
@@ -68,12 +62,12 @@ const OrderPage = (props) => {
 
     }, {
       headers: {
-        Authorization: `Bearer ${getLocalStorage}`,
+        Authorization: `Bearer ${userToken}`,
       },
     })
       .then((response) => {
         setTotalPage(response.data.total_page)
-        
+    
         setOrderData(response.data.data);
       })
       .catch((error) => {
@@ -81,26 +75,27 @@ const OrderPage = (props) => {
       });
   };
   let changeStatus = async(id,stat)=>{
-    let getLocalStorage = localStorage.getItem("cnc_login")
-    
+    let text = ""
     if (stat==9){
-      let text = `apakah anda yakin ingin membatalkan pesanan? ${id}`
-      window.confirm(text)
+      text = `apakah anda yakin ingin membatalkan pesanan?`
+      
     }
     if (stat==7){
-      let text = `apakah anda yakin ingin menerima pesanan? ${id}`
-      window.confirm(text)
+      let text = `apakah anda yakin ingin menerima pesanan?`
+      
     }
     if (stat==8){
-      let text = `apakah anda yakin ingin mengajukan komplain pesanan? ${id}`
-      window.confirm(text)
+      let text = `apakah anda yakin ingin mengajukan komplain pesanan?`
+      
     }
-    if (window.confirm){
+    if (window.confirm (text)){
     const change = await Axios.get(`${API_URL}/apis/trans/changestatus?id=${id}&stat=${stat}`,{
               headers: {
-          Authorization: `Bearer ${getLocalStorage}`,
+          Authorization: `Bearer ${userToken}`,
         },
             })
+           
+    toastMessage(change.data.message)
     getOrder()
           }
 }
@@ -115,7 +110,44 @@ const OrderPage = (props) => {
       window.removeEventListener('beforeunload', resetPageTitle());
     }
   }, []);
-
+  const toastMessage =(text)=>{
+    toast({
+      title: text,
+      status: 'warning',
+      duration: 3000,
+      isClosable: true,
+      position:"top"
+    })
+  }
+  const messageAuthorize =()=>{
+    if(!userToken){
+    toast({
+      title: 'Silahkan login dulu',
+      status: 'warning',
+      duration: 3000,
+      isClosable: true,
+      position:"top"
+    })}else if(role && role !== 1){
+      toast({
+        title: 'Admin tidak bisa mengakses ini!',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+        position:"top"
+      })}
+  }
+  useEffect(() => {
+    if(!userToken){
+      
+      navigate("/login")
+    }else if(role && role !== 1){
+      
+      navigate("/")}
+      messageAuthorize()
+      if(status && status == 1){
+        navigate("/")
+      }
+  }, [role,userToken,status] )
   const resetPageTitle = () => {
     
     document.title = "Cnc-ecommerce";
@@ -203,9 +235,9 @@ const OrderPage = (props) => {
                         {val.Transaction_Details[0].total_item} x Rp.{" "}
                         {val.Transaction_Details[0].purchased_price.toLocaleString()}
                       </Text>
-                      {val.Transaction_Details.length - 1 > 0 && (
+                      {parseInt(val.number_item)-1 > 0 && (
                         <Text py="2">
-                          {val.Transaction_Details.length - 1} barang lainnya
+                          {val.number_item - 1} barang lainnya
                         </Text>
                       )}
                     </CardBody>
@@ -270,7 +302,7 @@ const OrderPage = (props) => {
     <div className="container-fluid pt-3 ">
       <div className="row">
         {/* side bar kiri */}
-        <SidebarOrder  />
+        <SidebarOrder onWaitClick={handleStatus} />
         {/* side tengah */}
         <div className="col-8  mx-1 pb-2">
           <h1 className="ms-2 mt-2 fs-2">

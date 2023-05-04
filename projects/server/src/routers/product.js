@@ -5,7 +5,7 @@ const { uploader } = require("../config/uploader");
 
 //ROUTE
 
-route.get(
+route.post(
   "/sales",
   authorizeController.authAdmin,
   ProductController.getProductSales

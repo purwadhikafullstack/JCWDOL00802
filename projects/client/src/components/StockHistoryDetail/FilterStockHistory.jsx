@@ -9,19 +9,18 @@ import {
   Input,
 } from "@chakra-ui/react";
 
-const SalesFilter = ({
+const StockFilter = ({
   warehouses,
-  categories,
+  type,
   handleFilter,
-  year,
-  defaultMonth,
-  defaultYear,
+ 
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  
   const [selectedYear, setSelectedYear] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedType,setSelectedType]=useState("")
+  
   const [buttonDisable, setButtonDisable] = useState(false);
   const [yearList, setYearList] = useState([]);
 
@@ -40,9 +39,7 @@ const SalesFilter = ({
     { value: 11, name: "November" },
     { value: 12, name: "December" },
   ];
-  const handleSearchTermChange = (event) => {
-    setSearchTerm(event.target.value);
-  };
+ 
 
   const validatedYear = () => {
     if (!selectedMonth && selectedYear) {
@@ -60,7 +57,8 @@ const SalesFilter = ({
     }
     setYearList(dataYear);
   };
-
+  
+  
   useEffect(() => {
     yearListDefault();
   }, []);
@@ -74,7 +72,7 @@ const SalesFilter = ({
   };
 
   const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value);
+    setSelectedType(event.target.value);
   };
   const handleMonth = (event) => {
     setSelectedMonth(event.target.value);
@@ -85,11 +83,12 @@ const SalesFilter = ({
 
   const handleFilterClick = () => {
     const filters = {
-      searchTerm,
+     
       selectedYear,
       selectedMonth,
       warehouseFilter: selectedWarehouse,
-      categoryFilter: selectedCategory,
+      selectedType
+      
     };
 
     handleFilter(filters);
@@ -98,13 +97,7 @@ const SalesFilter = ({
   return (
     <Box p={4} boxShadow="base" borderRadius="md">
       <Stack spacing={4}>
-        <InputGroup>
-          <Input
-            placeholder="Search"
-            onChange={handleSearchTermChange}
-            value={searchTerm}
-          />
-        </InputGroup>
+        
         <Select placeholder="Year" onChange={handleYear}>
           {yearList.map((year) => (
             <option key={year} value={year}>
@@ -139,10 +132,10 @@ const SalesFilter = ({
           </Select>
         </FormControl>
         <FormControl>
-          <Select placeholder="Category" onChange={handleCategoryChange}>
-            {categories?.map((category) => (
-              <option key={category.id_category} value={category.id_category}>
-                {category.category}
+          <Select placeholder="All-type" onChange={handleCategoryChange} >
+            {type?.map((type) => (
+              <option key={type.type} value={type.type}>
+                {type.description}
               </option>
             ))}
           </Select>
@@ -159,4 +152,4 @@ const SalesFilter = ({
   );
 };
 
-export default SalesFilter;
+export default StockFilter;

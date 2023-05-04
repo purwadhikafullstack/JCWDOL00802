@@ -5,11 +5,12 @@ function PaginationOrder({
   currentPage,
   totalPages,
   onPageChange,
-  isFirstPage,
-  isLastPage,
   limit,
   onLimitChange,
 }) {
+
+  const [isLastPage,setIsLastPage]=useState(false)
+  const [isFirstPage,setIsFirtsPage]=useState(false)
   const handlePrevPage = () => {
     if (!isFirstPage) {
       onPageChange(currentPage - 1);
@@ -29,7 +30,14 @@ function PaginationOrder({
   const handleLastPage = () => {
     onPageChange(totalPages);
   };
-
+  useEffect(() => {
+    if(currentPage === 1){
+        setIsFirtsPage(true)
+    }else{setIsFirtsPage(false)}
+  if (currentPage === totalPages){
+    setIsLastPage(true)
+  }else{setIsLastPage(false)}
+  }, [totalPages])
   return (
     <Flex justify="center" align="center" my={6}>
       <Stack direction="row" spacing={4}>

@@ -2,12 +2,9 @@ import {useDispatch, useSelector} from "react-redux"
 import React,{useState,useEffect,componentDidMount} from "react"
 import Axios  from "axios"
 import { API_URL } from "../helper"
-import { Text, NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,Button, ButtonGroup,Link, Box, Flex,Card,Image,IconButton, HStack, Checkbox,Spacer} from "@chakra-ui/react"
+import { Text,Button, ButtonGroup,Link, Box, Flex,Card,Image,IconButton, HStack, Checkbox,Spacer,useToast} from "@chakra-ui/react"
 import { FaTrash } from 'react-icons/fa'
+import { RiShoppingCartLine } from 'react-icons/ri'
 
 import { useNavigate,useParams  } from "react-router-dom"
 
@@ -25,6 +22,8 @@ const Cart = (props) => {
   const [totalBarang,setTotalBarang]= useState(0)
   const [selectedAll,setSelectedAll]= useState(false)
   const navigate = useNavigate()
+  const toast = useToast()
+  
   const getCart = async ()=>{
     
             await Axios.get(`${API_URL}/apis/cart/getcart`,{
@@ -46,18 +45,43 @@ const Cart = (props) => {
 
  
 
-const {status} = useSelector((state) => {
+const {status,role} = useSelector((state) => {
     return {
       
       status: state.userReducer.status,
+      role:state.userReducer.role
     };})
-    
+    const messageAuthorize =()=>{
+      if(!userToken){
+      toast({
+        title: 'Silahkan login dulu',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+        position:"top"
+      })}else if(role & role !== 1){
+        toast({
+          title: 'Admin tidak bisa mengakses ini!',
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+          position:"top"
+        })}
+    }
+  useEffect(() => {
+    if(!userToken){
+      navigate("/login")
+    }else if(role && role !== 1){
+      navigate("/")} else if(status && status == 1){
+        navigate("/")
+      }
+      messageAuthorize()
+  }, [role,userToken,status] )
+
   useEffect(() => {
         getCart()
     }, []);
-  // useEffect(() => {
-  //       unselectAll()
-  //   }, []);
+  
   useEffect(() => {
         getTotalPrice()
     }, [cartData]);
@@ -86,7 +110,11 @@ const selectedChecker =()=>{
 const onDec = async (arg,arg2)=>{
   let id_cart = arg
   if(arg2>1){
-  await Axios.post(`${API_URL}/apis/cart/dec`,{id_cart}).then((response)=> 
+  await Axios.post(`${API_URL}/apis/cart/dec`,{id_cart},{
+    headers: {
+Authorization: `Bearer ${userToken}`,
+},
+  }).then((response)=> 
   {getCart()
   }).catch((error)=>{console.log(error)})
   } else if (arg2 =1){
@@ -96,7 +124,11 @@ const onDec = async (arg,arg2)=>{
 const onInc = async (id_cart,total_item,stock)=>{
   if (total_item < stock){
   
-await Axios.post(`${API_URL}/apis/cart/inc`,{id_cart}).then((response)=> 
+await Axios.post(`${API_URL}/apis/cart/inc`,{id_cart},{
+  headers: {
+Authorization: `Bearer ${userToken}`,
+}
+}).then((response)=> 
   {getCart()
   }).catch((error)=>{console.log(error)})}
   else if(total_item == stock){
@@ -107,7 +139,10 @@ const delCart= async (arg)=>{
 let text = `apakah anda yakin akan menghapus ini?`
 if (window.confirm(text)){
   
-await Axios.delete(`${API_URL}/apis/cart/delete?id=${arg}`, ).then((response)=> 
+await Axios.delete(`${API_URL}/apis/cart/?id=${arg}`,{
+  headers: {
+Authorization: `Bearer ${userToken}`,
+}} ).then((response)=> 
   {alert(response.data.message)
       getCart()
   }).catch((error)=>{alert(error)})
@@ -156,7 +191,11 @@ const getTotalPrice = ()=>{
 const onSelect = async (id_cart, checked) => {
   
   try {
-    let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: checked ? '1' : '0', id_cart });
+    let selector = await Axios.post(API_URL + `/apis/cart/updatecart`, { selected: checked ? '1' : '0', id_cart },{
+      headers: {
+  Authorization: `Bearer ${userToken}`,
+  },
+    });
     getCart();
     
   } catch (error) {
@@ -260,6 +299,37 @@ const handleBuyClick = () => {
             <strong>Keranjang</strong>
           </h1>
           <div>
+          {cartData.length == 0 &&
+          <div>
+               <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      height="100vh"
+    >
+      <RiShoppingCartLine size={64} color="#c3c7d1" />
+      <Text
+        fontSize="lg"
+        fontWeight="medium"
+        color="#424749"
+        marginTop={4}
+        textAlign="center"
+      >
+        Kamu belum ada barang yang dikeranjang nih
+      </Text>
+      <Button
+        onClick={()=>{navigate("/product")}}
+        variant="outline"
+        colorScheme="orange"
+        marginTop={4}
+        leftIcon={<RiShoppingCartLine />}
+      >
+        Check Product
+      </Button>
+    </Box>
+          </div>
+          }
           {cartData.length > 0 &&
           <Checkbox
           mt={4}
