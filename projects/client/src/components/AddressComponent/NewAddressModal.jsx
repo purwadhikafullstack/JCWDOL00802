@@ -108,7 +108,7 @@ const NewAddressModal = (props) => {
         province: selectedCity?.province,
         postal_code: selectedCity?.postal_code,
         detail_address: detailAddressEdit,
-        recipient_name: recipientNameEdit,
+        receiver: recipientNameEdit,
         phone_number: phoneNumberEdit,
         key_city: selectedCity?.city_id,
         key_province: selectedCity?.province_id,

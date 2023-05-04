@@ -19,5 +19,6 @@ router.use("/rajaongkir", rajaOngkirRouter);
 router.use("/cart", cartRouter);
 router.use("/address", addressRouter);
 router.use("/promo", promoRouter);
+router.use("/dashboard", dashboardRouter);
 
 module.exports = router;

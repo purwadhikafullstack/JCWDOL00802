@@ -1,8 +1,8 @@
 const UserModel = require("../model/user");
 const TransactionModel = require("../model/transaction");
-const { WarehouseModel, associateWarehouseModel } = require("../model/warehouse");
-const { WarehouseAdminModel, associateWarehouseAdminModel } = require("../model/Warehouse_admin");
-const { WarehouseMutationModel, associateWarehouseMutationModel } = require("../model/warehouse_mutation");
+const WarehouseModel = require("../model/warehouse");
+const WarehouseAdminModel = require("../model/Warehouse_admin");
+const WarehouseMutationModel = require("../model/warehouse_mutation");
 const StockModel = require("../model/stock");
 const ProductModel = require("../model/Product");
 const { Sequelize } = require("sequelize");
@@ -169,8 +169,8 @@ module.exports = {
       const pendingRequests = await WarehouseMutationModel.findAll({
         where: { id_warehouse_sender: warehouseAdmin.id_warehouse, status: 2 },
         include: [
-          { model: ProductModel, as: 'product' },
-          { model: WarehouseModel, as: 'warehouseReceiver' },
+          { model: ProductModel, as: 'Product' },
+          { model: WarehouseModel, as: 'receiver' },
         ],
       });
   
