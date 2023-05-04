@@ -4,12 +4,30 @@ import { Link } from "react-router-dom";
 import Axios from "axios";
 import { API_URL } from "../helper";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Landing = (props) => {
+  const navigate = useNavigate();
+
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(0);
   const [dataCategory, setDataCategory] = useState(null);
   const [dataPromo, setDataPromo] = useState(null);
+
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
+
+  let getLocalStorage = localStorage.getItem("cnc_login");
+
+  useEffect(() => {
+    if (role == 2 || role == 3) {
+      navigate("/admin");
+    }
+  }, [getLocalStorage]);
 
   const getCategory = async () => {
     try {

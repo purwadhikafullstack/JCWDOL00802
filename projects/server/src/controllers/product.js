@@ -1055,7 +1055,7 @@ module.exports = {
           });
           check.push(search);
         }
-        if (check.id_warehouse == to_id_warehouse) {
+        if (check[0].id_warehouse == to_id_warehouse) {
           //STOK BARANG DI GUDANG SBLH DI HOLD DULU (stok dan stok histori)
           let holdItem = await StockModel.decrement(
             { stock: input },
