@@ -37,6 +37,7 @@ import Dashboard from "./pages/Dashboard";
 import RequestStock from "./pages/RequestStock";
 import NewPromo from "./pages/NewPromo";
 import AdminPromo from "./pages/AdminPromo";
+import EditPromo from "./pages/EditPromo";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -141,6 +142,7 @@ function App() {
               <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
               <Route path="/admin/newpromo" element={<NewPromo />} />
               <Route path="/admin/promo" element={<AdminPromo />} />
+              <Route path="/admin/editpromo" element={<EditPromo />} />
             </>
           )}
           <Route path="*" element={<NotFound />} />
