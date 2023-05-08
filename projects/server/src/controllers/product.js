@@ -12,7 +12,7 @@ const StockHistoryModel = require("../model/stock_history");
 const StockHistoryTypeModel = require("../model/stock_history_type");
 const { WarehouseMutationModel } = require("../model");
 const WarehouseMutationStatusModel = require("../model/warehouse_mutation_status");
-
+const format = require("date-fns");
 module.exports = {
   getProductSales: async (req, res) => {
     try {
@@ -700,6 +700,7 @@ module.exports = {
       let defaultYear = new Date().getFullYear();
       let startDate = new Date(`${defaultYear}-${defaultBulan + 1}-01`);
       let endDate = new Date();
+      endDate.setDate(endDate.getDate() + 1);
       if (
         year !== "" &&
         typeof year !== "undefined" &&
@@ -769,6 +770,8 @@ module.exports = {
   getStockHistory: async (req, res) => {
     try {
       let warehouse = req.body.warehouse;
+      let role = req.decript.role;
+      let id_user = req.decript.id_user;
       let order = req.body.order;
       let category = req.body.category;
       let search = req.body.search;
@@ -784,6 +787,7 @@ module.exports = {
       let defaultYear = new Date().getFullYear();
       let startDate = new Date(`${defaultYear}-${defaultBulan + 1}-01`);
       let endDate = new Date();
+      endDate.setDate(endDate.getDate() + 1);
       if (
         year !== "" &&
         typeof year !== "undefined" &&
@@ -793,6 +797,7 @@ module.exports = {
         let bulan = parseInt(month);
         let tahun = parseInt(year);
         startDate = new Date(`${tahun}-${bulan}-01`);
+
         endDate =
           bulan < 12
             ? new Date(`${tahun}-${bulan + 1}-01`)
@@ -811,7 +816,24 @@ module.exports = {
       if (category !== "" && typeof category !== "undefined") {
         filterCategory.id_category = category;
       }
-
+      let filterStock = {
+        date: {
+          [sequelize.Op.and]: {
+            [sequelize.Op.gte]: startDate,
+            [sequelize.Op.lt]: endDate,
+          },
+        },
+      };
+      if (warehouse !== "" && typeof warehouse !== "undefined") {
+        filterStock.id_warehouse = warehouse;
+      }
+      if (role == 2) {
+        let find = await WarehouseAdminModel.findAll({
+          where: { id_user },
+        });
+        warehouse = find[0].dataValues.id_warehouse;
+        filterStock.id_warehouse = warehouse;
+      }
       let productData = await ProductModel.findAndCountAll({
         where: filterProduct,
 
@@ -819,23 +841,32 @@ module.exports = {
         order: [orderFilter],
         page,
         offset,
-        raw: true,
+        distinct: true,
+        col: "id_product",
         include: [
           {
             model: CategoryProductModel,
             where: filterCategory,
             attributes: [],
           },
+          {
+            model: StockHistoryModel,
+            as: "stockprod",
+            where: filterStock,
+            attributes: [],
+          },
         ],
       });
+
       ///get total item sama total page
       const total_item = productData.count;
       const total_page = Math.ceil(total_item / limit);
       for (let i = 0; i < productData.rows.length; i++) {
         let tempt = {};
-        tempt.id_product = productData.rows[i].id_product;
-        tempt.name = productData.rows[i].name;
-        id_product = productData.rows[i].id_product;
+        tempt.id_product = productData.rows[i].dataValues.id_product;
+        tempt.name = productData.rows[i].dataValues.name;
+        id_product = productData.rows[i].dataValues.id_product;
+
         let filterhistory = {
           date: {
             [sequelize.Op.and]: {
@@ -866,6 +897,15 @@ module.exports = {
           type: { [sequelize.Op.or]: [1, 3, 6, 7] },
         };
         if (warehouse !== "" && typeof warehouse !== "undefined") {
+          filterhistory.id_warehouse = warehouse;
+          filterplus.id_warehouse = warehouse;
+          filterminus.id_warehouse = warehouse;
+        }
+        if (role == 2) {
+          let find = await WarehouseAdminModel.findAll({
+            where: { id_user },
+          });
+          let warehouse = find[0].dataValues.id_warehouse;
           filterhistory.id_warehouse = warehouse;
           filterplus.id_warehouse = warehouse;
           filterminus.id_warehouse = warehouse;

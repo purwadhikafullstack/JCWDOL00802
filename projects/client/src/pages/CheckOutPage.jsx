@@ -27,6 +27,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import AddressModal from "../components/CheckOutComponent/AddressModal";
+import NewAddressModal from "../components/AddressComponent/NewAddressModal";
 
 const CheckOut = (props) => {
   const [cartData, setCartData] = useState(null);
@@ -232,15 +233,6 @@ const CheckOut = (props) => {
     }
   };
 
-  const getClosestWarehouse = async () => {
-    const getData = await Axios.get(`${API_URL}/apis/trans/warehouse`, {
-      headers: {
-        Authorization: `Bearer ${getLocalStorage}`,
-      },
-    }).then((response) => {
-      setSelectedOrigin(response.data.key_city);
-    });
-  };
   const getDate = async () => {
     let tanggal = format(new Date(), "yyyy-MM-dd H:m:s");
     let add = selectedAddress.data[0].detail_address;
@@ -306,9 +298,6 @@ const CheckOut = (props) => {
       );
     });
   };
-  const handleChangeCourier = (event) => {
-    setCourier(event.target.value);
-  };
 
   const printService = () => {
     return (
@@ -319,7 +308,7 @@ const CheckOut = (props) => {
         bg="gray"
         rounded="md"
       >
-        <FormControl id="courier">
+        <FormControl id="courier" isDisabled={!selectedAddress}>
           <FormLabel fontWeight="bold">Pilih Kurir</FormLabel>
           <RadioGroup onChange={(e) => setCourier(e.target.value)}>
             <Stack spacing={3}>
@@ -409,9 +398,16 @@ const CheckOut = (props) => {
                     </p>
                   </div>
                 ) : (
-                  <p>No address selected</p>
+                  <Box position="relative">
+            <Box position="absolute" top="20px" right="0">
+              <NewAddressModal
+                
+              />
+            </Box>
+          </Box>
                 )}
               </div>
+              { address?.length > 0 &&
               <button
                 style={{
                   backgroundColor: "#fff",
@@ -425,7 +421,7 @@ const CheckOut = (props) => {
                 onClick={() => setIsModalOpen(true)}
               >
                 Pilih Alamat Lain
-              </button>
+              </button>}
             </div>
             <AddressModal
               addresses={address}

@@ -11,12 +11,12 @@ function SidebarOrder({  onWaitClick }) {
         };
       })
   return (
-    <div className="col-2">
-      <div className="row border border-top-0 border-start-0 border-end-0 border-primary mx-2">
-        <div className="col-1">
+    <div className="container">
+      <div className="border border-top-0 border-start-0 border-end-0 border-primary">
+        <div className="">
           <CgProfile />
         </div>
-        <div className="col-4">{username}</div>
+        <div className="">{username}</div>
       </div>
       <div className="mx-2 mt-2">
         <div className="accordion mt-16px">
@@ -57,7 +57,7 @@ function SidebarOrder({  onWaitClick }) {
                     <strong>Daftar Transaksi</strong>
                   </div>
                 </Link>
-                <div className="" onClick={()=>{onWaitClick(1)}}>
+                <div className="" onClick={onWaitClick}>
                   <strong>Menunggu pembayaran</strong>
                 </div>
               </div>
@@ -99,7 +99,7 @@ function SidebarOrder({  onWaitClick }) {
                     borderColor: "#FFA500",
                   }}
               >
-                <Link href="/cart/">
+                <Link href="/profile/">
                   <div className="">Halaman Profile</div>
                 </Link>
                 <Link href="/wishlist/">
