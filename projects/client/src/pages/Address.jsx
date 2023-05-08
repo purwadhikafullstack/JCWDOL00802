@@ -64,7 +64,6 @@ function Address() {
           Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
         },
       });
-      console.log(`res data ${address.data}`);
       setDataAddress(address.data);
     } catch (error) {
       console.log(error);

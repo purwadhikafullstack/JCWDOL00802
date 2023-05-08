@@ -135,7 +135,6 @@ const Dashboard = () => {
               data.readyToShipmentCount = result.readyToShipmentCount;
               break;
             default:
-              console.log(`Unexpected endpoint key: ${endpoint.key}`);
           }
         }
       }
