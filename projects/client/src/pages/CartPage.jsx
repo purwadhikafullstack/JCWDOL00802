@@ -69,6 +69,15 @@ const {status,role} = useSelector((state) => {
           position:"top"
         })}
     }
+    const toastMessage =(text,status)=>{
+      toast({
+        title: text,
+        status: status,
+        duration: 3000,
+        isClosable: true,
+        position:"top"
+      })
+    }
   useEffect(() => {
     if(!userToken){
       navigate("/login")
@@ -116,7 +125,9 @@ const onDec = async (arg,arg2)=>{
 Authorization: `Bearer ${userToken}`,
 },
   }).then((response)=> 
-  {getCart()
+  {
+    toastMessage(response.data.message,"success")
+    getCart()
   }).catch((error)=>{console.log(error)})
   } else if (arg2 =1){
     delCart(arg)
@@ -130,7 +141,9 @@ await Axios.post(`${API_URL}/apis/cart/inc`,{id_cart},{
 Authorization: `Bearer ${userToken}`,
 }
 }).then((response)=> 
-  {getCart()
+  {
+    toastMessage(response.data.message,"success")
+    getCart()
   }).catch((error)=>{console.log(error)})}
   else if(total_item == stock){
     alert ("sudah max")
@@ -144,7 +157,7 @@ await Axios.delete(`${API_URL}/apis/cart/?id=${arg}`,{
   headers: {
 Authorization: `Bearer ${userToken}`,
 }} ).then((response)=> 
-  {alert(response.data.message)
+  {toastMessage(response.data.message,"warning")
       getCart()
   }).catch((error)=>{alert(error)})
 }}

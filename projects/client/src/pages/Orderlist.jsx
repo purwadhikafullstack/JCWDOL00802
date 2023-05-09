@@ -94,7 +94,7 @@ const OrderPage = (props) => {
           Authorization: `Bearer ${userToken}`,
         },
             })
-           console.log(id);
+           
     toastMessage(change.data.message)
     getOrder()
           }

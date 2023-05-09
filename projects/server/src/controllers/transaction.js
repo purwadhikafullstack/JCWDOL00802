@@ -298,7 +298,7 @@ module.exports = {
       let id_warehouse = 0;
       let date = new Date();
       let checker = [];
-      console.log(id_user);
+
       let cartfind = await CartModel.findAll({
         where: {
           [sequelize.Op.and]: [{ selected: 1 }, { id_user }],
