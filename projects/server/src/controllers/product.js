@@ -12,7 +12,6 @@ const StockHistoryModel = require("../model/stock_history");
 const StockHistoryTypeModel = require("../model/stock_history_type");
 const { WarehouseMutationModel } = require("../model");
 const WarehouseMutationStatusModel = require("../model/warehouse_mutation_status");
-const format = require("date-fns");
 module.exports = {
   getProductSales: async (req, res) => {
     try {
@@ -25,12 +24,14 @@ module.exports = {
       let limit = parseInt(req.query.limit);
       let page = parseInt(req.query.page);
       let offset = page * limit;
+      let defaultBulan = new Date().getMonth();
+      let defaultYear = new Date().getFullYear();
+      let startDate = new Date(
+        `${defaultYear}-${defaultBulan + 1}-01 07:00:00`
+      );
+      let endDate = new Date();
+      endDate.setDate(endDate.getUTCDate() + 1);
 
-      let filterWarehouse = {
-        transaction_status: {
-          [sequelize.Op.eq]: 7,
-        },
-      };
       if (
         year !== "" &&
         typeof year !== "undefined" &&
@@ -39,18 +40,25 @@ module.exports = {
       ) {
         let bulan = parseInt(month);
         let tahun = parseInt(year);
-        let startDate = new Date(`2023-${bulan}-01`);
-        let endDate =
+        startDate = new Date(`2023-${bulan}-01 07:00:00`);
+        endDate =
           bulan < 12
-            ? new Date(`${tahun}-${bulan + 1}-01`)
-            : new Date(`${tahun + 1}-1-01`);
-        filterWarehouse.date = {
+            ? new Date(`${tahun}-${bulan + 1}-01 07:00:00`)
+            : new Date(`${tahun + 1}-1-01 07:00:00`);
+      }
+
+      let filterWarehouse = {
+        transaction_status: {
+          [sequelize.Op.eq]: 7,
+        },
+        date: {
           [sequelize.Op.and]: {
             [sequelize.Op.gte]: startDate,
             [sequelize.Op.lt]: endDate,
           },
-        };
-      }
+        },
+      };
+
       let filterCategory = {};
       let filterName = {};
 
@@ -698,7 +706,9 @@ module.exports = {
 
       let defaultBulan = new Date().getMonth();
       let defaultYear = new Date().getFullYear();
-      let startDate = new Date(`${defaultYear}-${defaultBulan + 1}-01`);
+      let startDate = new Date(
+        `${defaultYear}-${defaultBulan + 1}-01 07:00:00`
+      );
       let endDate = new Date();
       endDate.setDate(endDate.getDate() + 1);
       if (
@@ -709,11 +719,12 @@ module.exports = {
       ) {
         let bulan = parseInt(month);
         let tahun = parseInt(year);
-        startDate = new Date(`${tahun}-${bulan}-01`);
+        startDate = new Date(`${tahun}-${bulan}-01 07:00:00`);
+
         endDate =
           bulan < 12
-            ? new Date(`${tahun}-${bulan + 1}-01`)
-            : new Date(`${tahun + 1}-1-01`);
+            ? new Date(`${tahun}-${bulan + 1}-01 07:00:00`)
+            : new Date(`${tahun + 1}-1-01 07:00:00`);
       }
       let type = req.body.type;
       let filterhistory = {
@@ -785,7 +796,9 @@ module.exports = {
 
       let defaultBulan = new Date().getMonth();
       let defaultYear = new Date().getFullYear();
-      let startDate = new Date(`${defaultYear}-${defaultBulan + 1}-01`);
+      let startDate = new Date(
+        `${defaultYear}-${defaultBulan + 1}-01 07:00:00`
+      );
       let endDate = new Date();
       endDate.setDate(endDate.getDate() + 1);
       if (
@@ -796,12 +809,12 @@ module.exports = {
       ) {
         let bulan = parseInt(month);
         let tahun = parseInt(year);
-        startDate = new Date(`${tahun}-${bulan}-01`);
+        startDate = new Date(`${tahun}-${bulan}-01 07:00:00`);
 
         endDate =
           bulan < 12
-            ? new Date(`${tahun}-${bulan + 1}-01`)
-            : new Date(`${tahun + 1}-1-01`);
+            ? new Date(`${tahun}-${bulan + 1}-01 07:00:00`)
+            : new Date(`${tahun + 1}-1-01 07:00:00`);
       }
       let filterProduct = {};
       let orderFilter = ["id_product", "asc"];
