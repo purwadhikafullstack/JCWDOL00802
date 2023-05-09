@@ -74,7 +74,7 @@ const CheckOut = (props) => {
 
   const resetPageTitle = () => {
     document.title = "Cnc-ecommerce";
-    unselectAll();
+    // unselectAll();
   };
   let getLocalStorage = localStorage.getItem("cnc_login");
 
@@ -307,6 +307,7 @@ const CheckOut = (props) => {
         borderRadius="4px"
         bg="gray"
         rounded="md"
+        variant= {selectedAddress?"ghost":"outline"}
       >
         <FormControl id="courier" isDisabled={!selectedAddress}>
           <FormLabel fontWeight="bold">Pilih Kurir</FormLabel>
@@ -369,7 +370,7 @@ const CheckOut = (props) => {
                   flex: "1",
                 }}
               >
-                <h2
+                {selectedAddress &&<h2
                   style={{
                     fontSize: "18px",
                     fontWeight: "bold",
@@ -377,7 +378,7 @@ const CheckOut = (props) => {
                   }}
                 >
                   Selected Address
-                </h2>
+                </h2>}
                 {selectedAddress ? (
                   <div
                     style={{
@@ -397,14 +398,15 @@ const CheckOut = (props) => {
                       {selectedAddress.data[0].phone_number}
                     </p>
                   </div>
-                ) : (
-                  <Box position="relative">
-            <Box position="absolute" top="20px" right="0">
+                ) : (<div  className="px-4">
+                  <Box >
+            <Box top="20px" right="0">
               <NewAddressModal
                 
               />
             </Box>
           </Box>
+          </div>
                 )}
               </div>
               { address?.length > 0 &&
@@ -430,9 +432,10 @@ const CheckOut = (props) => {
               onClose={() => setIsModalOpen(false)}
               isOpen={isModalOpen}
             />
-
-            <div className="col-8 py-1">{printData()}</div>
-            <div className="col-4 py-3">{printService()}</div>
+            <div className="col-12 row mx-3 p-3">
+              <div className="col-8 mx-1">{printData()}</div>
+              <div className="col-3 py-2">{printService()}</div>
+            </div>
           </div>
           {/* bagian cost dll */}
           <div className="col-3 mx-2 py-2 rounded-lg border border-gray-200">
