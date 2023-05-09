@@ -129,7 +129,7 @@ const NewProduct = (props) => {
   }, [touched]);
 
   return (
-    <div>
+    <div className="paddingmain">
       <Text fontSize="2xl">Add Product</Text>
       <div className="d-flex">
         <div className="col-6 px-5">

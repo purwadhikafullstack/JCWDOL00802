@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
-import Paging from "../components/Pagination";
+import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
 function AdminCategoryProduct() {
   // AMBIL DATA ROLE UTK DISABLE BUTTON EDIT KALO BUKAN SUPERADMIN
@@ -93,13 +93,6 @@ function AdminCategoryProduct() {
       console.log(error);
     }
   };
-
-  let dataExist = false;
-  if (dataCategory == null) {
-    dataExist = false;
-  } else {
-    dataExist = true;
-  }
 
   //SHOWTAB
 
@@ -281,7 +274,7 @@ function AdminCategoryProduct() {
   //PRINT DATA
 
   const printData = () => {
-    let data = dataExist ? dataCategory : [];
+    let data = dataCategory ? dataCategory : [];
     let num = 0;
     return data.map((val, idx) => {
       num++;
@@ -313,7 +306,7 @@ function AdminCategoryProduct() {
   };
 
   return (
-    <div className="bg-white  w-100 p-2 m-auto ">
+    <div className="paddingmain">
       <div className="col-4">
         <Text fontSize="2xl">Kategori Produk</Text>
       </div>
@@ -376,7 +369,12 @@ function AdminCategoryProduct() {
             className="d-flex my-5"
             style={{ alignItems: "center", justifyContent: "center" }}
           >
-            <Paging first={page} second={lastPage} third={setPage} />
+            <PaginationOrder
+              currentPage={parseInt(page)}
+              totalPages={parseInt(lastPage)}
+              onPageChange={setPage}
+              maxLimit={0}
+            />
             <div
               className="d-flex mx-5"
               style={{ alignItems: "center", justifyContent: "center" }}
@@ -396,7 +394,7 @@ function AdminCategoryProduct() {
         </div>
         <div className="col-6 row">
           {showNew && (
-            <div>
+            <div className="card p-3">
               <Text>Add Kategori</Text>
               <div className="row">
                 <div className="col-6">
@@ -486,7 +484,7 @@ function AdminCategoryProduct() {
           )}
           {/* EDIT */}
           {showEdit && (
-            <div>
+            <div className="card p-3">
               <Text>Detail Kategori</Text>
               <div className="row">
                 <div className="col-6">
@@ -532,7 +530,6 @@ function AdminCategoryProduct() {
                     </ButtonGroup>
                   )}
                 </div>
-
                 <div>
                   <label className="form-label fw-bold text-muted">
                     Gambar Produk

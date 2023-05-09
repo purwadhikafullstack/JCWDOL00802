@@ -16,7 +16,6 @@ const Register = (props) => {
     },
     validationSchema: basicSchema,
   });
-  // const [email, setEmail] = React.useState("");
   const onRegis = () => {
     Axios.post(API_URL + `/apis/user/regis`, {
       email: values.email,
@@ -31,7 +30,7 @@ const Register = (props) => {
   };
 
   return (
-    <div>
+    <div className="paddingmain">
       <div className="container py-5">
         <div className="row bg-white my-5 shadow rounded">
           {/* Gambar sebelah kiri, kalao layar kecil hilang */}

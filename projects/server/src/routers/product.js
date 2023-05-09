@@ -134,4 +134,6 @@ route.post(
   ProductController.acceptedStockMove
 );
 
+route.post("/productlanding", ProductController.productLanding);
+
 module.exports = route;

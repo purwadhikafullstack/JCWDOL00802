@@ -199,7 +199,7 @@ function Address() {
   };
 
   return (
-    <div className="bg-white my-5 w-100 p-5 m-auto shadow">
+    <div className="paddingmain">
       <VStack spacing={6} align="stretch" ml="20%">
         <Flex
           justifyContent="space-between"

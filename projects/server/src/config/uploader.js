@@ -46,9 +46,9 @@ module.exports = {
     return multer({
       storage: storage,
       fileFilter: fileFilter,
-      // limits: {
-      //   fileSize: 1048576,
-      // },
+      limits: {
+        fileSize: 3145728,
+      },
     });
   },
 };

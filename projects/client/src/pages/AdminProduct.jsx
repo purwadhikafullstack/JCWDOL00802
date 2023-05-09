@@ -17,13 +17,13 @@ import {
   Input,
   Select,
 } from "@chakra-ui/react";
-import Paging from "../components/Pagination";
+import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
 function AdminProducts() {
   // STATE
-  const [dataProduct, setDataProduct] = useState(null);
-  const [dataWarehouse, setDataWarehouse] = useState();
-  const [dataCategory, setDataCategory] = useState();
+  const [dataProduct, setDataProduct] = useState([]);
+  const [dataWarehouse, setDataWarehouse] = useState([]);
+  const [dataCategory, setDataCategory] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState("");
   const [search, setSearch] = useState("");
@@ -80,13 +80,6 @@ function AdminProducts() {
       console.log(error);
     }
   };
-
-  let dataProductExist = false;
-  if (dataProduct == null) {
-    dataProductExist = false;
-  } else {
-    dataProductExist = true;
-  }
 
   const [onFilter, setOnFilter] = useState(false);
 
@@ -162,7 +155,7 @@ function AdminProducts() {
   };
 
   const printData = () => {
-    let data = dataProductExist ? dataProduct : [];
+    let data = dataProduct ? dataProduct : [];
     return data.map((val, idx) => {
       let editpage = `/admin/editproduct?id_product=${val.id_product}`;
       return (
@@ -193,7 +186,7 @@ function AdminProducts() {
   };
 
   return (
-    <div className="bg-white w-100 m-auto">
+    <div className="paddingmain">
       <div>
         <Text fontSize="2xl">Daftar Produk</Text>
       </div>
@@ -217,7 +210,12 @@ function AdminProducts() {
             className="d-flex my-5"
             style={{ alignContent: "center", justifyContent: "center" }}
           >
-            <Paging first={page} second={lastPage} third={setPage} />
+            <PaginationOrder
+              currentPage={parseInt(page)}
+              totalPages={parseInt(lastPage)}
+              onPageChange={setPage}
+              maxLimit={0}
+            />
             <div
               className="d-flex mx-5"
               style={{ alignItems: "center", justifyContent: "center" }}
@@ -240,8 +238,7 @@ function AdminProducts() {
           <div className="inputfilter">
             <Select
               onChange={(e) => setSelectedWarehouse(e.target.value)}
-              className="form-control form-control-lg mt-3
-          "
+              className="form-control form-control-lg mt-3"
             >
               {role == 3 && <option value="">all warehouse</option>}
               {printSelectWarehouse()}
@@ -263,8 +260,7 @@ function AdminProducts() {
           <div className="inputfilter">
             <Select
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="form-control form-control-lg mt-3
-          "
+              className="form-control form-control-lg mt-3"
             >
               <option value="">Semua Kategori</option>
               <option value={0}>Kategori Nihil</option>
@@ -274,8 +270,7 @@ function AdminProducts() {
           <div className="inputfilter">
             <Select
               onChange={(e) => setOrder(e.target.value)}
-              className="form-control form-control-lg mt-3
-          "
+              className="form-control form-control-lg mt-3"
             >
               <option value={0}>Urutkan</option>
               <option value={1} selected={order == 1}>

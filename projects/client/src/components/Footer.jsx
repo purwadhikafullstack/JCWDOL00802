@@ -15,7 +15,6 @@ const Footer = (props) => {
             <b>Click N Collect</b>
           </li>
           <li>Tentang Kami</li>
-          <li>Blog</li>
           <li>Mitra</li>
         </ul>
         <ul style={{ listStyleType: "none" }} className="d-none d-md-block">

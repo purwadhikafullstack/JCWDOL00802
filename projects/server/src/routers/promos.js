@@ -31,4 +31,6 @@ route.post(
   PromosController.editPromo
 );
 
+route.get("/getpromolanding", PromosController.getPromoLanding);
+
 module.exports = route;

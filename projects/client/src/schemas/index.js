@@ -34,7 +34,7 @@ export const basicSchema = yup.object().shape({
   phone: yup.number().positive().integer().required("Input Nomor Telepon"),
 
   //PROMO
-  promoCode: yup.string().max(30).required("Masukan promo code"),
+  promoCode: yup.string().min(6).max(30).required("Masukan promo code"),
   promoDescription: yup.string().max(300),
   promoMax: yup.number().positive().required("Masukan jumlah max promo"),
   promoLimit: yup.number().positive().required("Masukan minimal pembelanjaan"),

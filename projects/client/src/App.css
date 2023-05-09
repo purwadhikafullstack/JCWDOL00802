@@ -1,16 +1,49 @@
+.navbar {
+  position: sticky !important;
+  top: 0;
+  z-index: 10;
+  width: 100vw;
+  height: 60px;
+  background-color: #f2f2f2;
+}
+
+.atas {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.navatar {
+  margin-right: 30px;
+}
+
+.navinput {
+  flex: 1;
+}
+
+.dividernav {
+  border-color: rgb(204, 204, 204) !important;
+  opacity: 0.8 !important;
+  height: 40px !important;
+}
+
+.paddingmain {
+  padding: 30px;
+}
 /* SIDEBAR ME */
 .sidebar {
   background: #ffe5b4;
   color: #f96c08;
-  height: auto;
+  height: 100vh;
   transition: all 0.5s;
   font-size: 20px;
+  position: sticky;
+  top: 60px;
 }
 
 .bars {
   display: flex;
   font-size: 25px;
-  margin-left: 50px;
 }
 
 .top-section {
@@ -52,10 +85,10 @@
 }
 main {
   width: 100%;
-  padding: 20px;
 }
 .dropdown {
   transition: all 0.5s;
+  overflow: hidden;
 }
 .dropdowncontent {
   padding-left: 40px;
@@ -111,6 +144,9 @@ select.input-error {
   border-color: rgb(216, 216, 216);
   border-width: 1px;
   color: #353535;
+  /* POSISI */
+  position: sticky;
+  top: 80px;
 }
 
 .inputfilter {
@@ -206,4 +242,103 @@ select.input-error {
 .landingpgg:hover {
   color: #fda566;
   font-size: 25px;
+}
+
+/* LANDING */
+
+.caro-item {
+  width: 100vw;
+}
+
+.caro-img {
+  height: 100%;
+  object-fit: cover;
+}
+
+.categorybar {
+  height: 300px;
+  object-fit: fill;
+}
+
+.cate-item {
+  height: 200px;
+}
+
+.cate-img {
+  height: 100%;
+  object-fit: fill;
+}
+
+.categorycard {
+  height: 200px;
+  object-fit: cover;
+  display: block;
+  background: #ffe5b4;
+}
+
+.catbutton {
+  color: #f96c08 !important;
+}
+
+.promobar {
+  background-image: url("../src/Assets/catstrip.jpg");
+  height: 200px;
+  object-fit: fill;
+}
+
+.promocard {
+  height: 120px;
+  display: block;
+  background: rgba(255, 229, 180, 0.5);
+}
+
+.promo-item {
+  height: 120px;
+}
+
+.promobox {
+  border-radius: 15px;
+  border-width: 2px;
+  border-color: #f96c08;
+  margin-right: 50px;
+  padding: 10px;
+}
+
+.promodetail {
+  padding: 25px;
+}
+
+.productbox {
+  border-radius: 15px;
+  border-width: 2px;
+  border-color: #c0c0c0;
+  margin: 50px;
+  padding: 20px;
+  width: 1200px;
+}
+
+/* MODAL STOCK MUTATION */
+.badgemodal {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+.inputmutasi {
+  border-width: 0px !important;
+}
+
+.dividermutasi {
+  border-color: rgb(70, 70, 70) !important;
+  opacity: 0.2 !important;
+}
+
+.dividervertikal {
+  border-color: rgb(70, 70, 70) !important;
+  opacity: 0.3 !important;
+}
+
+.dividerarea {
+  border-color: rgb(70, 70, 70) !important;
+  opacity: 0.8 !important;
 }

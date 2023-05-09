@@ -7,12 +7,11 @@ function PaginationOrder({
   onPageChange,
   limit,
   onLimitChange,
-  maxLimit
+  maxLimit,
 }) {
-
-  const [isLastPage,setIsLastPage]=useState(false)
-  const [isFirstPage,setIsFirtsPage]=useState(false)
-  const [listLimit,setListLimit]=useState([])
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [isFirstPage, setIsFirtsPage] = useState(false);
+  const [listLimit, setListLimit] = useState([]);
   const handlePrevPage = () => {
     if (!isFirstPage) {
       onPageChange(currentPage - 1);
@@ -33,27 +32,30 @@ function PaginationOrder({
     onPageChange(totalPages);
   };
   useEffect(() => {
-    if(currentPage === 1){
-        setIsFirtsPage(true)
-    }else{setIsFirtsPage(false)}
-  if (currentPage === totalPages || totalPages===0){
-    setIsLastPage(true)
-  }else{setIsLastPage(false)}
-  }, [totalPages])
+    if (currentPage === 1) {
+      setIsFirtsPage(true);
+    } else {
+      setIsFirtsPage(false);
+    }
+    if (currentPage === totalPages || totalPages === 0) {
+      setIsLastPage(true);
+    } else {
+      setIsLastPage(false);
+    }
+  }, [totalPages, currentPage]);
 
   useEffect(() => {
-    if(maxLimit != 0){
-      let tempt =[]
-      for (let index = 0; index <= maxLimit; index+=5) {
-        if (index != 0){
-          tempt.push(index)
+    if (maxLimit != 0) {
+      let tempt = [];
+      for (let index = 0; index <= maxLimit; index += 5) {
+        if (index != 0) {
+          tempt.push(index);
         }
-        
       }
-      setListLimit(tempt)
+      setListLimit(tempt);
     }
-  }, [])
-  
+  }, []);
+
   return (
     <Flex justify="center" align="center" my={6}>
       <Stack direction="row" spacing={4}>
@@ -145,22 +147,25 @@ function PaginationOrder({
           Last
         </Button>
       </Stack>
-      { maxLimit !=0 &&
-      <Flex mx={3}align="center" justify="flex-end" position="relative">
-        <Text mx={2}>Show:</Text>
-        <Select
-          value={limit}
-          onChange={(e) => onLimitChange(Number(e.target.value))}
-          size="sm"
-          w="auto"
-          mx={2}
-        >
-          {listLimit.map(option => (
-    <option key={option} value={option.value}>{option}</option>
-  ))}
-        </Select>
-        <Text mx={2}>entries</Text>
-      </Flex>}
+      {maxLimit != 0 && (
+        <Flex mx={3} align="center" justify="flex-end" position="relative">
+          <Text mx={2}>Show:</Text>
+          <Select
+            value={limit}
+            onChange={(e) => onLimitChange(Number(e.target.value))}
+            size="sm"
+            w="auto"
+            mx={2}
+          >
+            {listLimit.map((option) => (
+              <option key={option} value={option.value}>
+                {option}
+              </option>
+            ))}
+          </Select>
+          <Text mx={2}>entries</Text>
+        </Flex>
+      )}
     </Flex>
   );
 }

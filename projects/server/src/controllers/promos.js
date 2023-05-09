@@ -174,4 +174,31 @@ module.exports = {
       console.log(error);
     }
   },
+  getPromoLanding: async (req, res) => {
+    try {
+      let page = parseInt(req.query.page) - 1;
+      let getData = await PromosModel.findAll({
+        where: { status: 1 },
+        order: [["expire_date", "DESC"]],
+        limit: 1,
+        page,
+        offset: page,
+        raw: true,
+      });
+
+      let data = await PromosModel.findAndCountAll({
+        where: { status: 1 },
+        limit: 1,
+        page,
+        offset: page,
+        order: [["expire_date", "DESC"]],
+        raw: true,
+      });
+      const total_page = Math.ceil(data.count);
+      return res.status(201).send({ data: getData, total_page });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
 };

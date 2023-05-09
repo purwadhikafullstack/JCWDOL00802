@@ -187,10 +187,11 @@ const CheckOut = (props) => {
     }
     if (!getLocalStorage) {
       navigate("/login");
-    } if(status && status == 1){
-      navigate("/")
     }
-  }, [cartData, getLocalStorage,status]);
+    if (status && status == 1) {
+      navigate("/");
+    }
+  }, [cartData, getLocalStorage, status]);
 
   useEffect(() => {
     getCost();
@@ -253,7 +254,7 @@ const CheckOut = (props) => {
         },
       }
     );
-    navigate("/transaction")
+    navigate("/transaction");
   };
 
   const printData = () => {
@@ -307,7 +308,7 @@ const CheckOut = (props) => {
         borderRadius="4px"
         bg="gray"
         rounded="md"
-        variant= {selectedAddress?"ghost":"outline"}
+        variant={selectedAddress ? "ghost" : "outline"}
       >
         <FormControl id="courier" isDisabled={!selectedAddress}>
           <FormLabel fontWeight="bold">Pilih Kurir</FormLabel>
@@ -345,7 +346,7 @@ const CheckOut = (props) => {
   };
 
   return (
-    <div>
+    <div className="paddingmain">
       <div className=" fs-3 mx-5">
         <strong>Checkout</strong>
       </div>
@@ -370,15 +371,17 @@ const CheckOut = (props) => {
                   flex: "1",
                 }}
               >
-                {selectedAddress &&<h2
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "bold",
-                    marginBottom: "10px",
-                  }}
-                >
-                  Selected Address
-                </h2>}
+                {selectedAddress && (
+                  <h2
+                    style={{
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Selected Address
+                  </h2>
+                )}
                 {selectedAddress ? (
                   <div
                     style={{
@@ -398,32 +401,32 @@ const CheckOut = (props) => {
                       {selectedAddress.data[0].phone_number}
                     </p>
                   </div>
-                ) : (<div  className="px-4">
-                  <Box >
-            <Box top="20px" right="0">
-              <NewAddressModal
-                
-              />
-            </Box>
-          </Box>
-          </div>
+                ) : (
+                  <div className="px-4">
+                    <Box>
+                      <Box top="20px" right="0">
+                        <NewAddressModal />
+                      </Box>
+                    </Box>
+                  </div>
                 )}
               </div>
-              { address?.length > 0 &&
-              <button
-                style={{
-                  backgroundColor: "#fff",
-                  color: "orange",
-                  variant: "outline",
-                  padding: "10px 20px",
-                  borderRadius: "8px",
-                  border: "2px solid orange",
-                  borderColor: "f96c08",
-                }}
-                onClick={() => setIsModalOpen(true)}
-              >
-                Pilih Alamat Lain
-              </button>}
+              {address?.length > 0 && (
+                <button
+                  style={{
+                    backgroundColor: "#fff",
+                    color: "orange",
+                    variant: "outline",
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    border: "2px solid orange",
+                    borderColor: "f96c08",
+                  }}
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Pilih Alamat Lain
+                </button>
+              )}
             </div>
             <AddressModal
               addresses={address}

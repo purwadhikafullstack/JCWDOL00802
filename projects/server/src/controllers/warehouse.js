@@ -199,8 +199,7 @@ module.exports = {
       let data = await WarehouseModel.findAll({
         where: {
           [Op.and]: [
-            warehouse_branch_name,
-            { id_warehouse: { [Op.ne]: id_warehouse } },
+            { warehouse_branch_name, id_warehouse: { [Op.ne]: id_warehouse } },
           ],
         },
       });

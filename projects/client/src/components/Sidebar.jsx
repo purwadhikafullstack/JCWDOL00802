@@ -15,7 +15,8 @@ import {
   FaPlus,
   FaFolder,
 } from "react-icons/fa";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link } from "@chakra-ui/react";
+import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Sidebar = (props) => {
@@ -94,7 +95,7 @@ const Sidebar = (props) => {
                 CNC ADMIN
               </h1>
               <div
-                style={{ marginLeft: isOpen ? "50px" : "0px" }}
+                style={{ marginLeft: isOpen ? "100px" : "0px" }}
                 className="bars"
               >
                 <FaBars />
@@ -117,8 +118,8 @@ const Sidebar = (props) => {
             <hr />
             <div className="menu-content">
               <div>
-                <NavLink
-                  to="/admin"
+                <Link
+                  href="/admin"
                   className="link"
                   style={{ display: roleAdmin ? "flex" : "none" }}
                 >
@@ -129,9 +130,9 @@ const Sidebar = (props) => {
                   >
                     Dashboard
                   </div>
-                </NavLink>
-                <NavLink
-                  to="/adminuserlist"
+                </Link>
+                <Link
+                  href="/adminuserlist"
                   className="link"
                   style={{ display: roleSuperAdmin ? "flex" : "none" }}
                 >
@@ -142,7 +143,7 @@ const Sidebar = (props) => {
                   >
                     Manage User
                   </div>
-                </NavLink>
+                </Link>
                 <div style={{ display: roleSuperAdmin ? "block" : "none" }}>
                   <div
                     className={isOpenPromo ? "linkselected" : "link"}
@@ -154,21 +155,27 @@ const Sidebar = (props) => {
                     </div>
                     {!isOpenPromo && (
                       <FaChevronRight
-                        style={{ display: isOpen ? "block" : "none" }}
+                        style={{
+                          display: isOpen ? "block" : "none",
+                          marginLeft: isOpen ? "110px" : "0px",
+                        }}
                       />
                     )}
                     {isOpenPromo && (
                       <FaChevronDown
-                        style={{ display: isOpen ? "block" : "none" }}
+                        style={{
+                          display: isOpen ? "block" : "none",
+                          marginLeft: isOpen ? "110px" : "0px",
+                        }}
                       />
                     )}
                   </div>
                   <div
                     className="dropdown"
-                    style={{ display: isOpenPromo ? "block" : "none" }}
+                    style={{ height: isOpenPromo ? 100 : 0 }}
                   >
-                    <NavLink
-                      to="/admin/newpromo"
+                    <Link
+                      href="/admin/newpromo"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleSuperAdmin ? "flex" : "none" }}
                     >
@@ -179,9 +186,9 @@ const Sidebar = (props) => {
                       >
                         Add Promo
                       </div>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/promo"
+                    </Link>
+                    <Link
+                      href="/admin/promo"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleSuperAdmin ? "flex" : "none" }}
                     >
@@ -192,7 +199,7 @@ const Sidebar = (props) => {
                       >
                         Promo List
                       </div>
-                    </NavLink>
+                    </Link>
                   </div>
                 </div>
                 <div>
@@ -217,10 +224,12 @@ const Sidebar = (props) => {
                   </div>
                   <div
                     className="dropdown"
-                    style={{ display: isOpenProduct ? "block" : "none" }}
+                    style={{
+                      height: isOpenProduct ? (roleSuperAdmin ? 200 : 150) : 0,
+                    }}
                   >
-                    <NavLink
-                      to="/admin/newproduct"
+                    <Link
+                      href="/admin/newproduct"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleSuperAdmin ? "flex" : "none" }}
                     >
@@ -231,9 +240,9 @@ const Sidebar = (props) => {
                       >
                         Add Product
                       </div>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/products"
+                    </Link>
+                    <Link
+                      href="/admin/products"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleAdmin ? "flex" : "none" }}
                     >
@@ -244,9 +253,9 @@ const Sidebar = (props) => {
                       >
                         Product List
                       </div>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/category"
+                    </Link>
+                    <Link
+                      href="/admin/category"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleAdmin ? "flex" : "none" }}
                     >
@@ -257,9 +266,9 @@ const Sidebar = (props) => {
                       >
                         Categories
                       </div>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/requeststock"
+                    </Link>
+                    <Link
+                      href="/admin/requeststock"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleAdmin ? "flex" : "none" }}
                     >
@@ -270,7 +279,7 @@ const Sidebar = (props) => {
                       >
                         Stock Request
                       </div>
-                    </NavLink>
+                    </Link>
                   </div>
                 </div>
                 <div style={{ display: roleSuperAdmin ? "block" : "none" }}>
@@ -284,21 +293,27 @@ const Sidebar = (props) => {
                     </div>
                     {!isOpenWarehouse && (
                       <FaChevronRight
-                        style={{ display: isOpen ? "block" : "none" }}
+                        style={{
+                          display: isOpen ? "block" : "none",
+                          marginLeft: isOpen ? "70px" : "0px",
+                        }}
                       />
                     )}
                     {isOpenWarehouse && (
                       <FaChevronDown
-                        style={{ display: isOpen ? "block" : "none" }}
+                        style={{
+                          display: isOpen ? "block" : "none",
+                          marginLeft: isOpen ? "70px" : "0px",
+                        }}
                       />
                     )}
                   </div>
                   <div
                     className="dropdown"
-                    style={{ display: isOpenWarehouse ? "block" : "none" }}
+                    style={{ height: isOpenWarehouse ? 100 : 0 }}
                   >
-                    <NavLink
-                      to="/admin/newwarehouse"
+                    <Link
+                      href="/admin/newwarehouse"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleSuperAdmin ? "flex" : "none" }}
                     >
@@ -309,9 +324,9 @@ const Sidebar = (props) => {
                       >
                         Add Warehouse
                       </div>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/warehouse"
+                    </Link>
+                    <Link
+                      href="/admin/warehouse"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleSuperAdmin ? "flex" : "none" }}
                     >
@@ -322,7 +337,7 @@ const Sidebar = (props) => {
                       >
                         Warehouse List
                       </div>
-                    </NavLink>
+                    </Link>
                   </div>
                 </div>
                 <div>
@@ -336,21 +351,27 @@ const Sidebar = (props) => {
                     </div>
                     {!isOpenReport && (
                       <FaChevronRight
-                        style={{ display: isOpen ? "block" : "none" }}
+                        style={{
+                          display: isOpen ? "block" : "none",
+                          marginLeft: isOpen ? "110px" : "0px",
+                        }}
                       />
                     )}
                     {isOpenReport && (
                       <FaChevronDown
-                        style={{ display: isOpen ? "block" : "none" }}
+                        style={{
+                          display: isOpen ? "block" : "none",
+                          marginLeft: isOpen ? "110px" : "0px",
+                        }}
                       />
                     )}
                   </div>
                   <div
                     className="dropdown"
-                    style={{ display: isOpenReport ? "block" : "none" }}
+                    style={{ height: isOpenReport ? 100 : 0 }}
                   >
-                    <NavLink
-                      to="/admin/salesreport"
+                    <Link
+                      href="/admin/salesreport"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleAdmin ? "flex" : "none" }}
                     >
@@ -361,9 +382,9 @@ const Sidebar = (props) => {
                       >
                         Sales Report
                       </div>
-                    </NavLink>
-                    <NavLink
-                      to="/admin/stockhistory"
+                    </Link>
+                    <Link
+                      href="/admin/stockhistory"
                       className={isOpen ? "link dropdowncontent" : "link"}
                       style={{ display: roleAdmin ? "flex" : "none" }}
                     >
@@ -374,7 +395,7 @@ const Sidebar = (props) => {
                       >
                         Stock History
                       </div>
-                    </NavLink>
+                    </Link>
                   </div>
                 </div>
               </div>

@@ -99,7 +99,7 @@ const NewUser = (props) => {
   //use callback & use memorize
 
   return (
-    <div id="regispage">
+    <div className="paddingmain">
       <div className="container py-5">
         <div className="row bg-white my-5 shadow rounded">
           <div className="col-12 col-md-8 d-none d-md-block">

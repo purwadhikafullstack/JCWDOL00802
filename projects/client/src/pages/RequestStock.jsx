@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { API_URL } from "../helper";
 import Axios from "axios";
-import { Text, Button, Image, Input, Select } from "@chakra-ui/react";
+import {
+  Text,
+  Button,
+  Image,
+  Input,
+  Select,
+  Badge,
+  Divider,
+} from "@chakra-ui/react";
 import { useEffect } from "react";
 import {
   Card,
@@ -15,7 +23,8 @@ import {
 } from "reactstrap";
 import { useSelector } from "react-redux";
 import { format } from "date-fns";
-import Paging from "../components/Pagination";
+import { NavLink } from "react-router-dom";
+import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
 function RequestStock() {
   const { role } = useSelector((state) => {
@@ -25,21 +34,21 @@ function RequestStock() {
   });
 
   // STATE
-  const [dataReceive, setDataReceive] = useState(null);
+  const [dataReceive, setDataReceive] = useState([]);
   const [searchReceive, setSearchReceive] = useState("");
   const [orderReceive, setOrderReceive] = useState(0);
-  const [dataWarehouseReceive, setDataWarehouseReceive] = useState();
-  const [dataCategoryReceive, setDataCategoryReceive] = useState();
-  const [dataStatusReceive, setDataStatusReceive] = useState();
+  const [dataWarehouseReceive, setDataWarehouseReceive] = useState([]);
+  const [dataCategoryReceive, setDataCategoryReceive] = useState([]);
+  const [dataStatusReceive, setDataStatusReceive] = useState([]);
   const [selectedCategoryReceive, setSelectedCategoryReceive] = useState("");
   const [selectedStatusReceive, setSelectedStatusReceive] = useState("");
   const [selectedWarehouseReceive, setSelectedWarehouseReceive] = useState("");
-  const [dataSend, setDataSend] = useState(null);
+  const [dataSend, setDataSend] = useState([]);
   const [searchSend, setSearchSend] = useState("");
   const [orderSend, setOrderSend] = useState(0);
-  const [dataWarehouseSend, setDataWarehouseSend] = useState();
-  const [dataCategorySend, setDataCategorySend] = useState();
-  const [dataStatusSend, setDataStatusSend] = useState();
+  const [dataWarehouseSend, setDataWarehouseSend] = useState([]);
+  const [dataCategorySend, setDataCategorySend] = useState([]);
+  const [dataStatusSend, setDataStatusSend] = useState([]);
   const [selectedCategorySend, setSelectedCategorySend] = useState("");
   const [selectedStatusSend, setSelectedStatusSend] = useState("");
   const [selectedWarehouseSend, setSelectedWarehouseSend] = useState("");
@@ -99,7 +108,6 @@ function RequestStock() {
         {
           search: searchReceive,
           warehouseReceive: selectedWarehouseReceive,
-          warehouseSend: "",
           category: selectedCategoryReceive,
           order: orderReceive,
           page: parseInt(pageReceive) - 1,
@@ -117,13 +125,6 @@ function RequestStock() {
     }
   };
 
-  let dataReceiveExist = false;
-  if (dataReceive == null) {
-    dataReceiveExist = false;
-  } else {
-    dataReceiveExist = true;
-  }
-
   const getMutationSend = async () => {
     try {
       let getLocalStorage = localStorage.getItem("cnc_login");
@@ -131,7 +132,6 @@ function RequestStock() {
         API_URL + `/apis/product/getmutation`,
         {
           search: searchSend,
-          warehouseReceive: "",
           warehouseSend: selectedWarehouseSend,
           category: selectedCategorySend,
           order: orderSend,
@@ -149,13 +149,6 @@ function RequestStock() {
       console.log(error);
     }
   };
-
-  let dataSendExist = false;
-  if (dataSend == null) {
-    dataSendExist = false;
-  } else {
-    dataSendExist = true;
-  }
 
   //BUTTON FUNCTION
   const modalButton = (val) => {
@@ -330,58 +323,60 @@ function RequestStock() {
 
   //PRINT DATA
   const printDataReceive = () => {
-    let data = dataReceiveExist ? dataReceive : [];
+    let data = dataReceive ? dataReceive : [];
 
     return data.map((val, idx) => {
       let gambar = `${API_URL}/img/product/${val.Product.product_picture}`;
-      let status = " text-light bg-muted";
+      let status = "gray";
       let nama = val.Product.name;
-      if (val.status == 1 || val.status == 2) {
-        status = "text-light bg-primary";
+      if (val.status == 1) {
+        status = "blue";
+      } else if (val.status == 2) {
+        status = "red";
       } else if (val.status == 3 || val.status == 4) {
-        status = "text-light bg-info";
+        status = "purple";
       } else if (val.status == 5) {
-        status = "bg-warning";
+        status = "yellow";
       } else if (val.status == 6) {
-        status = "text-light bg-success";
+        status = "green";
       } else if (val.status == 7 || val.status == 8) {
-        status = "text-light bg-secondary";
+        status = "gray";
       }
       return (
-        <Card
-          className="my-2 mx-2 shadow"
+        <NavLink
+          className="my-2 mx-2 shadow card py-2 px-3"
           color="secondary"
           outline
           style={{
             width: "300px",
+            height: "140px",
           }}
+          onClick={() => modalButton(val)}
         >
-          <CardHeader className={status}>
-            {val.warehouse_mutation_status.description}
-          </CardHeader>
-          <div className=" d-flex" style={{ justifyContent: "center" }}>
-            <Image
-              src={gambar}
-              alt={val.Product.name}
-              maxW={{ sm: "100px" }}
-              className="my-2"
-            />
+          <div className="d-flex ">
+            <div>
+              <Image
+                src={gambar}
+                alt={val.Product.name}
+                maxW={{ sm: "100px" }}
+                className="my-2"
+              />
+            </div>
+            <div className=" mx-2">
+              <div
+                className="d-flex"
+                style={{ alignItems: "center", justifyContent: "center" }}
+              >
+                <CardTitle tag="h5" className=" my-2">
+                  {nama.substring(0, 30)}
+                </CardTitle>
+              </div>
+              <Badge colorScheme={status} className="badgemodal">
+                {val.warehouse_mutation_status.description}
+              </Badge>
+            </div>
           </div>
-          <CardTitle tag="h5" className="mx-2 my-2">
-            {nama.substring(0, 30)}
-          </CardTitle>
-          <Button
-            className="my-2 mx-2"
-            type="button"
-            width="10"
-            colorScheme="orange"
-            variant="solid"
-            size="xs"
-            onClick={() => modalButton(val)}
-          >
-            Detail
-          </Button>
-        </Card>
+        </NavLink>
       );
     });
   };
@@ -465,7 +460,6 @@ function RequestStock() {
       });
     }
   };
-
   const printStatusSend = () => {
     let data = dataStatusSend;
     if (dataStatusSend) {
@@ -482,58 +476,60 @@ function RequestStock() {
     }
   };
   const printDataSend = () => {
-    let data = dataSendExist ? dataSend : [];
+    let data = dataSend ? dataSend : [];
 
     return data.map((val, idx) => {
       let gambar = `${API_URL}/img/product/${val.Product.product_picture}`;
-      let status = " text-light bg-muted";
+      let status = "gray";
       let nama = val.Product.name;
-      if (val.status == 1 || val.status == 2) {
-        status = "text-light bg-primary";
+      if (val.status == 1) {
+        status = "blue";
+      } else if (val.status == 2) {
+        status = "red";
       } else if (val.status == 3 || val.status == 4) {
-        status = "text-light bg-info";
+        status = "purple";
       } else if (val.status == 5) {
-        status = "bg-warning";
+        status = "yellow";
       } else if (val.status == 6) {
-        status = "text-light bg-success";
+        status = "green";
       } else if (val.status == 7 || val.status == 8) {
-        status = "text-light bg-secondary";
+        status = "gray";
       }
       return (
-        <Card
-          className="my-2 mx-2 shadow"
+        <NavLink
+          className="my-2 mx-2 shadow card py-2 px-3"
           color="secondary"
           outline
           style={{
             width: "300px",
+            height: "140px",
           }}
+          onClick={() => modalButton(val)}
         >
-          <CardHeader className={status}>
-            {val.warehouse_mutation_status.description}
-          </CardHeader>
-          <div className=" d-flex" style={{ justifyContent: "center" }}>
-            <Image
-              src={gambar}
-              alt={val.Product.name}
-              maxW={{ sm: "100px" }}
-              className="my-2"
-            />
+          <div className="d-flex ">
+            <div>
+              <Image
+                src={gambar}
+                alt={val.Product.name}
+                maxW={{ sm: "100px" }}
+                className="my-2"
+              />
+            </div>
+            <div className=" mx-2">
+              <div
+                className="d-flex"
+                style={{ alignItems: "center", justifyContent: "center" }}
+              >
+                <CardTitle tag="h5" className=" my-2">
+                  {nama.substring(0, 30)}
+                </CardTitle>
+              </div>
+              <Badge colorScheme={status} className="badgemodal">
+                {val.warehouse_mutation_status.description}
+              </Badge>
+            </div>
           </div>
-          <CardTitle tag="h5" className="mx-2 my-2">
-            {nama.substring(0, 30)}
-          </CardTitle>
-          <Button
-            className="my-2 mx-2"
-            type="button"
-            width="10"
-            colorScheme="orange"
-            variant="solid"
-            size="xs"
-            onClick={() => modalButton(val)}
-          >
-            Detail
-          </Button>
-        </Card>
+        </NavLink>
       );
     });
   };
@@ -623,7 +619,7 @@ function RequestStock() {
               <ButtonGroup>
                 <Button
                   colorScheme="yellow"
-                  className="mx-2"
+                  className="my-2"
                   onClick={() => onSend()}
                 >
                   Kirim
@@ -651,147 +647,154 @@ function RequestStock() {
   };
 
   return (
-    <div className="bg-white w-100 m-auto ">
+    <div className="paddingmain">
       <div>
-        <Text fontSize="2xl">Request Stock</Text>
-      </div>
-      <br />
-      <hr />
-      <div className="d-flex my-2"></div>
-      <div>
-        <Text fontSize="2xl">Barang Keluar</Text>
-        <div className="my-2 d-flex">
-          <div className="col-2">
+        <Text fontSize="2xl" className="mb-2">
+          Stok Keluar
+        </Text>
+        <hr className="dividervertikal" />
+        <div className="my-2 d-flex" style={{ height: "40px" }}>
+          <div className="col-2 mx-2">
             <Input
               type="text"
-              className="form-control p-3"
               placeholder="search"
               value={searchSend}
               onChange={(e) => setSearchSend(e.target.value)}
             />
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setSelectedWarehouseSend(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               {role == 3 && <option value="">all warehouse</option>}
               {printSelectWarehouseSend()}
             </Select>
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setSelectedCategorySend(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               <option value="">all category</option>
               <option value={0}>No Category</option>
               {printCategorySend()}
             </Select>
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setOrderSend(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               <option value={0}>Paling Sesuai </option>
               <option value={1}>Tanggal Ascending</option>
               <option value={2}>Tanggal Descending</option>
             </Select>
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setSelectedStatusSend(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               <option value="">All Status</option>
               {printStatusSend()}
             </Select>
           </div>
         </div>
+        <hr className="dividervertikal" />
         <div className="my-2  d-flex">{printDataSend()}</div>
         <div
           className="d-flex"
           style={{ alignItems: "center", justifyContent: "center" }}
         >
-          <Paging first={pageSend} second={lastPageSend} third={setPageSend} />
+          <PaginationOrder
+            currentPage={parseInt(pageSend)}
+            totalPages={parseInt(lastPageSend)}
+            onPageChange={setPageSend}
+            maxLimit={0}
+          />
         </div>
+        <br />
       </div>
-      <hr />
+      <hr className="dividerarea" />
       <br />
       <div>
-        <Text fontSize="2xl">Barang Masuk</Text>
-        <div className="my-2  d-flex">
-          <div className="col-2">
+        <Text fontSize="2xl" className="mb-2">
+          Stok Masuk
+        </Text>
+        <hr className="dividervertikal" />
+        <div className="my-2 d-flex" style={{ height: "40px" }}>
+          <div className="col-2 mx-2">
             <Input
               type="text"
-              className="form-control p-3"
               placeholder="search"
               value={searchReceive}
               onChange={(e) => setSearchReceive(e.target.value)}
             />
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setSelectedWarehouseReceive(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               {role == 3 && <option value="">all warehouse</option>}
               {printSelectWarehouseReceive()}
             </Select>
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setSelectedCategoryReceive(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               <option value="">all category</option>
               <option value={0}>No Category</option>
               {printCategoryReceive()}
             </Select>
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setOrderReceive(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               <option value={0}>Paling Sesuai </option>
               <option value={1}>Tanggal Ascending</option>
               <option value={2}>Tanggal Descending</option>
             </Select>
           </div>
-          <div className="col-2">
+          <Divider orientation="vertical" className="dividermutasi" />
+          <div className="col-2 mx-2">
             <Select
               onChange={(e) => setSelectedStatusReceive(e.target.value)}
-              className="form-control form-control-lg 
-          "
+              className="inputmutasi"
             >
               <option value="">All Status</option>
               {printStatusReceive()}
             </Select>
           </div>
         </div>
+        <hr className="dividervertikal" />
         <div className="my-2  d-flex">{printDataReceive()}</div>
         <div
           className="d-flex"
           style={{ alignItems: "center", justifyContent: "center" }}
         >
-          {/* {printPaginationReceive()} */}
-          <Paging
-            first={pageReceive}
-            second={lastPageReceive}
-            third={setPageReceive}
+          <PaginationOrder
+            currentPage={parseInt(pageReceive)}
+            totalPages={parseInt(lastPageReceive)}
+            onPageChange={setPageReceive}
+            maxLimit={0}
           />
         </div>
+        <br />
       </div>
-      {/*  */}
+      {/* MODAL */}
       <div>{printModal()}</div>
     </div>
   );
