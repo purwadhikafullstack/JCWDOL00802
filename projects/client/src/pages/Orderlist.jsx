@@ -123,14 +123,14 @@ const OrderPage = (props) => {
     if(!userToken){
     toast({
       title: 'Silahkan login dulu',
-      status: 'warning',
+      status: 'error',
       duration: 3000,
       isClosable: true,
       position:"top"
     })}else if(role && role !== 1){
       toast({
         title: 'Admin tidak bisa mengakses ini!',
-        status: 'warning',
+        status: 'error',
         duration: 3000,
         isClosable: true,
         position:"top"
@@ -184,6 +184,11 @@ const OrderPage = (props) => {
     setPage(1)
     setStatus(status)
   }
+  const handleWaiting = (e)=>{
+    setPage(1)
+    setStatus("waiting")
+    
+  }
   
   
   const PrintOrder = () => {
@@ -192,7 +197,7 @@ const OrderPage = (props) => {
       return data.map((val, idx) => {
         let gambar = `${API_URL}/img/product/${val.Transaction_Details[0].Product.product_picture}`;
         return (
-          <div className="" key={val.id_transaction}>
+          <div className="shadow p-3 mb-5 bg-body-tertiary rounded" key={val.id_transaction}>
             <div className="row">
               <div className="col-1 fs-6 pe-1">
                 <strong>Belanja</strong>
@@ -248,10 +253,8 @@ const OrderPage = (props) => {
                         {(val.total_price + val.shipment_fee).toLocaleString()}
                       </Text>
                       <Spacer />
+                      <div className="position-absolute  end-0">
                       <Button
-                        position="absolute"
-                        right = "20"
-                        bottom="5"
                         variant="solid"
                         colorScheme="orange"
                         mx="1"
@@ -263,14 +266,14 @@ const OrderPage = (props) => {
                         check detail
                       </Button>
                       {val.transaction_status == 1 && (
-                        <div >
+                          <>
                           <Button variant="solid" colorScheme="orange" mx="1"onClick={()=>changeStatus(val.id_transaction,9)}>
                             cancel
                           </Button>
                           <Button variant="solid" mx="1" colorScheme="orange">
                             upload bukti
                           </Button>
-                        </div>
+                        </>
                       )}
                       {val.transaction_status == 8 && (
                         <Button variant="solid" mx="1" colorScheme="orange">
@@ -278,15 +281,15 @@ const OrderPage = (props) => {
                         </Button>
                       )}
                       {val.transaction_status == 6 && (
-                        <div>
+                        <>
                           <Button variant="solid" mx="1" colorScheme="orange"onClick={()=>changeStatus(val.id_transaction,7)}>
                             terima pesanan
                           </Button>
                           <Button variant="solid" mx="1" colorScheme="orange"onClick={()=>changeStatus(val.id_transaction,8)}>
                             ajukan komplain
                           </Button>
-                        </div>
-                      )}
+                        </>
+                      )}</div>
                     </CardFooter>
                   </Stack>
                 </Card>
@@ -299,12 +302,16 @@ const OrderPage = (props) => {
   };
 
   return (
-    <div className="container-fluid pt-3 ">
+    <div className="container-fluid pt-3 px-3 ">
       <div className="row">
         {/* side bar kiri */}
-        <SidebarOrder onWaitClick={handleStatus} />
+        
+        <div className="col-3 row">
+          <div className=" col-3 position-fixed start-2">
+      <SidebarOrder onWaitClick={handleWaiting} /></div>
+    </div>
         {/* side tengah */}
-        <div className="col-8  mx-1 pb-2">
+        <div className="col-8  position-relative mx-2 pb-2 start-2">
           <h1 className="ms-2 mt-2 fs-2">
             <strong>Daftar Transaksi</strong>
           </h1>
@@ -319,7 +326,7 @@ const OrderPage = (props) => {
             )}
           </div>
           
-          <PaginationOrder pageNumbers={pageNumber} currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} isLastPage={isLastPage} isFirstPage={isFirstPage} onLimitChange={handleLimit}/>
+          <PaginationOrder  currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} maxLimit={30} onLimitChange={handleLimit}/>
         </div>
 
         {/* side kanan*/}

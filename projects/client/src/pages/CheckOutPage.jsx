@@ -27,6 +27,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import AddressModal from "../components/CheckOutComponent/AddressModal";
+import NewAddressModal from "../components/AddressComponent/NewAddressModal";
 
 const CheckOut = (props) => {
   const [cartData, setCartData] = useState(null);
@@ -73,7 +74,7 @@ const CheckOut = (props) => {
 
   const resetPageTitle = () => {
     document.title = "Cnc-ecommerce";
-    unselectAll();
+    // unselectAll();
   };
   let getLocalStorage = localStorage.getItem("cnc_login");
 
@@ -232,15 +233,6 @@ const CheckOut = (props) => {
     }
   };
 
-  const getClosestWarehouse = async () => {
-    const getData = await Axios.get(`${API_URL}/apis/trans/warehouse`, {
-      headers: {
-        Authorization: `Bearer ${getLocalStorage}`,
-      },
-    }).then((response) => {
-      setSelectedOrigin(response.data.key_city);
-    });
-  };
   const getDate = async () => {
     let tanggal = format(new Date(), "yyyy-MM-dd H:m:s");
     let add = selectedAddress.data[0].detail_address;
@@ -306,9 +298,6 @@ const CheckOut = (props) => {
       );
     });
   };
-  const handleChangeCourier = (event) => {
-    setCourier(event.target.value);
-  };
 
   const printService = () => {
     return (
@@ -318,8 +307,9 @@ const CheckOut = (props) => {
         borderRadius="4px"
         bg="gray"
         rounded="md"
+        variant= {selectedAddress?"ghost":"outline"}
       >
-        <FormControl id="courier">
+        <FormControl id="courier" isDisabled={!selectedAddress}>
           <FormLabel fontWeight="bold">Pilih Kurir</FormLabel>
           <RadioGroup onChange={(e) => setCourier(e.target.value)}>
             <Stack spacing={3}>
@@ -380,7 +370,7 @@ const CheckOut = (props) => {
                   flex: "1",
                 }}
               >
-                <h2
+                {selectedAddress &&<h2
                   style={{
                     fontSize: "18px",
                     fontWeight: "bold",
@@ -388,7 +378,7 @@ const CheckOut = (props) => {
                   }}
                 >
                   Selected Address
-                </h2>
+                </h2>}
                 {selectedAddress ? (
                   <div
                     style={{
@@ -408,10 +398,18 @@ const CheckOut = (props) => {
                       {selectedAddress.data[0].phone_number}
                     </p>
                   </div>
-                ) : (
-                  <p>No address selected</p>
+                ) : (<div  className="px-4">
+                  <Box >
+            <Box top="20px" right="0">
+              <NewAddressModal
+                
+              />
+            </Box>
+          </Box>
+          </div>
                 )}
               </div>
+              { address?.length > 0 &&
               <button
                 style={{
                   backgroundColor: "#fff",
@@ -425,7 +423,7 @@ const CheckOut = (props) => {
                 onClick={() => setIsModalOpen(true)}
               >
                 Pilih Alamat Lain
-              </button>
+              </button>}
             </div>
             <AddressModal
               addresses={address}
@@ -434,9 +432,10 @@ const CheckOut = (props) => {
               onClose={() => setIsModalOpen(false)}
               isOpen={isModalOpen}
             />
-
-            <div className="col-8 py-1">{printData()}</div>
-            <div className="col-4 py-3">{printService()}</div>
+            <div className="col-12 row mx-3 p-3">
+              <div className="col-8 mx-1">{printData()}</div>
+              <div className="col-3 py-2">{printService()}</div>
+            </div>
           </div>
           {/* bagian cost dll */}
           <div className="col-3 mx-2 py-2 rounded-lg border border-gray-200">

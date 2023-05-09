@@ -77,11 +77,10 @@ module.exports = {
           });
         }
         let usercheck = await TransactionModel.findOne({
-          id_transaction: req.query.id,
+          where: { id_transaction: req.query.id },
         });
         req.decript = decript;
-        console.log(decript.id_user);
-        console.log(usercheck.id_user);
+
         if (usercheck.id_user == decript.id_user) {
           next();
         } else if (usercheck.id_user !== decript.id_user) {
@@ -105,7 +104,7 @@ module.exports = {
           });
         }
         let usercheck = await CartModel.findOne({
-          id_cart: req.body.id_cart,
+          where: { id_cart: req.body.id_cart },
         });
         req.decript = decript;
         if (usercheck.id_user == decript.id_user) {
@@ -131,7 +130,7 @@ module.exports = {
           });
         }
         let usercheck = await CartModel.findOne({
-          id_cart: req.query.id,
+          where: { id_cart: req.query.id },
         });
         req.decript = decript;
         if (usercheck.id_user == decript.id_user) {

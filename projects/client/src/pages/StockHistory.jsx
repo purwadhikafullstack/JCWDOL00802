@@ -148,15 +148,9 @@ function StockHistory() {
     setSelectedWarehouse(value.warehouseFilter)
     setTahun(value.selectedYear)
     setBulan(value.selectedMonth)
+    setPage(1)
   }  
-  useEffect(() => {
-    if(page === 1){
-        setIsFirtsPage(true)
-    }else{setIsFirtsPage(false)}
-  if (page === totalPage){
-    setIsLastPage(true)
-  }else{setIsLastPage(false)}
-  }, [salesData])
+ 
   return (
     <div className="container row my-4">
         <div className ="col-8 mx-1">
@@ -164,7 +158,7 @@ function StockHistory() {
           <StockHistoryTable data={salesData}/>
           </div>
           <div>
-          <PaginationOrder  currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} isLastPage={isLastPage} isFirstPage={isFirstPage} onLimitChange={handleLimit}/>
+          <PaginationOrder  currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} onLimitChange={handleLimit} maxLimit={15}/>
           </div>
         </div>
         <div className="col-3 my-3 ">

@@ -2,6 +2,7 @@ const express = require("express");
 const route = express.Router();
 const { ProductController, authorizeController } = require("../controllers");
 const { uploader } = require("../config/uploader");
+const { authAdmin } = require("../controllers/authorize");
 
 //ROUTE
 
@@ -45,7 +46,7 @@ route.post(
   authorizeController.authSuperAdmin,
   ProductController.deleteProducts
 );
-route.post("/stockhistory", ProductController.getStockHistory);
+route.post("/stockhistory", authAdmin, ProductController.getStockHistory);
 route.post(
   "/stockhistorydetail",
   authorizeController.authAdmin,

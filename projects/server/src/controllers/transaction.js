@@ -55,6 +55,8 @@ module.exports = {
           filterTransaction.transaction_status = {
             [sequelize.Op.or]: [1, 2, 3, 4, 5, 6],
           };
+        } else if (status == "waiting") {
+          filterTransaction.transaction_status = 1;
         } else {
           filterTransaction.transaction_status = status;
         }
@@ -296,6 +298,7 @@ module.exports = {
       let id_warehouse = 0;
       let date = new Date();
       let checker = [];
+
       let cartfind = await CartModel.findAll({
         where: {
           [sequelize.Op.and]: [{ selected: 1 }, { id_user }],

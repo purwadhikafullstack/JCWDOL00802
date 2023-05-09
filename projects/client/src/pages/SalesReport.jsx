@@ -106,8 +106,7 @@ function ReportSales() {
 
   const handleApplyFilter = (value)=>{
     setSelectedCategory(value.categoryFilter)
-    setSelectedWarehouse(value.warehouseFilter)
-    
+    setSelectedWarehouse(value.warehouseFilter) 
     setTahun(value.selectedYear)
     setBulan(value.selectedMonth)
     setSearch(value.searchTerm)
@@ -129,7 +128,7 @@ function ReportSales() {
       <div className="col-9 my-4">
         <div className="my-3"><ReportSalesTop pendapatan={pendapatan} total_barang={penjualan} total_pesanan={pesanan} /></div>
         <TableSalesReport data={salesData} />
-        <div className="my-3"><PaginationOrder currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} isLastPage={isLastPage} isFirstPage={isFirstPage} onLimitChange={handleLimit}/></div>
+        <div className="my-3"><PaginationOrder currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} maxLimit={15} onLimitChange={handleLimit}/></div>
       </div>
       <div className="col-3"><SalesFilter warehouses={dataWarehouse} categories={dataCategory} handleFilter={handleApplyFilter}/></div>
     </div>

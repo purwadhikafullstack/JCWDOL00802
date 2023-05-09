@@ -106,7 +106,7 @@ module.exports = {
       );
       return res.status(200).send({
         success: true,
-        message: "added to total",
+        message: "berhasil menambahkan jumlah barang",
       });
     } catch (error) {
       console.log(error.message);
@@ -123,7 +123,7 @@ module.exports = {
       );
       return res.status(200).send({
         success: true,
-        message: "deducted from total",
+        message: "berhasil mengurangi jumlah barang",
       });
     } catch (error) {
       console.log(error.message);
@@ -141,7 +141,7 @@ module.exports = {
       });
       return res.status(200).send({
         success: true,
-        message: "Purge To Shadow Realm",
+        message: "berhasil menghapus keranjang",
       });
     } catch (error) {
       return res.status(401).send({

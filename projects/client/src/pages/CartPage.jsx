@@ -7,6 +7,7 @@ import { FaTrash } from 'react-icons/fa'
 import { RiShoppingCartLine } from 'react-icons/ri'
 
 import { useNavigate,useParams  } from "react-router-dom"
+import WishlistItem from "../components/cartComponent/Wishlist"
 
 
 
@@ -62,11 +63,20 @@ const {status,role} = useSelector((state) => {
       })}else if(role & role !== 1){
         toast({
           title: 'Admin tidak bisa mengakses ini!',
-          status: 'warning',
+          status: 'error',
           duration: 3000,
           isClosable: true,
           position:"top"
         })}
+    }
+    const toastMessage =(text,status)=>{
+      toast({
+        title: text,
+        status: status,
+        duration: 3000,
+        isClosable: true,
+        position:"top"
+      })
     }
   useEffect(() => {
     if(!userToken){
@@ -115,7 +125,9 @@ const onDec = async (arg,arg2)=>{
 Authorization: `Bearer ${userToken}`,
 },
   }).then((response)=> 
-  {getCart()
+  {
+    toastMessage(response.data.message,"success")
+    getCart()
   }).catch((error)=>{console.log(error)})
   } else if (arg2 =1){
     delCart(arg)
@@ -129,7 +141,9 @@ await Axios.post(`${API_URL}/apis/cart/inc`,{id_cart},{
 Authorization: `Bearer ${userToken}`,
 }
 }).then((response)=> 
-  {getCart()
+  {
+    toastMessage(response.data.message,"success")
+    getCart()
   }).catch((error)=>{console.log(error)})}
   else if(total_item == stock){
     alert ("sudah max")
@@ -143,7 +157,7 @@ await Axios.delete(`${API_URL}/apis/cart/?id=${arg}`,{
   headers: {
 Authorization: `Bearer ${userToken}`,
 }} ).then((response)=> 
-  {alert(response.data.message)
+  {toastMessage(response.data.message,"warning")
       getCart()
   }).catch((error)=>{alert(error)})
 }}
@@ -345,11 +359,15 @@ const handleBuyClick = () => {
           <div className="col-12">
           {printData()}
           </div>
+          <div>
+            <WishlistItem product={cartData}/>
+          </div>
           </div>
         </div>
         {/* bagian kanan */}
+        
             <div className="col-3 mx-2 py-2 rounded-lg border border-gray-200">
-                <div className="col-auto pb-2 rounded-lg border border-gray-200 bg-white">
+                <div className="col-auto pb-2 rounded-lg border border-gray-200 bg-white ">
                 <Button
                 colorScheme={totalBarang === 0 ? "gray" : "orange"}
                 variant="outline"
@@ -361,7 +379,7 @@ const handleBuyClick = () => {
                 Makin Hemat Pake Promo
               </Button>
                 </div>
-                <div className="row col-auto py-3">
+                <div className="row col-auto py-3 ">
                   <h2 className="col-12 font-weight-bold">Ringkasan Belanja</h2>
                   <div className="row col-12">
                     <h3 className="col-8">Total harga ({totalBarang} barang)</h3>
