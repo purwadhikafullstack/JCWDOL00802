@@ -38,6 +38,10 @@ import RequestStock from "./pages/RequestStock";
 import NewPromo from "./pages/NewPromo";
 import AdminPromo from "./pages/AdminPromo";
 import EditPromo from "./pages/EditPromo";
+import Product from "./pages/Product";
+import AdminUserList from "./pages/AdminUserList";
+import AdminOrderList from "./pages/AdminOrderList"
+import AdminOrderListDetail from "./pages/AdminOrderDetail.jsx"
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -102,6 +106,7 @@ function App() {
           <Route path="/newuser" element={<NewUser />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
           <Route path="/checkout/" element={<CheckOut />} />
+          <Route path="/product" element={<Product />} />
           <Route path="/product/detail/:id" element={<DetailPage />} />
           <Route path="/transaction" element={<OrderPage />} />
           <Route path="/cart" element={<Cart />} />
@@ -143,6 +148,9 @@ function App() {
               <Route path="/admin/newpromo" element={<NewPromo />} />
               <Route path="/admin/promo" element={<AdminPromo />} />
               <Route path="/admin/editpromo" element={<EditPromo />} />
+              <Route path="/admin/orderlist" element={<AdminOrderList />} />
+              <Route path="/admin/order-detail" element={<AdminOrderListDetail />} />
+              <Route path="/admin/userlist" element={<AdminUserList />} />
             </>
           )}
           <Route path="*" element={<NotFound />} />

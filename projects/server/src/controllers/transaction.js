@@ -9,6 +9,11 @@ const StockHistoryModel = require("../model/stock_history");
 const WarehouseMutationModel = require("../model/warehouse_mutation");
 const CartModel = require("../model/Cart");
 const AddressModel = require("../model/address");
+const WarehouseAdminModel = require("../model/Warehouse_admin");
+const UserModel = require("../model/user");
+const protocol = "http://localhost";
+const { transporter } = require("../config/nodemailer");
+const { Op } = require("sequelize");
 
 module.exports = {
   getTransaction: async (req, res) => {
@@ -550,4 +555,508 @@ module.exports = {
       console.log(error);
     }
   },
+
+  
+  uploadProof: async (req, res) => {
+    try {
+      const { id_transaction } = req.query;
+      const id_user = req.decript.id_user;
+
+      const transaction = await TransactionModel.findOne({
+        where: { id_transaction, id_user },
+      });
+
+      if (!transaction) {
+        return res.status(404).json({
+          success: false,
+          message: "Transaction not found or doesn't belong to the user",
+        });
+      }
+
+      if (transaction.transaction_status !== 1) {
+        return res.status(400).json({
+          success: false,
+          message: "The transaction is not in 'menunggu pembayaran' status",
+        });
+      }
+
+      await TransactionModel.update(
+        {
+          transaction_status: 2,
+          transaction_proof: req.file.filename,
+        },
+        {
+          where: { id_transaction },
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Transaction proof uploaded and status updated",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Error uploading transaction proof",
+        error: error.message,
+      });
+    }
+  },
+
+  accTransaction: async (req, res) => {
+    let text = " ";
+    let id_transaction = req.query.id;
+    try {
+      let getTrans = await TransactionModel.findAll({
+        where: { id_transaction },
+      });
+      let id = getTrans[0].warehouse_sender;
+      let getdetail = await TransactionDetailModel.findAll({
+        where: { id_transaction: req.query.id },
+      });
+      for (let i = 0; i < getdetail.length; i++) {
+        let total = getdetail[i].total_item;
+        let id_product = getdetail[i].id_product;
+        let date = new Date();
+        let findMutation = await WarehouseMutationModel.findAll({
+          where: { status: 1, reference: id_transaction },
+          raw: true,
+        });
+        if (findMutation.length > 0) {
+          for (let i = 0; i < findMutation.length; i++) {
+            let id_mutation = findMutation[i].id_mutation;
+            let id_warehouse = findMutation[i].id_warehouse_sender;
+            let amount = findMutation[i].total_item;
+
+            let updateMutation = await WarehouseMutationModel.update(
+              { status: 3 },
+              { where: { id_mutation } }
+            );
+          }
+        }
+      }
+      // Update the transaction status to 3 (payment accepted)
+      let updateTransactionStatus = await TransactionModel.update(
+        { transaction_status: 3 },
+        { where: { id_transaction } }
+      );
+
+      text = "accepted";
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        success: false,
+        message: "An error occurred while processing your request.",
+        error: error.message,
+      });
+    }
+    return res.status(200).send({
+      success: true,
+      message: text,
+    });
+  },
+
+  rejectTransaction: async (req, res) => {
+    let id_transaction = req.query.id;
+    try {
+      // Update the transaction status from 2 (pending) to 1 (rejected)
+      let updateTransactionStatus = await TransactionModel.update(
+        { transaction_status: 1 },
+        { where: { id_transaction, transaction_status: 2 } }
+      );
+
+      if (updateTransactionStatus[0] === 0) {
+        // No rows were updated
+        return res.status(400).send({
+          success: false,
+          message: "Transaction not found or already rejected/accepted.",
+        });
+      }
+
+      return res.status(200).send({
+        success: true,
+        message: "Transaction has been rejected.",
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        success: false,
+        message: "An error occurred while processing your request.",
+        error: error.message,
+      });
+    }
+  },
+
+  sendingPackage: async (req, res) => {
+    try {
+      const { id_transaction, resi } = req.body;
+
+      // Update the resi and transaction_status in the database
+      await TransactionModel.update(
+        { resi, transaction_status: 6, date_send: new Date() },
+        { where: { id_transaction } }
+      );
+
+      // Retrieve the updated transaction and user's email
+      const transaction = await TransactionModel.findOne({
+        where: { id_transaction },
+        include: [
+          { model: UserModel, as: "user", attributes: ["email", "full_name"] },
+          {
+            model: AddressModel,
+            as: "alamat_pengiriman",
+            attributes: ["receiver"],
+          },
+        ],
+      });
+
+      // Send an email to the user
+      const mailOptions = {
+        from: "ClickNCollect",
+        to: transaction.user.email,
+        subject: "Package Shipment Confirmation",
+        text: `Dear ${transaction.user.full_name},\n\nYour package with transaction ID ${transaction.id_transaction} has been shipped by ${transaction.shipment_service} on ${transaction.date_send}. The resi number is ${transaction.resi}.`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log("Error sending email:", error);
+        } else {
+          console.log("Email sent:", info.response);
+        }
+      });
+
+      res.status(200).json({ message: "Resi and transaction status updated." });
+    } catch (error) {
+      console.log(error);
+      res
+        .status(500)
+        .json({
+          message:
+            "An error occurred while updating the resi and transaction status.",
+        });
+    }
+  },
+
+  proceedTransaction: async (req, res) => {
+    let id_transaction = req.query.id;
+    try {
+      // Update the transaction status from 3 (accepted) to 4 (proceeded)
+      let updateTransactionStatus = await TransactionModel.update(
+        { transaction_status: 4 },
+        { where: { id_transaction, transaction_status: 3 } }
+      );
+
+      if (updateTransactionStatus[0] === 0) {
+        // No rows were updated
+        return res.status(400).send({
+          success: false,
+          message: "Transaction not found or not accepted.",
+        });
+      }
+
+      return res.status(200).send({
+        success: true,
+        message: "Transaction has been proceeded.",
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        success: false,
+        message: "An error occurred while processing your request.",
+        error: error.message,
+      });
+    }
+  },
+
+  dikemasTransaction: async (req, res) => {
+    let id_transaction = req.query.id;
+    try {
+      // Update the transaction status from 4 (proceeded) to 5 (dikemas)
+      let updateTransactionStatus = await TransactionModel.update(
+        { transaction_status: 5 },
+        { where: { id_transaction, transaction_status: 4 } }
+      );
+
+      if (updateTransactionStatus[0] === 0) {
+        // No rows were updated
+        return res.status(400).send({
+          success: false,
+          message: "Transaction not found or not in proceeded status.",
+        });
+      }
+
+      return res.status(200).send({
+        success: true,
+        message: "Transaction has been marked as dikemas.",
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        success: false,
+        message: "An error occurred while processing your request.",
+        error: error.message,
+      });
+    }
+  },
+
+  cancelTransaction: async (req, res) => {
+    let text = " ";
+    let id_transaction = req.query.id;
+    try {
+      let getTrans = await TransactionModel.findAll({
+        where: { id_transaction },
+      });
+      let id = getTrans[0].warehouse_sender;
+      let getdetail = await TransactionDetailModel.findAll({
+        where: { id_transaction: req.query.id },
+      });
+      for (let i = 0; i < getdetail.length; i++) {
+        let total = getdetail[i].total_item;
+        let id_product = getdetail[i].id_product;
+        let date = new Date();
+        let findMutation = await WarehouseMutationModel.findAll({
+          where: {
+            status: {
+              [Op.or]: [1, 3],
+            },
+            reference: id_transaction,
+          },
+          raw: true,
+        });
+        if (findMutation.length > 0) {
+          for (let i = 0; i < findMutation.length; i++) {
+            let id_mutation = findMutation[i].id_mutation;
+            let id_warehouse = findMutation[i].id_warehouse_sender;
+            let amount = findMutation[i].total_item;
+
+            let updateMutation = await WarehouseMutationModel.update(
+              { status: 7 },
+              { where: { id_mutation } }
+            );
+            let totalCek = await StockHistoryModel.findAll({
+              limit: 1,
+              order: [["date", "desc"]],
+              where: { id_product, id_warehouse },
+            });
+            let newTotal = totalCek[0].total - amount;
+            let updateStockHistory = await StockHistoryModel.create({
+              id_product,
+              id_warehouse,
+              amount,
+              total: newTotal,
+              date,
+              type: 6,
+            });
+            let updateStock = await StockModel.increment(
+              { stock: amount },
+              {
+                where: { id_product, id_warehouse },
+              }
+            );
+            total -= amount;
+          }
+        }
+        let totalCek = await StockHistoryModel.findAll({
+          limit: 1,
+          order: [["date", "desc"]],
+          where: { id_product, id_warehouse: id },
+        });
+        let newTotal = totalCek[0].total - total;
+        let updateStockWarehouseSender = await StockHistoryModel.create({
+          id_product,
+          id_warehouse: id,
+          amount: total,
+          total: newTotal,
+          date,
+          type: 7,
+        });
+        let updateStock = await StockModel.increment(
+          { stock: total },
+          {
+            where: { id_product, id_warehouse: id },
+          }
+        );
+      }
+      // Update the transaction status to 9 (cancelled)
+      let updateTransactionStatus = await TransactionModel.update(
+        { transaction_status: 9 },
+        { where: { id_transaction } }
+      );
+
+      text = "accepted";
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({
+        success: false,
+        message: "An error occurred while processing your request.",
+        error: error.message,
+      });
+    }
+    return res.status(200).send({
+      success: true,
+      message: text,
+    });
+  },
+
+  getOrdersAdmin: async (req, res) => {
+    try {
+        let search = req.body.search;
+        let warehouse = req.body.warehouse;
+        let role = req.decript.role;
+        let sort = req.body.sort;
+        let page = req.body.page || 0;
+        let limit = parseInt(req.body.limit) || 10;
+
+        let offset = page * limit;
+
+        let filter = {};
+        let order = [["id_transaction"]];
+        let filterWarehouse = {};
+
+        if (search !== "" && typeof search !== "undefined") {
+            filter["$alamat_pengiriman.receiver$"] = {
+                [Sequelize.Op.like]: `%${search}%`
+            };
+        }
+
+        if (sort == 1) {
+            order = [["id_transaction", "ASC"]];
+        } else if (sort == 2) {
+            order = [["id_transaction", "DESC"]];
+        } else if (sort == 3) {
+            order = [["alamat_pengiriman.receiver", "ASC"]];
+        } else if (sort == 4) {
+            order = [["alamat_pengiriman.receiver", "DESC"]];
+        } else if (sort == 5) {
+            order = [["Transaction_status.status", "ASC"]];
+        } else if (sort == 6) {
+            order = [["Transaction_status.status", "DESC"]];
+        }
+
+        if (warehouse !== "" && typeof warehouse !== "undefined") {
+          filterWarehouse.warehouse_sender = warehouse;
+        }
+    
+        if (role == 2) {
+          const find = await WarehouseAdminModel.findAll({
+            where: { id_user: req.decript.id_user },
+          });
+          warehouse = find[0].dataValues.id_warehouse;
+          filterWarehouse.warehouse_sender = warehouse;
+        }
+
+        const transactions = await TransactionModel.findAndCountAll({
+          where: {
+            ...filter,
+            ...filterWarehouse,
+          },
+          order: order,
+          limit,
+          offset,
+          include: [
+            {
+              model: TransactionStatusModel,
+              as: "Transaction_status"
+            },
+            {
+              model: TransactionDetailModel,
+              as: "Transaction_Details",
+              include: [{
+                model: ProductModel,
+                as: "Product"
+              }]
+            },
+            {
+              model: AddressModel,
+              as: "alamat_pengiriman",
+            },
+            {
+              model: WarehouseModel,
+              as: "Warehouse",
+              attributes: ["warehouse_branch_name"],
+            }
+          ],
+        });
+    
+        const total_page = Math.ceil(transactions.count / limit);
+    
+        return res.status(200).send({ data: transactions.rows, total_page, page });
+      } catch (error) {
+        console.log(error);
+        return res.status(500).send(error);
+      }
+    },
+
+    getOrderById: async (req, res) => {
+      try {
+        const id_user = req.decript.id_user;
+        const userRole = req.decript.role;
+        const id_transaction = req.query.id_transaction;
+  
+        const filter = {
+          include: [
+            {
+              model: TransactionStatusModel,
+            },
+            {
+              model: TransactionDetailModel,
+              include: [
+                {
+                  model: ProductModel,
+                  as: "Product",
+                },
+              ],
+            },
+            {
+              model: AddressModel,
+              as: "alamat_pengiriman", // Include UserModel
+            },
+            {
+              model: WarehouseModel, // Include WarehouseModel
+              as: "Warehouse", // Alias for the WarehouseModel
+              attributes: ["warehouse_branch_name"], // Select only the name attribute
+            },
+          ],
+          where: {
+            id_transaction: id_transaction,
+          },
+        };
+  
+        if (userRole === 3) {
+          // Superadmin
+          // No additional filtering required
+        } else if (userRole === 2) {
+          // Warehouse admin
+          const warehouseAdmin = await WarehouseAdminModel.findOne({
+            where: { id_user: id_user },
+          });
+  
+          if (!warehouseAdmin) {
+            return res.status(404).json({ message: "Warehouse admin not found" });
+          }
+  
+          filter.where.warehouse_sender = warehouseAdmin.id_warehouse;
+        } else {
+          return res.status(403).json({ message: "Access denied" });
+        }
+  
+        const order = await TransactionModel.findOne(filter);
+  
+        if (!order) {
+          return res.status(404).json({ message: "Order not found" });
+        }
+  
+        if (order.transaction_proof) {
+          const transactionProofPath = `${protocol}:${process.env.PORT}/img/transactions/${order.transaction_proof}`;
+          order.transaction_proof = transactionProofPath;
+        }
+  
+        return res.json(order);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    },
+  
 };

@@ -7,7 +7,10 @@ module.exports = {
   getAddress: async (req, res) => {
     try {
       let data = await AddressModel.findAll({
-        where: { id_user: req.decript.id_user },
+        where: { 
+          id_user: req.decript.id_user,
+          isdeleted: 0 
+        },
         include: [
           {
             model: PostalCodeModel,
@@ -172,8 +175,12 @@ module.exports = {
       if (!address) {
         return res.status(404).json({ message: "Address not found" });
       }
-      await AddressModel.destroy({ where: { id_user, id_address } });
-      res.status(200).json({ message: "Address deleted" });
+      // Update the isdeleted field to 1 (true)
+      await AddressModel.update(
+        { isdeleted: 1 },
+        { where: { id_user, id_address } }
+      );
+      res.status(200).json({ message: "Address soft deleted" });
     } catch (err) {
       console.log(err);
       res.status(500).json({ message: "Internal Server Error" });

@@ -136,4 +136,9 @@ route.post(
 
 route.post("/productlanding", ProductController.productLanding);
 
+route.post(
+  "/listproduct",
+  ProductController.getProductUser
+);
+
 module.exports = route;

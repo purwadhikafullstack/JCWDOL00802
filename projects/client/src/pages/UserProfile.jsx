@@ -13,13 +13,16 @@ import {
   AvatarBadge,
   IconButton,
   Center,
+  Icon,
+  Text
 } from "@chakra-ui/react";
 import { SmallCloseIcon } from "@chakra-ui/icons";
 import { API_URL } from "../helper";
 import { useSelector } from "react-redux";
+import { FaStar } from 'react-icons/fa';
 
 const Profile = (props) => {
-  const { id, username, email, phone_number, profile_picture, full_name } =
+  const { id, username, email, phone_number, profile_picture, full_name, subscription  } =
     useSelector((state) => {
       return {
         id: state.userReducer.id_user,
@@ -28,6 +31,7 @@ const Profile = (props) => {
         phone_number: state.userReducer.phone_number,
         profile_picture: state.userReducer.profile_picture,
         full_name: state.userReducer.full_name,
+        subscription: state.userReducer.subs.data[0]
       };
     });
 
@@ -116,10 +120,20 @@ const Profile = (props) => {
         my={12}
       >
         <Heading lineHeight={1.1} fontSize={{ base: "2xl", sm: "3xl" }}>
-          User Profile Edit
+          Profile 
+          <Icon
+            as={FaStar}
+            w={5}
+            h={5}
+            color={subscription ? "orange" : "gray.500"}
+            ml={2}
+          />
+          <Text fontSize="sm" color={subscription ? "orange" : "gray.500"}>
+          {subscription ? "Subscription Member" : "Not Subscription Member"}
+        </Text>
         </Heading>
         <FormControl id="userName">
-          <FormLabel>User Icon</FormLabel>
+          <FormLabel>Profile Pitcure</FormLabel>
           <Stack direction={["column", "row"]} spacing={6}>
             <Center>
               <Avatar size="xl" src={profile_picture}>
