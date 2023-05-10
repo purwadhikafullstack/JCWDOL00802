@@ -4,6 +4,8 @@ const ProductModel = require("./Product");
 const TransactionDetailModel = require("./transaction_detail");
 const TransactionStatusModel = require("./transaction_status");
 const AddressModel = require("./address");
+const WarehouseModel = require("./warehouse")
+const UserModel = require("./user")
 const { DataTypes } = Sequelize;
 
 const TransactionModel = dbSequelize.define(
@@ -96,4 +98,13 @@ TransactionModel.hasOne(AddressModel, {
   as: "alamat_pengiriman",
   sourceKey: "address",
 });
+
+TransactionModel.belongsTo(WarehouseModel, {
+  foreignKey: "warehouse_sender",
+  as: "Warehouse",
+});
+
+UserModel.hasMany(TransactionModel, { foreignKey: "id_user" });
+TransactionModel.belongsTo(UserModel, { foreignKey: "id_user" });
+
 module.exports = TransactionModel;

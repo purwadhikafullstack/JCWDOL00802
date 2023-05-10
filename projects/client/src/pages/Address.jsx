@@ -72,8 +72,8 @@ function Address() {
 
   const onDelete = async (id_address) => {
     try {
-      await Axios.delete(API_URL + `/apis/address/delete`, {
-        data: { id_address },
+      await Axios.post(API_URL + `/apis/address/delete`, {
+        id_address,
         headers: {
           Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
         },
@@ -212,6 +212,9 @@ function Address() {
             <Box position="absolute" top="20px" right="0">
               <NewAddressModal
                 onAddressListRefresh={triggerAddressListRefresh}
+                onSuccess={() => {
+                  alert("Address added successfully!");
+                }}
               />
             </Box>
           </Box>

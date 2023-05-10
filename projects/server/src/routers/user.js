@@ -53,4 +53,33 @@ route.get("/keep", authorizeController.authUser, userController.keepLogin);
 route.get("/profile", authorizeController.authUser, userController.getProfile); 
 route.post("/edit", authorizeController.authUser, upload.single('profile_picture') ,userController.editProfile ); 
 
+
+route.post(
+  "/listuser",
+  authorizeController.authSuperAdmin,
+  userController.getUserList
+);
+
+route.delete(
+  "/delete",
+  authorizeController.authSuperAdmin,
+  userController.deleteUser
+);
+
+route.post(
+  "/edituser",
+  authorizeController.authSuperAdmin,
+  upload.single("profile_picture"),
+  userController.updateUser
+);
+
+route.post(
+  "/adduser",
+  authorizeController.authSuperAdmin,
+  upload.single("profile_picture"),
+  userController.addUser
+);
+
+route.get("/user", userController.getUserByID)
+
 module.exports = route;

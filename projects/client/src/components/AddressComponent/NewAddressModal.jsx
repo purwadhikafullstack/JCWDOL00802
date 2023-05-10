@@ -29,7 +29,7 @@ import {
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-const NewAddressModal = (props) => {
+const NewAddressModal = ({ onAddressListRefresh, onSuccess }) => {
   const [isDefault, setIsDefault] = React.useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [detailAddressEdit, setDetailAddressEdit] = React.useState("");
@@ -121,8 +121,8 @@ const NewAddressModal = (props) => {
       }
     )
       .then((response) => {
-        setIsSuccess(true); // Show success alert
-        props.onAddressListRefresh(); // Trigger the address list refresh
+        onSuccess();
+        onAddressListRefresh();
 
         setDetailAddressEdit("");
         setRecipientNameEdit("");
