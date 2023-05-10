@@ -132,7 +132,7 @@ const Sidebar = (props) => {
                   </div>
                 </Link>
                 <Link
-                  href="/adminuserlist"
+                  href="/admin/userlist"
                   className="link"
                   style={{ display: roleSuperAdmin ? "flex" : "none" }}
                 >
@@ -142,6 +142,18 @@ const Sidebar = (props) => {
                     className="link_text"
                   >
                     Manage User
+                  </div>
+                </Link>
+                <Link
+                  href="/admin/orderlist"
+                  className="link"
+                >
+                  <FaUserAlt />
+                  <div
+                    style={{ display: isOpen ? "block" : "none" }}
+                    className="link_text"
+                  >
+                    Manage Transaction
                   </div>
                 </Link>
                 <div style={{ display: roleSuperAdmin ? "block" : "none" }}>
