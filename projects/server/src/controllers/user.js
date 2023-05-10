@@ -98,7 +98,7 @@ module.exports = {
         if (checkPass) {
           delete get[0].dataValues.password;
           let token = cetakToken({ ...get[0].dataValues });
-          res.status(200).send({ ...get[0].dataValues, token }); //,token
+          res.status(200).send({ ...get[0].dataValues, token });
         } else {
           if (get[0].dataValues.status == 3) {
             let results = await UserModel.update(
@@ -124,7 +124,7 @@ module.exports = {
     }
   },
   keepLogin: async (req, res) => {
-    let token = req.headers.authorization.split(" ")[1];
+    let token = req.token;
     try {
       let get = await UserModel.findAll({
         where: { email: req.decript.email },

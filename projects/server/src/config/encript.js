@@ -12,7 +12,7 @@ module.exports = {
   },
   readToken: (req, res, next) => {
     // pengecekan token
-    let token = req.headers.authorization.split(" ")[1];
+    let token = req.token;
     jwt.verify(token, "cnc!", (err, decript) => {
       if (err) {
         return res.status(401).send({

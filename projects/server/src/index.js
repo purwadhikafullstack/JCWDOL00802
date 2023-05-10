@@ -1,8 +1,9 @@
-const path = require("path")
-require("dotenv").config({path: path.resolve(__dirname, "../.env")})
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const express = require("express");
 const cors = require("cors");
 const { join } = require("path");
+const bearerToken = require("express-bearer-token");
 
 const PORT = process.env.PORT || 8000;
 const app = express();
@@ -16,6 +17,7 @@ app.use(
 );
 
 app.use(express.json());
+app.use(bearerToken());
 
 //#region API ROUTES
 //CHECK SEQUELIZE
