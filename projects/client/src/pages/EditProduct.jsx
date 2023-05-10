@@ -386,7 +386,7 @@ const EditProduct = () => {
   };
 
   return (
-    <div className="bg-white w-100 m-auto ">
+    <div className="paddingmain">
       <div>
         <Text fontSize="2xl">Detail Product</Text>
       </div>

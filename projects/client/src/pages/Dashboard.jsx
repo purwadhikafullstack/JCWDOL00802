@@ -146,7 +146,11 @@ const Dashboard = () => {
   }, [userRole]);
 
   return (
-    <Flex flexDirection="column" pt={{ base: "120px", md: "75px" }}>
+    <Flex
+      flexDirection="column"
+      pt={{ base: "120px", md: "75px" }}
+      className="paddingmain"
+    >
       <SimpleGrid columns={{ sm: 1, md: 2, xl: 5 }} spacing={4}>
         {userRole === 3 && (
           <>

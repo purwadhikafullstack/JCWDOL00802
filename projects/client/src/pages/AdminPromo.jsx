@@ -16,7 +16,7 @@ import {
   Select,
   ButtonGroup,
 } from "@chakra-ui/react";
-import Paging from "../components/Pagination";
+import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
 function AdminPromo() {
   // STATE
@@ -44,13 +44,6 @@ function AdminPromo() {
     }
   };
 
-  let dataExist = false;
-  if (dataPromo == null) {
-    dataExist = false;
-  } else {
-    dataExist = true;
-  }
-
   const [onFilter, setOnFilter] = useState(false);
 
   const onSetFilter = () => {
@@ -75,7 +68,7 @@ function AdminPromo() {
 
   //PRINT DATA
   const printData = () => {
-    let data = dataExist ? dataPromo : [];
+    let data = dataPromo ? dataPromo : [];
     // let num = 0;
     return data.map((val, idx) => {
       let editpage = `/admin/editpromo?id_promo=${val.id_promo}`;
@@ -109,7 +102,7 @@ function AdminPromo() {
   };
 
   return (
-    <div className="bg-white w-100 m-auto ">
+    <div className="paddingmain">
       <div>
         <Text fontSize="2xl">Pengelolaan Promo </Text>
       </div>
@@ -132,7 +125,12 @@ function AdminPromo() {
             className="d-flex my-5"
             style={{ alignContent: "center", justifyContent: "center" }}
           >
-            <Paging first={page} second={lastPage} third={setPage} />
+            <PaginationOrder
+              currentPage={parseInt(page)}
+              totalPages={parseInt(lastPage)}
+              onPageChange={setPage}
+              maxLimit={0}
+            />
             <div
               className="d-flex mx-5"
               style={{ alignItems: "center", justifyContent: "center" }}
@@ -191,7 +189,7 @@ function AdminPromo() {
               <option value={1} selected={status == 1}>
                 Aktif
               </option>
-              <option value={2} selected={status == 2}>
+              <option value={0} selected={status == 2}>
                 Tidak Aktif
               </option>
             </Select>

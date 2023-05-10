@@ -67,7 +67,7 @@ module.exports = {
       let { password, subs } = req.body;
       //patch disini
       let newUser = await UserModel.update(
-        { password: hashPassword(password), status: 2, subs },
+        { password: hashPassword(password), status: 2, subs, role: 1 },
         {
           where: { email },
         }
@@ -96,17 +96,11 @@ module.exports = {
         });
       } else {
         if (checkPass) {
-          // let results = await UserModel.update(
-          //   {
-          //     status: 4,
-          //   },
-          //   { where: { id: get[0].dataValues.id } }
-          // );
           delete get[0].dataValues.password;
           let token = cetakToken({ ...get[0].dataValues });
           res.status(200).send({ ...get[0].dataValues, token }); //,token
         } else {
-          if (get[0].dataValues.status == 4) {
+          if (get[0].dataValues.status == 3) {
             let results = await UserModel.update(
               {
                 status: 5,
@@ -115,19 +109,12 @@ module.exports = {
             );
             res.status(400).send({
               success: false,
-              msg: "Your Account is SUSPENDED",
+              msg: "Your Account is DELETED",
             });
           } else {
-            // let results = await UserModel.update(
-            //   {
-            //     failed_counter: get[0].dataValues.failed_counter + 1,
-            //   },
-            //   { where: { id: get[0].dataValues.id } }
-            // );
             res.status(400).send({
               success: false,
               msg: "Your password is wrong",
-              // failed_login: get[0].dataValues.failed_counter + 1,
             });
           }
         }
@@ -154,7 +141,7 @@ module.exports = {
       //patch disini
       let resetUser = await UserModel.update(
         //status diganti jadi req. reset pass supaya gabisa request reset lagi
-        { status: 6 },
+        { status: 4 },
         {
           where: { email },
         }

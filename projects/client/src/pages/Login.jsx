@@ -72,7 +72,7 @@ const Login = (props) => {
   }, [touched]);
 
   return (
-    <div>
+    <div className="paddingmain">
       <div className="bg-white my-5 w-100 p-5 m-auto shadow">
         <Text fontSize="4xl" className="fw-bold">
           Login

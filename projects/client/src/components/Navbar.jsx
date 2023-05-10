@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   Avatar,
   AvatarBadge,
@@ -18,26 +18,19 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-  PopoverHeader,
-  PopoverBody,
-  PopoverFooter,
-  PopoverArrow,
-  PopoverCloseButton,
   IconButton,
+  Divider,
 } from "@chakra-ui/react";
 import {
-  AiOutlineMessage,
   AiOutlineSearch,
   AiOutlineShopping,
-  AiOutlineUser,
   AiOutlineBell,
   AiOutlineClose,
+  AiOutlineLogout,
 } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { AiOutlineLogout } from "react-icons/ai";
 import { logoutAction } from "../actions/userAction";
-import { useState, useEffect } from "react";
 import { API_URL } from "../helper";
 import Axios from "axios";
 
@@ -47,9 +40,8 @@ const Navbar = (props) => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [newPendingRequests, setNewPendingRequests] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState("");
-  const [dataCategory, setDataCategory] = useState(null);
+  const [dataCategory, setDataCategory] = useState([]);
 
   const { id_user, email, role, profile_picture } = useSelector((state) => {
     return {
@@ -135,19 +127,12 @@ const Navbar = (props) => {
     }
   };
 
-  let dataExist = false;
-  if (dataCategory == null) {
-    dataExist = false;
-  } else {
-    dataExist = true;
-  }
-
   useEffect(() => {
     getCategory();
   }, []);
 
   const printCategory = () => {
-    let data = dataExist ? dataCategory : [];
+    let data = dataCategory ? dataCategory : [];
     return (
       <MenuList>
         {data.map((val, idx) => {
@@ -166,204 +151,199 @@ const Navbar = (props) => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg bg-light">
-      <div className="container">
+    <nav className="navbar">
+      <div
+        className="atas"
+        style={{ alignItems: "center", justifyContent: "center" }}
+      >
         {/* Logo */}
-        <Link to="/" className="Logo">
+        <Link to="/" className="mx-2">
           <img
             src={require("../Assets/logotengah2.png")}
             alt="Click N Collect"
             style={{ height: 40, objectFit: "scale-down" }}
           />
         </Link>
-        {/* Toggle kalo layarny mengecil */}
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          {/* Kategori */}
-          <Menu>
-            <MenuButton
-              className="nav-item main-content-color"
-              style={{ cursor: "pointer" }}
-            >
-              Kategori
-            </MenuButton>
-            {/* Drop Down Kategori */}
-            {printCategory()}
-          </Menu>
-          {/* Pencarian / Search Bar */}
-          <InputGroup>
-            <InputLeftElement
-              pointerEvents="none"
-              children={<AiOutlineSearch />}
-            />
-            <Input type="tel" placeholder="Ketik kata kunci" maxWidth={500} />
-          </InputGroup>
-          {/* Gambar profiling, cart, dan transaction */}
-          <Popover
-            isOpen={showNotifications}
-            onClose={() => setShowNotifications(false)}
+        {/* Kategori */}
+        <Divider orientation="vertical" className="dividernav mx-2" />
+        <Menu>
+          <MenuButton
+            className="nav-item main-content-color mx-2"
+            style={{ cursor: "pointer" }}
           >
-            <PopoverTrigger>
-              <Button
-                variant="unstyled"
-                onClick={() => setShowNotifications(!showNotifications)}
-              >
-                <Box position="relative">
-                  <AiOutlineBell size={40} color={"#f96c08"} />
-                  {newPendingRequestsCount > 0 && (
-                    <Badge
-                      position="absolute"
-                      top={0}
-                      right={0}
-                      borderRadius="full"
-                      bg="red.500"
-                      color="white"
-                    >
-                      {newPendingRequestsCount}
-                    </Badge>
-                  )}
-                </Box>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <Box
-                zIndex="1"
-                bg="white"
-                borderWidth="1px"
-                borderColor="gray.200"
-                borderRadius="md"
-                boxShadow="sm"
-                minWidth="250px"
-              >
-                <Box fontWeight="bold" p={3}>
-                  Notifications
-                </Box>
-                <Box height="1px" bg="gray.200" my={2} />
-                {newPendingRequests.map((request) => {
-                  const {
-                    id_mutation,
-                    id_product,
-                    id_warehouse_sender,
-                    id_warehouse_receiver,
-                    date,
-                  } = request.dataValues || request;
-                  const formattedDate = new Date(date).toLocaleDateString(); // You can customize the date format here if needed
-                  return (
-                    <Box
-                      key={id_mutation}
-                      p={3}
-                      display="flex"
-                      justifyContent="space-between"
-                    >
-                      {`New Request ${request.product.name} from ${request.warehouseReceiver.warehouse_branch_name}, ${formattedDate}`}
-                      <IconButton
-                        size="sm"
-                        colorScheme="red"
-                        icon={<AiOutlineClose />}
-                        onClick={() => deleteNotification(id_mutation)}
-                      />
-                    </Box>
-                  );
-                })}
-              </Box>
-            </PopoverContent>
-          </Popover>
-          <Link to="/profile">
-            <AiOutlineUser size={40} color={"#f96c08"} className="mx-1" />
-          </Link>
-          <Link to="/cart">
-            <AiOutlineShopping size={40} color={"#f96c08"} className="mx-1" />
-          </Link>
-          <Link to="/transaction">
-            <AiOutlineMessage size={40} color={"#f96c08"} className="mx-1" />
-          </Link>
-          {/* Avatar user (Kalau Login) / Masuk dan Registasi (Kalau belum Login) */}
-          <form className="login" role="search" style={{ zIndex: 10 }}>
-            {props.loading ? (
-              <Spinner />
-            ) : email && !props.loading ? (
-              <Menu>
-                <MenuButton type="button">
-                  <Avatar
-                    src={avatarSrc}
-                    size="md"
-                    className="avatar"
-                    textColor={"black"}
-                  >
-                    <AvatarBadge boxSize="1em" bg="green.500" />
-                  </Avatar>
-                </MenuButton>
-                {/* Drop Down */}
-                <MenuList textColor="black">
-                  <Link to="profile">
-                    <MenuItem>{email}</MenuItem>
-                  </Link>
-                  <MenuDivider />
-                  {/* Bila admin, tapi nanti di back end harus ganti super admin rolenya jadi 3 aja */}
-                  {role == 2 || role == 3 ? (
-                    <div>
-                      <Link to="/admin/products">
-                        <MenuItem>Pengelolaan Produk</MenuItem>
-                      </Link>
+            Kategori
+          </MenuButton>
+          {/* Drop Down Kategori */}
+          {printCategory()}
+        </Menu>
+        <Divider orientation="vertical" className="dividernav mx-2" />
+        {/* Pencarian / Search Bar */}
+        <InputGroup className="mx-2 navinput">
+          <InputLeftElement
+            pointerEvents="none"
+            children={<AiOutlineSearch />}
+          />
+          <Input placeholder="Ketik kata kunci" style={{ width: "100%" }} />
+        </InputGroup>
 
-                      <Link to="/admin/transaction">
-                        <MenuItem>Pengelolaan Transaksi</MenuItem>
-                      </Link>
-                      <Link to="/admin/warehouse">
-                        <MenuItem>Pengelolaan Gudang</MenuItem>
-                      </Link>
-                    </div>
-                  ) : (
-                    // Bila user, karena user kodenya 1, jadi semua yg lbh dr 1 itu admin atau super admin
-                    <div>
-                      <Link to="/cart">
-                        <MenuItem>Keranjang</MenuItem>
-                      </Link>
-                      <Link to="/transaction">
-                        <MenuItem>Transaksi Pembelian</MenuItem>
-                      </Link>
-                      <Link to="/address">
-                        <MenuItem>Address</MenuItem>
-                      </Link>
-                    </div>
-                  )}
-                  <MenuDivider />
-                  {/* Logout */}
-                  <Link to="/">
-                    <MenuItem onClick={() => dispatch(logoutAction())}>
-                      Logout
-                      <AiOutlineLogout className="ms-2" />
-                    </MenuItem>
-                  </Link>
-                </MenuList>
-              </Menu>
-            ) : (
-              // Bila login bersifat false, keluar tombol utk login dan regis
-              <ButtonGroup>
-                <Link to="/login">
-                  <Button type="button" colorScheme="orange" variant="solid">
-                    Masuk
-                  </Button>
+        {/* Gambar notification, cart, dan transaction */}
+        {role == 1 && (
+          <div
+            className="d-flex"
+            style={{ alignItems: "center", justifyContent: "center" }}
+          >
+            <Popover
+              isOpen={showNotifications}
+              onClose={() => setShowNotifications(false)}
+            >
+              <PopoverTrigger>
+                <Button
+                  variant="unstyled"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
+                  <Box position="relative">
+                    <AiOutlineBell
+                      size={40}
+                      color={"#f96c08"}
+                      className="mx-2"
+                    />
+                    {newPendingRequestsCount > 0 && (
+                      <Badge
+                        position="absolute"
+                        top={0}
+                        right={0}
+                        borderRadius="full"
+                        bg="red.500"
+                        color="white"
+                      >
+                        {newPendingRequestsCount}
+                      </Badge>
+                    )}
+                  </Box>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <Box
+                  zIndex="1"
+                  bg="white"
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  boxShadow="sm"
+                  minWidth="250px"
+                >
+                  <Box fontWeight="bold" p={3}>
+                    Notifications
+                  </Box>
+                  <Box height="1px" bg="gray.200" my={2} />
+                  {newPendingRequests.map((request) => {
+                    const {
+                      id_mutation,
+                      id_product,
+                      id_warehouse_sender,
+                      id_warehouse_receiver,
+                      date,
+                    } = request.dataValues || request;
+                    const formattedDate = new Date(date).toLocaleDateString(); // You can customize the date format here if needed
+                    return (
+                      <Box
+                        key={id_mutation}
+                        p={3}
+                        display="flex"
+                        justifyContent="space-between"
+                      >
+                        {`New Request ${request.product.name} from ${request.warehouseReceiver.warehouse_branch_name}, ${formattedDate}`}
+                        <IconButton
+                          size="sm"
+                          colorScheme="red"
+                          icon={<AiOutlineClose />}
+                          onClick={() => deleteNotification(id_mutation)}
+                        />
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </PopoverContent>
+            </Popover>
+            <Link to="/cart">
+              <AiOutlineShopping size={40} color={"#f96c08"} className="mx-2" />
+            </Link>
+          </div>
+        )}
+        {/* Avatar user (Kalau Login) / Masuk dan Registasi (Kalau belum Login) */}
+        <Divider orientation="vertical" className="dividernav mx-2" />
+        <form
+          className="login navatar mx-2"
+          role="search"
+          style={{ zIndex: 10 }}
+        >
+          {props.loading ? (
+            <Spinner />
+          ) : email && !props.loading ? (
+            <Menu>
+              <MenuButton type="button">
+                <Avatar
+                  src={avatarSrc}
+                  size="md"
+                  className="avatar"
+                  textColor={"black"}
+                >
+                  <AvatarBadge boxSize="1em" bg="green.500" />
+                </Avatar>
+              </MenuButton>
+              {/* Drop Down */}
+              <MenuList textColor="black">
+                <Link to="profile">
+                  <MenuItem>{email}</MenuItem>
                 </Link>
-                <Link to="/regis">
-                  <Button type="button" colorScheme="orange" variant="outline">
-                    Daftar
-                  </Button>
+                <MenuDivider />
+                {/* Bila admin, tapi nanti di back end harus ganti super admin rolenya jadi 3 aja */}
+                {role == 2 || role == 3 ? (
+                  <div>
+                    <Link to="/admin">
+                      <MenuItem>Dashboard</MenuItem>
+                    </Link>
+                  </div>
+                ) : (
+                  // Bila user, karena user kodenya 1, jadi semua yg lbh dr 1 itu admin atau super admin
+                  <div>
+                    <Link to="/transaction">
+                      <MenuItem>Transaksi Pembelian</MenuItem>
+                    </Link>
+                    <Link to="/wishlist">
+                      <MenuItem>Wishlist</MenuItem>
+                    </Link>
+                    <Link to="/profile">
+                      <MenuItem>Akun Saya</MenuItem>
+                    </Link>
+                  </div>
+                )}
+                <MenuDivider />
+                {/* Logout */}
+                <Link to="/">
+                  <MenuItem onClick={() => dispatch(logoutAction())}>
+                    Logout
+                    <AiOutlineLogout className="ms-2" />
+                  </MenuItem>
                 </Link>
-              </ButtonGroup>
-            )}
-          </form>
-        </div>
+              </MenuList>
+            </Menu>
+          ) : (
+            // Bila login bersifat false, keluar tombol utk login dan regis
+            <ButtonGroup>
+              <Link to="/login">
+                <Button type="button" colorScheme="orange" variant="solid">
+                  Masuk
+                </Button>
+              </Link>
+              <Link to="/regis">
+                <Button type="button" colorScheme="orange" variant="outline">
+                  Daftar
+                </Button>
+              </Link>
+            </ButtonGroup>
+          )}
+        </form>
       </div>
     </nav>
   );

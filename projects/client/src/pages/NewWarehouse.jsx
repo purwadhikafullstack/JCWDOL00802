@@ -82,29 +82,15 @@ const NewWarehouse = (props) => {
   }, [touched]);
 
   //PRINT DATA
-  let dataProvinceExist = false;
-  if (provinceList == null) {
-    dataProvinceExist = false;
-  } else {
-    dataProvinceExist = true;
-  }
-
   const printDataProvince = () => {
-    let data = dataProvinceExist ? provinceList : [];
+    let data = provinceList ? provinceList : [];
     return data.map((val, idx) => {
       return <option value={val.province_id}>{val.province}</option>;
     });
   };
 
-  let dataCityExist = false;
-  if (cityList == null) {
-    dataCityExist = false;
-  } else {
-    dataCityExist = true;
-  }
-
   const printDataCity = () => {
-    let data = dataCityExist ? cityList : [];
+    let data = cityList ? cityList : [];
     return data.map((val, idx) => {
       return (
         <option value={val.city_id}>
@@ -155,7 +141,7 @@ const NewWarehouse = (props) => {
   };
 
   return (
-    <div className="bg-white w-100 p-3 m-auto ">
+    <div className="paddingmain">
       <div>
         <Text fontSize="2xl">Add Warehouse</Text>
       </div>

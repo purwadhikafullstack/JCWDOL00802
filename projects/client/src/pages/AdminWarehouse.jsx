@@ -16,7 +16,7 @@ import {
   Select,
   ButtonGroup,
 } from "@chakra-ui/react";
-import Paging from "../components/Pagination";
+import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
 function AdminWarehouse() {
   // STATE
@@ -43,13 +43,6 @@ function AdminWarehouse() {
     }
   };
 
-  let dataExist = false;
-  if (dataWarehouse == null) {
-    dataExist = false;
-  } else {
-    dataExist = true;
-  }
-
   const [onFilter, setOnFilter] = useState(false);
 
   const onSetFilter = () => {
@@ -73,7 +66,7 @@ function AdminWarehouse() {
 
   //PRINT DATA
   const printData = () => {
-    let data = dataExist ? dataWarehouse : [];
+    let data = dataWarehouse ? dataWarehouse : [];
     // let num = 0;
     return data.map((val, idx) => {
       let editpage = `/admin/editwarehouse?id_warehouse=${val.id_warehouse}`;
@@ -110,7 +103,7 @@ function AdminWarehouse() {
   };
 
   return (
-    <div className="bg-white w-100 m-auto ">
+    <div className="paddingmain">
       <div>
         <Text fontSize="2xl">Pengelolaan Gudang </Text>
       </div>
@@ -133,7 +126,12 @@ function AdminWarehouse() {
             className="d-flex my-5"
             style={{ alignContent: "center", justifyContent: "center" }}
           >
-            <Paging first={page} second={lastPage} third={setPage} />
+            <PaginationOrder
+              currentPage={parseInt(page)}
+              totalPages={parseInt(lastPage)}
+              onPageChange={setPage}
+              maxLimit={0}
+            />
             <div
               className="d-flex mx-5"
               style={{ alignItems: "center", justifyContent: "center" }}

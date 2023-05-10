@@ -372,17 +372,17 @@ module.exports = {
 
       if (role == 2) {
         edit = false;
-
         let getWarehouse = await WarehouseAdminModel.findOne({
-          where: id_user,
+          where: { id_user },
         });
         filterWarehouse.id_warehouse = getWarehouse.id_warehouse;
       }
 
-      let data = await ProductModel.findOne({
+      let data = await ProductModel.findAll({
         where: {
           id_product,
         },
+        subQuery: false,
         group: ["id_product"],
         attributes: [
           "id_product",
@@ -391,7 +391,7 @@ module.exports = {
           "description",
           "weight",
           "product_picture",
-          [sequelize.fn("sum", sequelize.col("stocks.stock")), "stock"],
+          [sequelize.fn("sum", sequelize.col("stock")), "stock"],
         ],
         include: [
           {
@@ -407,7 +407,7 @@ module.exports = {
         ],
       });
 
-      res.status(200).send({ data, edit });
+      res.status(200).send({ data: data[0], edit });
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
@@ -1091,7 +1091,7 @@ module.exports = {
               id_warehouse,
               id_product,
               date,
-              type: 1,
+              type: 2,
               amount,
               note,
               total: hasil,
@@ -1135,7 +1135,7 @@ module.exports = {
       let id_warehouse = parseInt(req.query.warehouse);
       let id_product = parseInt(req.query.product);
       let data = await StockModel.findOne({
-        where: { id_warehouse, id_product },
+        where: { [Op.and]: [{ id_warehouse, id_product }] },
       });
 
       res.status(200).send(data);
@@ -1232,7 +1232,6 @@ module.exports = {
       let status = req.body.status;
 
       let limit = 5;
-      // let page = 0;
       let page = parseInt(req.body.page);
       let result = [];
       let offset = page * limit;
@@ -1479,13 +1478,13 @@ module.exports = {
             { stock: input },
             {
               where: {
-                [sequelize.Op.and]: [{ id_product }, { id_warehouse }],
+                [Op.and]: [{ id_product }, { id_warehouse }],
               },
             }
           );
           let findLast = await StockHistoryModel.findOne({
             where: {
-              [sequelize.Op.and]: [{ id_product }, { id_warehouse }],
+              [Op.and]: [{ id_product }, { id_warehouse }],
             },
             order: [["date", "DESC"]],
           });
@@ -1496,7 +1495,6 @@ module.exports = {
             date,
             type: 6,
             amount: input,
-            note,
             total: hasil,
           });
           res.status(200).send("success");
@@ -1614,7 +1612,6 @@ module.exports = {
             date,
             type: 3,
             amount: input,
-            note,
             total: hasil,
           });
 
@@ -1629,6 +1626,46 @@ module.exports = {
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
+    }
+  },
+  productLanding: async (req, res) => {
+    try {
+      let limit = parseInt(req.body.limit);
+      let page = req.body.page;
+      let offset = page * limit;
+
+      const data = await ProductModel.findAll({
+        group: ["id_product"],
+        page,
+        offset,
+        order: [["id_product", "DESC"]],
+        attributes: [
+          "id_product",
+          "name",
+          "price",
+          "status",
+          "product_picture",
+          [sequelize.fn("sum", sequelize.col("stock")), "total_stock"],
+        ],
+        include: [
+          {
+            model: StockModel,
+            as: "stocks",
+            attributes: [],
+          },
+        ],
+      });
+      console.log(data[0].dataValues.total_stock);
+      let filterData = data.filter((e) => {
+        return parseInt(e.dataValues.total_stock) > 0;
+      });
+
+      let result = filterData.slice(0, limit);
+
+      return res.status(201).send({ data: result });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
     }
   },
 };
