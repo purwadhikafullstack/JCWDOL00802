@@ -72,8 +72,8 @@ function Address() {
 
   const onDelete = async (id_address) => {
     try {
-      await Axios.post(API_URL + `/apis/address/delete`, {
-        id_address,
+      await Axios.delete(API_URL + `/apis/address/delete`, {
+        data: { id_address },
         headers: {
           Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
         },

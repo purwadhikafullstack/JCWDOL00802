@@ -1,7 +1,5 @@
 const { Sequelize } = require("sequelize");
 const { dbSequelize } = require("../config/db");
-const WarehouseAdminModel = require("./Warehouse_admin");
-const WarehouseModel = require("./warehouse");
 
 const { DataTypes } = Sequelize;
 
@@ -45,26 +43,5 @@ const UserModel = dbSequelize.define(
     timestamps: false,
   }
 );
-
-UserModel.hasOne(WarehouseAdminModel, {
-  foreignKey: "id_user",
-  sourceKey: "id_user",
-  as: 'warehouseAdmin',
-});
-
-WarehouseModel.hasOne(WarehouseAdminModel, {
-  foreignKey: 'id_warehouse',
-  as: 'warehouseAdmin',
-});
-
-WarehouseAdminModel.belongsTo(UserModel, {
-  foreignKey: 'id_user',
-  as: 'user',
-});
-
-WarehouseAdminModel.belongsTo(WarehouseModel, {
-  foreignKey: 'id_warehouse',
-  as: 'warehouse',
-});
 
 module.exports = UserModel;

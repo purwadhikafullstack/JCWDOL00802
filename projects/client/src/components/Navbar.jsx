@@ -143,9 +143,7 @@ const Navbar = (props) => {
         {data.length >= 10 && (
           <>
             <hr />
-            <MenuItem>
-              <Link to="/product">Lihat Semua Kategori</Link>
-            </MenuItem>
+            <MenuItem>Lihat Semua Kategori</MenuItem>
           </>
         )}
       </MenuList>
