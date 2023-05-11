@@ -40,8 +40,8 @@ import AdminPromo from "./pages/AdminPromo";
 import EditPromo from "./pages/EditPromo";
 import Product from "./pages/Product";
 import AdminUserList from "./pages/AdminUserList";
-import AdminOrderList from "./pages/AdminOrderList"
-import AdminOrderListDetail from "./pages/AdminOrderDetail.jsx"
+import AdminOrderList from "./pages/AdminOrderList";
+import AdminOrderListDetail from "./pages/AdminOrderDetail.jsx";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -110,6 +110,12 @@ function App() {
           <Route path="/product/detail/:id" element={<DetailPage />} />
           <Route path="/transaction" element={<OrderPage />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/admin/stockhistory" element={<StockHistory />} />
+          <Route
+            path="/admin/stockhistory/:id"
+            element={<StockHistoryDetail />}
+          />
+          <Route path="/admin/salesreport" element={<ReportSales />} />
           {/* semua yang butuh login user taruh dalam <></> bawah ini */}
           {role == 1 && (
             <>
@@ -121,7 +127,7 @@ function App() {
           {admin.includes(role) && (
             <>
               <Route path="/admin" element={<Dashboard />} />
-              <Route path="/admin/salesreport" element={<ReportSales />} />
+
               <Route path="/admin/products" element={<AdminProducts />} />
               <Route
                 path="/admin/category"
@@ -129,14 +135,13 @@ function App() {
               />
 
               <Route path="/admin/editproduct" element={<EditProduct />} />
-              <Route path="/admin/stockhistory" element={<StockHistory />} />
-              <Route
-                path="/admin/stockhistory/:id"
-                element={<StockHistoryDetail />}
-              />
+
               <Route path="/admin/requeststock" element={<RequestStock />} />
               <Route path="/admin/orderlist" element={<AdminOrderList />} />
-              <Route path="/admin/order-detail" element={<AdminOrderListDetail />} />
+              <Route
+                path="/admin/order-detail"
+                element={<AdminOrderListDetail />}
+              />
             </>
           )}
 

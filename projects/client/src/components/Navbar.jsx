@@ -28,7 +28,7 @@ import {
   AiOutlineClose,
   AiOutlineLogout,
 } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutAction } from "../actions/userAction";
 import { API_URL } from "../helper";
@@ -51,7 +51,7 @@ const Navbar = (props) => {
       profile_picture: state.userReducer.profile_picture,
     };
   });
-
+  let navigate=useNavigate()
   useEffect(() => {
     if (id_user) {
       const getUserById = async (id_user) => {
@@ -126,7 +126,10 @@ const Navbar = (props) => {
       console.log(error);
     }
   };
-
+  const handleMenuItemClick = (categoryId) => {
+    navigate("/product",{state:{id_category:categoryId}})
+   ;
+  }
   useEffect(() => {
     getCategory();
   }, []);
@@ -137,7 +140,7 @@ const Navbar = (props) => {
       <MenuList>
         {data.map((val, idx) => {
           if (idx < 10) {
-            return <MenuItem>{val.category}</MenuItem>;
+            return <MenuItem onClick={() => handleMenuItemClick(val.id_category)}>{val.category}</MenuItem>;
           }
         })}
         {data.length >= 10 && (

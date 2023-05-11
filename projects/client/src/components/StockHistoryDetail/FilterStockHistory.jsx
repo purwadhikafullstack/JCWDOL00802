@@ -13,6 +13,11 @@ const StockFilter = ({
   warehouses,
   type,
   handleFilter,
+  selectedOrder,
+ selectedSort,
+ setOrder,
+ setSort,
+
  
 }) => {
   
@@ -20,7 +25,7 @@ const StockFilter = ({
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedWarehouse, setSelectedWarehouse] = useState("");
   const [selectedType,setSelectedType]=useState("")
-  
+  const [resetDisable, setResetDisable] = useState(true)
   const [buttonDisable, setButtonDisable] = useState(false);
   const [yearList, setYearList] = useState([]);
 
@@ -39,21 +44,44 @@ const StockFilter = ({
     { value: 11, name: "November" },
     { value: 12, name: "December" },
   ];
- 
+  let Sort = [{label:"tanggal",value:"date"},{label:"tipe transaksi",value:"type"},{label:"gudang",value:"id_warehouse"},{label:"jumlah barang",value:"amount"}]
+  const handleResetFilterClick = () => {
+    
+    setSelectedYear("");
+    setSelectedMonth("")
+    setSelectedType("")
+    if(warehouses?.length> 1){
+      setSelectedWarehouse("");
+    }
+    
+    
+  }
 
+  useEffect(() => {
+    if(!selectedMonth && !selectedType && !selectedWarehouse && !selectedYear){
+      setResetDisable(true)
+    }else{ setResetDisable(false)}
+  }, [selectedMonth,selectedWarehouse,selectedYear,selectedType])
+  useEffect(() => {
+    if (resetDisable) {
+      handleFilterClick();
+    }
+  }, [resetDisable]);
+  
   const validatedYear = () => {
+   
     if (!selectedMonth && selectedYear) {
       setButtonDisable(true);
     } else if (selectedMonth && !selectedYear) {
       setButtonDisable(true);
-    } else setButtonDisable(false);
+    } else {setButtonDisable(false)};
   };
   const yearListDefault = () => {
     const year = new Date().getFullYear();
     let baseYear = 2022;
-    let dataYear = [];
+    let dataYear = [{label:"year", value :""}];
     for (let i = parseInt(year); i >= baseYear; i--) {
-      dataYear.push(i);
+      dataYear.push({label :i, value:i});
     }
     setYearList(dataYear);
   };
@@ -64,7 +92,7 @@ const StockFilter = ({
   }, []);
   useEffect(() => {
     validatedYear();
-  }, [selectedMonth, selectedYear, warehouses]);
+  }, [selectedMonth, selectedYear]);
 
   const handleWarehouseChange = (event) => {
     setSelectedWarehouse(event.target.value)
@@ -98,10 +126,10 @@ const StockFilter = ({
     <Box p={4} boxShadow="base" borderRadius="md">
       <Stack spacing={4}>
         
-        <Select placeholder="Year" onChange={handleYear}>
+        <Select onChange={handleYear}>
           {yearList.map((year) => (
-            <option key={year} value={year}>
-              {year}
+            <option key={year} value={year.value} selected={year.value==selectedYear}>
+              {year.label}
             </option>
           ))}
         </Select>
@@ -120,11 +148,12 @@ const StockFilter = ({
           </Select>
         </FormControl>
         <FormControl>
-          <Select placeholder="Warehouse" onChange={handleWarehouseChange}>
+          <Select onChange={handleWarehouseChange}isDisabled={warehouses?.length ==1}>
             {warehouses?.map((warehouse) => (
               <option
                 key={warehouse.id_warehouse}
                 value={warehouse.id_warehouse}
+                selected ={warehouse.id_warehouse == selectedWarehouse}
               >
                 {warehouse.warehouse_branch_name}
               </option>
@@ -132,9 +161,9 @@ const StockFilter = ({
           </Select>
         </FormControl>
         <FormControl>
-          <Select placeholder="All-type" onChange={handleCategoryChange} >
+          <Select  onChange={handleCategoryChange} >
             {type?.map((type) => (
-              <option key={type.type} value={type.type}>
+              <option key={type.type} value={type.type} selected={type.type == selectedType}>
                 {type.description}
               </option>
             ))}
@@ -147,7 +176,30 @@ const StockFilter = ({
         >
           Terapkan filter
         </Button>
+        <Button colorScheme="orange" onClick={handleResetFilterClick} isDisabled={resetDisable} variant={resetDisable? "ghost":"outline"}>
+        Reset Filter
+      </Button>
+      <FormControl>
+    <Select onChange={(e) => setSort(e.target.value)}>
+      {Sort?.map((option) => (
+        <option key={option.value} value={option.value} selected={option.value == selectedSort}>
+          {option.label}
+        </option>
+      ))}
+    </Select>
+  </FormControl>
+  <FormControl>
+    <Select onChange={(e) => setOrder(e.target.value)}>
+      {[{label:"A-Z",value:"asc"}, {label:"Z-A",value: "desc"}].map((option) => (
+        <option key={option} value={option.value} selected={option.value == selectedOrder} >
+          {option.label}
+        </option>
+      ))}
+    </Select>
+  </FormControl>
       </Stack>
+      <div>{selectedMonth}</div>
+      <div>{selectedYear}</div>
     </Box>
   );
 };

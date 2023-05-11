@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { API_URL } from "../helper";
@@ -60,6 +60,16 @@ function Products() {
       console.log(error);
     }
   };
+  let location = useLocation()
+
+  useEffect(() => {
+    console.log(location);
+    if(location.state.id_category){
+      setSelectedCategory(location.state.id_category)
+    }
+    
+  }, [location])
+  
 
   let dataProductExist = false;
   if (dataProduct == null) {
@@ -100,7 +110,7 @@ function Products() {
 
   useEffect(() => {
     getProduct();
-  }, [page, limit, onFilter]);
+  }, [page, limit, onFilter,selectedCategory]);
 
   //PRINT DATA
   const printCategory = () => {
