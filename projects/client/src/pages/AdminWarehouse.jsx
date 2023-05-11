@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../helper";
 import Axios from "axios";
@@ -49,6 +50,13 @@ function AdminWarehouse() {
   const [isOpenAlertDialog, setIsOpenAlertDialog] = useState(false);
   const [warehouseIdToRemove, setWarehouseIdToRemove] = useState(null);
   const [selectedAdminIndex, setSelectedAdminIndex] = useState(null);
+  let userToken = localStorage.getItem("cnc_login");
+  let navigate = useNavigate();
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
 
   // GET DATA
   const getWarehouse = async () => {
@@ -67,7 +75,6 @@ function AdminWarehouse() {
     }
   };
 
-  
   //for assign admin
 
   const getAdminList = async () => {
@@ -190,47 +197,82 @@ function AdminWarehouse() {
             <Td>{val.detail_address.substring(0, 30)}</Td>
             <Td>{admin}</Td>
             <Td>
-              <Link to={editpage}>
-                <Button
-                  size="sm"
-                  type="button"
-                  colorScheme="orange"
-                  variant="solid"
-                >
-                  Edit Gudang
-                </Button>
-              </Link>
-            </Td>
-            <Td>
-              {val.status === 1 && (
-                <Button
-                  type="button"
-                  colorScheme="blue"
-                  variant="solid"
-                  onClick={() => {
-                    setCurrentWarehouseId(val.id_warehouse);
-                    onOpen();
-                  }}
-                >
-                  Assign Admin
-                </Button>
-              )}
-              {val.status === 2 && (
-                <Button
-                  type="button"
-                  colorScheme="red"
-                  variant="solid"
-                  onClick={() => onRemoveAdmin(val.id_warehouse)}
-                >
-                  Remove Admin
-                </Button>
-              )}
+              <ButtonGroup>
+                <Link to={editpage}>
+                  <Button
+                    size="sm"
+                    type="button"
+                    colorScheme="orange"
+                    variant="solid"
+                  >
+                    Edit
+                  </Button>
+                </Link>
+                {val.status === 1 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    colorScheme="blue"
+                    variant="solid"
+                    onClick={() => {
+                      setCurrentWarehouseId(val.id_warehouse);
+                      onOpen();
+                    }}
+                  >
+                    Assign Admin
+                  </Button>
+                )}
+                {val.status === 2 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    colorScheme="red"
+                    variant="solid"
+                    onClick={() => onRemoveAdmin(val.id_warehouse)}
+                  >
+                    Remove Admin
+                  </Button>
+                )}
+              </ButtonGroup>
             </Td>
           </Tr>
         );
       }
     });
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Daftar Gudang";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    } else if (role && role == 2) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">
@@ -246,7 +288,6 @@ function AdminWarehouse() {
                   <Th color="#ffffff">Cabang Gudang</Th>
                   <Th color="#ffffff">Alamat</Th>
                   <Th color="#ffffff">Admin</Th>
-                  <Th></Th>
                   <Th></Th>
                 </Tr>
               </Thead>

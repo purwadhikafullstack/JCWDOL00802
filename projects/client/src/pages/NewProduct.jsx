@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from "react";
 import Axios from "axios";
-import {
-  Button,
-  ButtonGroup,
-  Text,
-  Textarea,
-  Input,
-  Image,
-} from "@chakra-ui/react";
+import { Button, Text, Textarea, Input, Image } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useFormik } from "formik";
 import { API_URL } from "../helper";
 import { basicSchema } from "../schemas";
+import { useSelector } from "react-redux";
 
 const NewProduct = (props) => {
   const navigate = useNavigate();
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
   // STATE
-
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
     initialValues: {
       productName: "",
@@ -127,6 +126,40 @@ const NewProduct = (props) => {
       setFirstLaunch(false);
     }
   }, [touched]);
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Tambah Produk";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    } else if (role && role == 2) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">

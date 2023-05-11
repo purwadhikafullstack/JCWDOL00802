@@ -2,13 +2,19 @@ import React, { useState, useEffect } from "react";
 import Axios from "axios";
 import { Button, Text, Textarea, Input, Image } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
 import { useFormik } from "formik";
 import { API_URL } from "../helper";
 import { basicSchema } from "../schemas";
+import { useSelector } from "react-redux";
 
 const NewPromo = (props) => {
   const navigate = useNavigate();
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
   // STATE
 
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
@@ -17,6 +23,7 @@ const NewPromo = (props) => {
       promoDescription: "",
       promoMax: null,
       promoLimit: null,
+      count: null,
     },
     validationSchema: basicSchema,
   });
@@ -24,6 +31,16 @@ const NewPromo = (props) => {
   const [preview, setPreview] = useState("https://fakeimg.pl/350x200/");
   const [promoPicture, setPromoPicture] = useState("");
   const [expire, setExpire] = useState(null);
+  const [dataCategory, setDataCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(0);
+
+  // GET
+
+  const getCategory = async () => {
+    Axios.get(`${API_URL}/apis/product/category`).then((response) => {
+      setDataCategory(response.data);
+    });
+  };
 
   //GAMBAR
   const loadPromoPictureEdit = (e) => {
@@ -43,6 +60,8 @@ const NewPromo = (props) => {
         promo_picture: promoPicture,
         expire_date: expire,
         limitation: values.promoLimit,
+        category: selectedCategory,
+        count_user: values.count,
       },
       {
         headers: {
@@ -63,6 +82,10 @@ const NewPromo = (props) => {
 
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [firstLaunch, setFirstLaunch] = useState(true);
+
+  useEffect(() => {
+    getCategory();
+  }, []);
 
   useEffect(() => {
     if (
@@ -88,6 +111,58 @@ const NewPromo = (props) => {
       setFirstLaunch(false);
     }
   }, [touched]);
+
+  // PRINT
+  const printCategory = () => {
+    let data = dataCategory;
+
+    if (dataCategory) {
+      return data.map((val, idx) => {
+        return (
+          <option
+            value={val?.id_category}
+            selected={val.id_category == selectedCategory}
+          >
+            {val?.category}
+          </option>
+        );
+      });
+    }
+  };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Tambah Promo";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    } else if (role && role == 2) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">
@@ -139,24 +214,45 @@ const NewPromo = (props) => {
             )}
           </div>
 
-          <div className="my-3">
-            <label className="form-label fw-bold text-muted">Promo max</label>
-            <Input
-              id="promoMax"
-              type="number"
-              className={
-                errors.promoMax && touched.promoMax ? "input-error" : ""
-              }
-              placeholder="Promo Max"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              value={values.promoMax}
-            />
-            {errors.promoMax && touched.promoMax && (
-              <Text fontSize="small" className="error">
-                {errors.promoMax}
-              </Text>
-            )}
+          <div className="my-3 d-flex">
+            <div className="mx-2">
+              <label className="form-label fw-bold text-muted">Promo max</label>
+              <Input
+                id="promoMax"
+                type="number"
+                className={
+                  errors.promoMax && touched.promoMax ? "input-error" : ""
+                }
+                placeholder="Promo Max"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.promoMax}
+              />
+              {errors.promoMax && touched.promoMax && (
+                <Text fontSize="small" className="error">
+                  {errors.promoMax}
+                </Text>
+              )}
+            </div>
+            <div className="mx-2">
+              <label className="form-label fw-bold text-muted">
+                Promo max per user
+              </label>
+              <Input
+                id="count"
+                type="number"
+                className={errors.count && touched.count ? "input-error" : ""}
+                placeholder="Promo Max"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.count}
+              />
+              {errors.count && touched.count && (
+                <Text fontSize="small" className="error">
+                  {errors.count}
+                </Text>
+              )}
+            </div>
           </div>
           <div className="my-3">
             <label className="form-label fw-bold text-muted">
@@ -190,6 +286,16 @@ const NewPromo = (props) => {
           </div>
         </div>
         <div className="col-6 px-5">
+          <div className="my-3">
+            <label className="form-label fw-bold text-muted">Kategori</label>
+            <select
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="form-control"
+            >
+              <option value={0}>Select Category</option>
+              {printCategory()}
+            </select>
+          </div>
           <div>
             <label className="form-label fw-bold text-muted">
               Gambar Promo

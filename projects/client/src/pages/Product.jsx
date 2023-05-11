@@ -29,7 +29,7 @@ function Products() {
   const [limit, setLimit] = useState(10);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
- 
+
   // GET DATA
 
   const getCategory = async () => {
@@ -40,19 +40,15 @@ function Products() {
 
   const getProduct = async () => {
     try {
-      
-      let products = await Axios.post(
-        API_URL + `/apis/product/listproduct`,
-        {
-          search,
-          category: selectedCategory,
-          order,
-          limit,
-          page: parseInt(page) - 1,
-          minPrice,
-          maxPrice,
-        }
-      );
+      let products = await Axios.post(API_URL + `/apis/product/listproduct`, {
+        search,
+        category: selectedCategory,
+        order,
+        limit,
+        page: parseInt(page) - 1,
+        minPrice,
+        maxPrice,
+      });
       setPage(products.data.page + 1);
       setDataProduct(products.data.data);
       setLastPage(products.data.total_page);
@@ -60,16 +56,16 @@ function Products() {
       console.log(error);
     }
   };
-  let location = useLocation()
+  let location = useLocation();
 
   useEffect(() => {
-    console.log(location);
-    if(location.state.id_category){
-      setSelectedCategory(location.state.id_category)
+    if (location.state && location.state.id_category) {
+      setSelectedCategory(location.state.id_category);
     }
-    
-  }, [location])
-  
+    if (location.state && location.state.search) {
+      setSearch(location.state.search);
+    }
+  }, [location]);
 
   let dataProductExist = false;
   if (dataProduct == null) {
@@ -110,7 +106,7 @@ function Products() {
 
   useEffect(() => {
     getProduct();
-  }, [page, limit, onFilter,selectedCategory]);
+  }, [page, limit, onFilter, selectedCategory]);
 
   //PRINT DATA
   const printCategory = () => {
@@ -132,10 +128,10 @@ function Products() {
   const printData = () => {
     let data = dataProductExist ? dataProduct : [];
     return data.map((val, idx) => {
-      let detailproduct = `/product/detail/${val.id_product}`
+      let detailproduct = `/product/detail/${val.id_product}`;
       return (
         <Flex
-          flexBasis={['100%', '50%', '25%']} // 100% for mobile, 50% for tablet, 25% for desktop
+          flexBasis={["100%", "50%", "25%"]} // 100% for mobile, 50% for tablet, 25% for desktop
           direction="column"
           borderWidth="1px"
           borderRadius="lg"
@@ -172,27 +168,33 @@ function Products() {
     });
   };
 
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="bg-white w-100 m-auto">
-   <Box pl={10}>
-    <Text fontSize="2xl">Daftar Produk</Text>
-</Box>
+      <Box pl={10}>
+        <Text fontSize="2xl">Daftar Produk</Text>
+      </Box>
       <div className=" d-flex">
         <div className="col-9 rounded p-3">
-          <Flex
-            className=" d-flex"
-            flexWrap="wrap"
-            justifyContent="center"
-          >
+          <Flex className=" d-flex" flexWrap="wrap" justifyContent="center">
             {printData()}
           </Flex>
           <div
             className="d-flex my-5"
             style={{ alignContent: "center", justifyContent: "center" }}
           >
-                <PaginationOrder
+            <PaginationOrder
               currentPage={parseInt(page)}
               totalPages={parseInt(lastPage)}
               onPageChange={setPage}
@@ -204,102 +206,101 @@ function Products() {
             >
               menampilkan
               <Input
-              type="text"
-              className="form-control"
-              placeholder="limit"
-              value={limit}
-              onChange={(e) => setLimit(e.target.value)}
-              style={{ width: "60px" }}
-            />
-            barang
+                type="text"
+                className="form-control"
+                placeholder="limit"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+                style={{ width: "60px" }}
+              />
+              barang
+            </div>
           </div>
         </div>
-      </div>
-      <div className="col-3 rounded shadow mt-3 p-3 filterbox">
-        <div>Filter</div>
-        <div className="inputfilter">
-          <Input
-            type="text"
-            className="form-control mt-3"
-            placeholder="Cari nama produk"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="inputfilter">
-          <Select
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="form-control form-control-lg mt-3
+        <div className="col-3 rounded shadow mt-3 p-3 filterbox">
+          <div>Filter</div>
+          <div className="inputfilter">
+            <Input
+              type="text"
+              className="form-control mt-3"
+              placeholder="Cari nama produk"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="inputfilter">
+            <Select
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="form-control form-control-lg mt-3
         "
-          >
-            <option value="">Semua Kategori</option>
-            {printCategory()}
-          </Select>
-        </div>
-        <div className="inputfilter">
-          <Select
-            onChange={(e) => setOrder(e.target.value)}
-            className="form-control form-control-lg mt-3
+            >
+              <option value="">Semua Kategori</option>
+              {printCategory()}
+            </Select>
+          </div>
+          <div className="inputfilter">
+            <Select
+              onChange={(e) => setOrder(e.target.value)}
+              className="form-control form-control-lg mt-3
         "
-          >
-            <option value={0}>Urutkan</option>
-            <option value={1} selected={order == 1}>
-              Nama:A-Z
-            </option>
-            <option value={2} selected={order == 2}>
-              Nama:Z-A
-            </option>
-            <option value={3} selected={order == 3}>
-              Harga Terendah
-            </option>
-            <option value={4} selected={order == 4}>
-              Harga Tertinggi
-            </option>
-          </Select>
+            >
+              <option value={0}>Urutkan</option>
+              <option value={1} selected={order == 1}>
+                Nama:A-Z
+              </option>
+              <option value={2} selected={order == 2}>
+                Nama:Z-A
+              </option>
+              <option value={3} selected={order == 3}>
+                Harga Terendah
+              </option>
+              <option value={4} selected={order == 4}>
+                Harga Tertinggi
+              </option>
+            </Select>
+          </div>
+          <div className="inputfilter">
+            <Input
+              type="text"
+              placeholder="harga min"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              className="form-control form-control-lg mt-3"
+            />
+          </div>
+          <div className="inputfilter">
+            <Input
+              type="text"
+              placeholder="harga max"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="form-control form-control-lg mt-3"
+            />
+          </div>
+          <br />
+          <ButtonGroup>
+            <Button
+              type="button"
+              colorScheme="orange"
+              variant="solid"
+              onClick={() => onSetFilter()}
+            >
+              Set Filter
+            </Button>
+            <Button
+              type="button"
+              colorScheme="orange"
+              variant={onFilter ? "solid" : "outline"}
+              onClick={() => onResetFilter()}
+              isDisabled={!onFilter}
+            >
+              Reset Filter
+            </Button>
+          </ButtonGroup>
         </div>
-        <div className="inputfilter">
-          <Input
-            type="text"
-            placeholder="harga min"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            className="form-control form-control-lg mt-3"
-          />
-        </div>
-        <div className="inputfilter">
-          <Input
-            type="text"
-            placeholder="harga max"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            className="form-control form-control-lg mt-3"
-          />
-        </div>
-        <br />
-        <ButtonGroup>
-          <Button
-            type="button"
-            colorScheme="orange"
-            variant="solid"
-            onClick={() => onSetFilter()}
-          >
-            Set Filter
-          </Button>
-          <Button
-            type="button"
-            colorScheme="orange"
-            variant={onFilter ? "solid" : "outline"}
-            onClick={() => onResetFilter()}
-            isDisabled={!onFilter}
-          >
-            Reset Filter
-          </Button>
-        </ButtonGroup>
       </div>
     </div>
-  </div>
-);
-
+  );
 }
 
 export default Products;

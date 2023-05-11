@@ -1,20 +1,19 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Axios from "axios";
-import {
-  Button,
-  ButtonGroup,
-  Text,
-  Textarea,
-  Input,
-  Image,
-} from "@chakra-ui/react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Button, Text, Textarea, Input, Image } from "@chakra-ui/react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
-
 import { API_URL } from "../helper";
 const EditPromo = (props) => {
   const navigate = useNavigate();
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
 
   //STATE
   const [kode, setKode] = useState("");
@@ -23,10 +22,11 @@ const EditPromo = (props) => {
   const [limitPromo, setLimitPromo] = useState();
   const [statusPromo, setStatusPromo] = useState();
   const [expirePromo, setExpirePromo] = useState();
-
+  const [dataCategory, setDataCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(0);
   const [preview, setPreview] = useState("https://fakeimg.pl/350x200/");
   const [promoPicture, setPromoPicture] = useState("");
-
+  const [cpu, setCpu] = useState(0);
   //FORMIK
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
     initialValues: {
@@ -34,6 +34,7 @@ const EditPromo = (props) => {
       promoDescription: deskripsi,
       promoMax: maxPromo,
       promoLimit: limitPromo,
+      count: cpu,
     },
     enableReinitialize: true,
     validationSchema: basicSchema,
@@ -66,14 +67,26 @@ const EditPromo = (props) => {
       setLimitPromo(promo.data[0].limitation);
       setStatusPromo(promo.data[0].status);
       setPreview(`${API_URL}/img/promo/${promo.data[0].promo_picture}`);
+      setPromoPicture(promo.data[0].promo_picture);
       setExpirePromo(promo.data[0].expire_date.split("T")[0]);
+      setCpu(promo.data[0].count_user);
+      setSelectedCategory(promo.data[0].category);
     } catch (error) {
       console.log(error);
     }
   };
 
+  const getCategory = async () => {
+    Axios.get(`${API_URL}/apis/product/category`).then((response) => {
+      setDataCategory(response.data);
+    });
+  };
+
   useEffect(() => {
     getPromo();
+  }, []);
+  useEffect(() => {
+    getCategory();
   }, []);
 
   const [buttonDisabled, setButtonDisabled] = useState(true);
@@ -91,8 +104,6 @@ const EditPromo = (props) => {
     }
   }, [errors]);
 
-  //PRINT DATA
-
   //FUNCTION BUTTON
   const onEdit = async () => {
     try {
@@ -107,6 +118,8 @@ const EditPromo = (props) => {
           expire_date: expirePromo,
           limitation: values.promoLimit,
           status: statusPromo,
+          category: selectedCategory,
+          count_user: values.count,
         },
         {
           headers: {
@@ -123,6 +136,58 @@ const EditPromo = (props) => {
       alert(error.response.data.msg);
     }
   };
+
+  // PRINT
+  const printCategory = () => {
+    let data = dataCategory;
+
+    if (dataCategory) {
+      return data.map((val, idx) => {
+        return (
+          <option
+            value={val?.id_category}
+            selected={val.id_category == selectedCategory}
+          >
+            {val?.category}
+          </option>
+        );
+      });
+    }
+  };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Detail Promo";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    } else if (role && role == 2) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">
@@ -174,24 +239,45 @@ const EditPromo = (props) => {
             )}
           </div>
 
-          <div className="my-3">
-            <label className="form-label fw-bold text-muted">Promo max</label>
-            <Input
-              id="promoMax"
-              type="number"
-              className={
-                errors.promoMax && touched.promoMax ? "input-error" : ""
-              }
-              placeholder="Promo Max"
-              onChange={handleChange}
-              onBlur={handleBlur}
-              value={values.promoMax}
-            />
-            {errors.promoMax && touched.promoMax && (
-              <Text fontSize="small" className="error">
-                {errors.promoMax}
-              </Text>
-            )}
+          <div className="my-3 d-flex">
+            <div className="mx-2">
+              <label className="form-label fw-bold text-muted">Promo max</label>
+              <Input
+                id="promoMax"
+                type="number"
+                className={
+                  errors.promoMax && touched.promoMax ? "input-error" : ""
+                }
+                placeholder="Promo Max"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.promoMax}
+              />
+              {errors.promoMax && touched.promoMax && (
+                <Text fontSize="small" className="error">
+                  {errors.promoMax}
+                </Text>
+              )}
+            </div>
+            <div className="mx-2">
+              <label className="form-label fw-bold text-muted">
+                Promo max per user
+              </label>
+              <Input
+                id="count"
+                type="number"
+                className={errors.count && touched.count ? "input-error" : ""}
+                placeholder="Promo Max"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values.count}
+              />
+              {errors.count && touched.count && (
+                <Text fontSize="small" className="error">
+                  {errors.count}
+                </Text>
+              )}
+            </div>
           </div>
           <div className="my-3">
             <label className="form-label fw-bold text-muted">
@@ -230,7 +316,7 @@ const EditPromo = (props) => {
             <label className="form-label fw-bold text-muted">Status</label>
             <select
               onChange={(e) => setStatusPromo(e.target.value)}
-              className="form-control  "
+              className="form-control"
             >
               <option value={0} selected={statusPromo == 0}>
                 Not Active
@@ -238,6 +324,16 @@ const EditPromo = (props) => {
               <option value={1} selected={statusPromo == 1}>
                 Active
               </option>
+            </select>
+          </div>
+          <div className="my-3">
+            <label className="form-label fw-bold text-muted">Kategori</label>
+            <select
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="form-control"
+            >
+              <option value={0}>Select Category</option>
+              {printCategory()}
             </select>
           </div>
           <div>

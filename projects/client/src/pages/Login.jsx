@@ -14,10 +14,18 @@ import { useDispatch } from "react-redux";
 import { API_URL } from "../helper";
 import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
+import { useSelector } from "react-redux";
 
-const Login = (props) => {
+const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
+  let admin = [2, 3];
 
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
     initialValues: {
@@ -38,11 +46,15 @@ const Login = (props) => {
       .then((response) => {
         dispatch(loginAction(response.data));
         localStorage.setItem("cnc_login", response.data.token);
-        navigate("/", { replace: true });
+        if (role == 1) {
+          navigate("/", { replace: true });
+        } else if (role == 2 || role == 3) {
+          navigate("/admin", { replace: true });
+        }
       })
       .catch((error) => {
         console.log(error);
-        alert("Wrong Password");
+        alert(error.response.data.msg);
       });
   };
 
@@ -71,13 +83,58 @@ const Login = (props) => {
     }
   }, [touched]);
 
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Login";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (role && role == 1 && userToken) {
+      navigate("/");
+    } else if (role && admin.includes(role)) {
+      navigate("/admin");
+    }
+  }, [role]);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
   return (
     <div className="paddingmain">
-      <div className="bg-white my-5 w-100 p-5 m-auto shadow">
+      <div className="my-2 w-100 p-5 shadow">
         <Text fontSize="4xl" className="fw-bold">
           Login
         </Text>
-        <div className="mt-5 mb-3">
+        <div className="d-flex">
+          <a className="muted-color">Belum daftar?</a>
+          <a className="ms-2 main-color fw-bold" href="/regis">
+            Daftar disini
+          </a>
+        </div>
+        <div className="d-flex">
+          <a className="muted-color">Lupa Password?</a>
+          <a className="ms-2 main-color fw-bold" href="/requestreset">
+            Reset Password disini
+          </a>
+        </div>
+        <div className="mt-3 mb-3">
           <label className="form-label fw-bold text-muted">Email</label>
           <Input
             type="text"

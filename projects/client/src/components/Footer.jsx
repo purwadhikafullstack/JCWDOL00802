@@ -1,12 +1,11 @@
 import React from "react";
-import { Text } from "@chakra-ui/react";
 import {
   AiFillFacebook,
   AiFillInstagram,
   AiFillTwitterCircle,
 } from "react-icons/ai";
 
-const Footer = (props) => {
+const Footer = () => {
   return (
     <div className="p-5 shadow-lg w-100 position-absolute top-100 bg-light">
       <div className="container d-none d-md-flex flex-wrap justify-content-between">
@@ -21,13 +20,17 @@ const Footer = (props) => {
           <li>
             <b>Transaksi</b>
           </li>
-          <li>Beli</li>
+          <li>
+            <a href="/product">Belanja Sekarang</a>
+          </li>
           <li>Lokasi Kami</li>
         </ul>
         <div className="d-none d-md-block">
           <b>Ikuti Kami</b>
           <div className="d-flex">
-            <AiFillFacebook size={42} color="#f96c08" />
+            <a href="https://www.facebook.com/clickncollect23/">
+              <AiFillFacebook size={42} color="#f96c08" />
+            </a>
             <AiFillInstagram size={42} color="#f96c08" />
             <AiFillTwitterCircle size={42} color="#f96c08" />
           </div>

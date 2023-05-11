@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { API_URL } from "../helper";
@@ -33,6 +33,8 @@ function AdminProducts() {
   const [limit, setLimit] = useState(10);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  let userToken = localStorage.getItem("cnc_login");
+  let navigate = useNavigate();
   const { role } = useSelector((state) => {
     return {
       role: state.userReducer.role,
@@ -184,6 +186,38 @@ function AdminProducts() {
       );
     });
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Daftar Produk";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+  useEffect(() => {
+    let admin = [2, 3];
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && !admin.includes(role)) {
+      navigate("/");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">

@@ -4,10 +4,16 @@ import { Button, ButtonGroup, Text, Textarea, Input } from "@chakra-ui/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
-
+import { useSelector } from "react-redux";
 import { API_URL } from "../helper";
 const EditWarehouse = (props) => {
   const navigate = useNavigate();
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
 
   //STATE
   const [nameEdit, setNameEdit] = useState("");
@@ -207,6 +213,40 @@ const EditWarehouse = (props) => {
         });
     }
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Detail Gudang";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    } else if (role && role == 2) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">

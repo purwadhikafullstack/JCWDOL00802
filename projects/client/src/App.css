@@ -34,7 +34,8 @@
 .sidebar {
   background: #ffe5b4;
   color: #f96c08;
-  height: 100vh;
+  height: 100%;
+  min-height: 100vh;
   transition: all 0.5s;
   font-size: 20px;
   position: sticky;
@@ -115,27 +116,6 @@ select.input-error {
 
 .error {
   color: #fc8181;
-}
-
-/* PAGINATION */
-
-.page {
-  background: #ffe5b4;
-  color: #f96c08;
-}
-.page:hover {
-  background: #f96c08;
-  color: white;
-}
-
-.pageselected {
-  background: #f96c08 !important;
-  color: white !important;
-}
-
-.disablePage {
-  background: white !important;
-  color: grey !important;
 }
 
 /* FILTER */

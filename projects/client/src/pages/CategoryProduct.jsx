@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { API_URL } from "../helper";
 import Axios from "axios";
 import {
@@ -7,7 +8,6 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
@@ -28,6 +28,9 @@ function AdminCategoryProduct() {
       role: state.userReducer.role,
     };
   });
+
+  let userToken = localStorage.getItem("cnc_login");
+  let navigate = useNavigate();
 
   const [isEdit, setIsEdit] = useState(false);
 
@@ -304,6 +307,39 @@ function AdminCategoryProduct() {
       );
     });
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Daftar Kategori";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    let admin = [2, 3];
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && !admin.includes(role)) {
+      navigate("/");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">

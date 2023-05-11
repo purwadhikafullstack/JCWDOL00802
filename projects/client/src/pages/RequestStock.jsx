@@ -12,8 +12,6 @@ import {
 } from "@chakra-ui/react";
 import { useEffect } from "react";
 import {
-  Card,
-  CardHeader,
   CardTitle,
   Modal,
   ModalHeader,
@@ -23,10 +21,12 @@ import {
 } from "reactstrap";
 import { useSelector } from "react-redux";
 import { format } from "date-fns";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
 function RequestStock() {
+  let navigate = useNavigate();
+  let userToken = localStorage.getItem("cnc_login");
   const { role } = useSelector((state) => {
     return {
       role: state.userReducer.role,
@@ -268,7 +268,7 @@ function RequestStock() {
   //   USE EFFECT
 
   useEffect(() => {
-    setPageReceive(0);
+    setPageReceive(1);
   }, [
     selectedWarehouseReceive,
     selectedCategoryReceive,
@@ -278,7 +278,7 @@ function RequestStock() {
   ]);
 
   useEffect(() => {
-    setPageSend(0);
+    setPageSend(1);
   }, [
     selectedWarehouseSend,
     selectedCategorySend,
@@ -645,6 +645,37 @@ function RequestStock() {
       </Modal>
     );
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Mutasi Produk";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">

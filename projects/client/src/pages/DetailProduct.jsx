@@ -15,7 +15,7 @@ import {
   ButtonGroup,
   Input,
   useColorModeValue,
-  IconButton
+  IconButton,
 } from "@chakra-ui/react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { API_URL } from "../helper";
@@ -131,11 +131,24 @@ const DetailPage = (props) => {
       alert("on cart = 0");
     } else alert(` on cart = ${cartData.total_item}`);
   };
-  
+
   const toggleLove = () => {
-    setIsLoved((prevState) => !prevState); 
+    setIsLoved((prevState) => !prevState);
     //Logic Buat Wishlist
   };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
+
   return (
     <Container maxW={"7xl"}>
       <SimpleGrid
@@ -198,17 +211,13 @@ const DetailPage = (props) => {
             <Button onClick={onDec}>-</Button>
           </HStack>
           <ButtonGroup spacing={2}>
-            <Button
-              colorScheme="orange"
-              variant="solid"
-              onClick={addToCart}
-            >
+            <Button colorScheme="orange" variant="solid" onClick={addToCart}>
               Add To Cart
             </Button>
             <IconButton
               aria-label="Add to wishlist"
               icon={<FiHeart />}
-              colorScheme={isLoved ? "red" : "gray"} 
+              colorScheme={isLoved ? "red" : "gray"}
               onClick={toggleLove}
             />
           </ButtonGroup>

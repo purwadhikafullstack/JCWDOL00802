@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-// import { FcGoogle } from "react-icons/fc";
 import Axios from "axios";
 import { Button, Text, Input } from "@chakra-ui/react";
 import { API_URL } from "../helper";
@@ -8,7 +7,7 @@ import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
 import { useSelector } from "react-redux";
 
-const Register = () => {
+const RequestReset = () => {
   const navigate = useNavigate();
   let userToken = localStorage.getItem("cnc_login");
   const { role } = useSelector((state) => {
@@ -23,12 +22,12 @@ const Register = () => {
     },
     validationSchema: basicSchema,
   });
-  const onRegis = () => {
-    Axios.post(API_URL + `/apis/user/regis`, {
+  const onReset = () => {
+    Axios.post(API_URL + `/apis/user/resetRequest`, {
       email: values.email,
     })
       .then((response) => {
-        alert("Register Success ✅");
+        alert("Request Reset Password Success ✅, Check your email");
         navigate("/");
       })
       .catch((error) => {
@@ -44,6 +43,7 @@ const Register = () => {
       window.removeEventListener("beforeunload", resetPageTitle());
     };
   }, []);
+
   useEffect(() => {
     if (role && role == 1) {
       navigate("/");
@@ -83,7 +83,7 @@ const Register = () => {
           <div className="col-12 col-md-4 p-5 shadow">
             <h6 className="fw-bold muted-color">Click N Collect</h6>
             <Text className="fw-bold" fontSize="4xl">
-              Daftar disini
+              Request Reset Password
             </Text>
             <div className="d-flex">
               <a className="muted-color">Sudah daftar?</a>
@@ -115,26 +115,11 @@ const Register = () => {
               width="full"
               colorScheme="orange"
               variant={errors.email ? "outline" : "solid"}
-              onClick={() => onRegis()}
+              onClick={() => onReset()}
               isDisabled={errors.email}
             >
-              Daftar
+              Request Reset Password
             </Button>
-            {/* Social Media Login */}
-            {/* <div className="text-center text-muted">
-              <span>atau</span>
-            </div>
-            <button
-              //   onClick={() =>
-              //     window.open(`https://google.com`, "_blank").focus()
-              //   }
-              className="btn btn-light py-2 text-muted mt-2 w-100 shadow"
-            >
-              <div className="d-flex justify-content-center align-items-center">
-                <FcGoogle size={36} className="me-2" />{" "}
-                <span> Daftar dengan Google</span>
-              </div>
-            </button> */}
           </div>
         </div>
       </div>
@@ -142,4 +127,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RequestReset;

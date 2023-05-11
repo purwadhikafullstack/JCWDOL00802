@@ -38,4 +38,5 @@ export const basicSchema = yup.object().shape({
   promoDescription: yup.string().max(300),
   promoMax: yup.number().positive().required("Masukan jumlah max promo"),
   promoLimit: yup.number().positive().required("Masukan minimal pembelanjaan"),
+  count: yup.number().positive().required("Masukan jumlah max promo per user"),
 });
