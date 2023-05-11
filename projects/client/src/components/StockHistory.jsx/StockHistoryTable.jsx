@@ -21,7 +21,7 @@ function StockHistoryTable({ data }) {
                 {val.name}</Link>
                 </Td>
               <Td color="#707070">{val.In}</Td>
-              <Td color="#707070">{val.out}</Td>
+              <Td color="#707070">{Math.abs(val.out)}</Td>
               <Td color="#707070">{val.last}</Td>
             </Tr>
           ))}

@@ -12,11 +12,12 @@ import {
   Td,
   TableCaption,
   TableContainer,
-  Link,
+  Link,useToast
 } from "@chakra-ui/react";
 import SalesFilter from "../components/SalesReportComponent/SalesFilter";
 import StockHistoryTable from "../components/StockHistory.jsx/StockHistoryTable";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
+import { useNavigate } from "react-router-dom";
 
 function StockHistory() {
   const [salesData, setSalesData] = useState(null);
@@ -37,16 +38,22 @@ function StockHistory() {
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [limit, setLimit] = useState(5);
-  const [order, setOrder] = useState(["id_product", "asc"]);
+  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("id_product");
   const[isFirstPage,setIsFirtsPage]= useState(false)
   const [isLastPage, setIsLastPage]=useState(false)
+
+  let sortData = [
+    {label:"id",value:"id_product"},
+    {value:"name",label:"nama"}
+  ]
   const { id_user, role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
       role: state.userReducer.role,
     };
   });
-
+  let userToken= localStorage.getItem("cnc_login")
   const getTransaction = async () => {
     let getLocalStorage = localStorage.getItem("cnc_login");
     const formattedBulan = parseInt(bulan) + 1;
@@ -55,12 +62,13 @@ function StockHistory() {
     Axios.post(
       `${API_URL}/apis/product/stockhistory?page=${parseInt(page)-1}&limit=${limit}`,
       {
-        bulan: formattedBulan,
-        tahun: formattedTahun,
+        bulan: bulan,
+        tahun: tahun,
         search: search,
         warehouse: selectedWarehouse,
         category: selectedCategory,
-        order: [order[0]],
+        order:[sort,order]
+        
       },
       {
         headers: {
@@ -100,28 +108,36 @@ function StockHistory() {
   };
 
 
-
-
-  ;
+  let navigate= useNavigate()
+  let toast = useToast() 
+  const toastMessage =(text,stat)=>{
+    toast({
+      title: text,
+      status: stat,
+      duration: 3000,
+      isClosable: true,
+      position:"top"
+    })
+  }
+  useEffect(() => {
+    let admin =[2,3]
+   
+    if(role && !admin.includes(role)){
+      navigate("/")
+      toastMessage("unAuthorized Access", "error")
+    }
+    if (!userToken){
+      navigate("/login")
+      toastMessage("Please Login First", "error")
+    }
+  }, [role,userToken])
 
 
   
   
-  const printOrder = () => {
-    let data = [
-      ["id_product", "asc"],
-      ["id_product", "desc"],
-      ["name", "asc"],
-      ["name", "desc"],
-    ];
-    return data.map((val) => {
-      return (
-        <option value={val} selected={val == order}>
-          {val}
-        </option>
-      );
-    });
-  };
+  
+    
+  
 
 
   useEffect(() => {
@@ -141,6 +157,7 @@ function StockHistory() {
     limit,
     page,
     order,
+    sort
   ]);
 
   const handleApplyFilter = (value)=>{
@@ -163,7 +180,7 @@ function StockHistory() {
         </div>
         <div className="col-3 my-3 ">
           <div >
-            <SalesFilter warehouses={dataWarehouse} categories={dataCategory} handleFilter={handleApplyFilter}/>
+            <SalesFilter warehouses={dataWarehouse} categories={dataCategory} handleFilter={handleApplyFilter} setOrder={setOrder} setSort={setSort} selectedOrder={order} selectedSort={sort} Sort={sortData}/>
           </div>
           
       </div>

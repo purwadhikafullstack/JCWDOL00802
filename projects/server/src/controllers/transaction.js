@@ -187,7 +187,7 @@ module.exports = {
           await StockHistoryModel.create({
             id_product,
             id_warehouse,
-            amount: stock,
+            amount: parseInt(`-${stock}`),
             total: newTotal,
             date: date,
             type: 4,
@@ -202,7 +202,7 @@ module.exports = {
           await StockHistoryModel.create({
             id_product,
             id_warehouse,
-            amount: stock,
+            amount: parseInt(`-${stock}`),
             total: newTotal,
             date: date,
             type: 5,
@@ -272,7 +272,7 @@ module.exports = {
           await StockHistoryModel.create({
             id_product,
             id_warehouse,
-            amount: total,
+            amount: parseInt(`-${total}`),
             total: newTotal,
             date,
             type: 4,
@@ -287,7 +287,7 @@ module.exports = {
           await StockHistoryModel.create({
             id_product,
             id_warehouse,
-            amount: total,
+            amount: parseInt(`-${total}`),
             total: newTotal,
             date,
             type: 5,
@@ -556,7 +556,6 @@ module.exports = {
     }
   },
 
-  
   uploadProof: async (req, res) => {
     try {
       const { id_transaction } = req.query;
@@ -729,12 +728,10 @@ module.exports = {
       res.status(200).json({ message: "Resi and transaction status updated." });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({
-          message:
-            "An error occurred while updating the resi and transaction status.",
-        });
+      res.status(500).json({
+        message:
+          "An error occurred while updating the resi and transaction status.",
+      });
     }
   },
 
@@ -901,167 +898,170 @@ module.exports = {
 
   getOrdersAdmin: async (req, res) => {
     try {
-        let search = req.body.search;
-        let warehouse = req.body.warehouse;
-        let role = req.decript.role;
-        let sort = req.body.sort;
-        let page = req.body.page || 0;
-        let limit = parseInt(req.body.limit) || 10;
+      let search = req.body.search;
+      let warehouse = req.body.warehouse;
+      let role = req.decript.role;
+      let sort = req.body.sort;
+      let page = req.body.page || 0;
+      let limit = parseInt(req.body.limit) || 10;
 
-        let offset = page * limit;
+      let offset = page * limit;
 
-        let filter = {};
-        let order = [["id_transaction"]];
-        let filterWarehouse = {};
+      let filter = {};
+      let order = [["id_transaction"]];
+      let filterWarehouse = {};
 
-        if (search !== "" && typeof search !== "undefined") {
-            filter["$alamat_pengiriman.receiver$"] = {
-                [Sequelize.Op.like]: `%${search}%`
-            };
-        }
-
-        // Add transaction_status filter here
-        filter["$transaction_status$"] = {
-            [sequelize.Op.in]: [2, 3, 4, 5]
+      if (search !== "" && typeof search !== "undefined") {
+        filter["$alamat_pengiriman.receiver$"] = {
+          [Sequelize.Op.like]: `%${search}%`,
         };
+      }
 
-        if (sort == 1) {
-            order = [["id_transaction", "ASC"]];
-        } else if (sort == 2) {
-            order = [["id_transaction", "DESC"]];
-        } else if (sort == 3) {
-            order = [["alamat_pengiriman.receiver", "ASC"]];
-        } else if (sort == 4) {
-            order = [["alamat_pengiriman.receiver", "DESC"]];
-        } else if (sort == 5) {
-            order = [["transaction_status", "ASC"]];
-        } else if (sort == 6) {
-            order = [["transaction_status", "DESC"]];
-        }
+      // Add transaction_status filter here
+      filter["$transaction_status$"] = {
+        [sequelize.Op.in]: [2, 3, 4, 5],
+      };
 
-        if (warehouse !== "" && typeof warehouse !== "undefined") {
-          filterWarehouse.warehouse_sender = warehouse;
-        }
-    
-        if (role == 2) {
-          const find = await WarehouseAdminModel.findAll({
-            where: { id_user: req.decript.id_user },
-          });
-          warehouse = find[0].dataValues.id_warehouse;
-          filterWarehouse.warehouse_sender = warehouse;
-        }
+      if (sort == 1) {
+        order = [["id_transaction", "ASC"]];
+      } else if (sort == 2) {
+        order = [["id_transaction", "DESC"]];
+      } else if (sort == 3) {
+        order = [["alamat_pengiriman.receiver", "ASC"]];
+      } else if (sort == 4) {
+        order = [["alamat_pengiriman.receiver", "DESC"]];
+      } else if (sort == 5) {
+        order = [["transaction_status", "ASC"]];
+      } else if (sort == 6) {
+        order = [["transaction_status", "DESC"]];
+      }
 
-        const transactions = await TransactionModel.findAndCountAll({
-          where: {
-            ...filter,
-            ...filterWarehouse,
-          },
-          order: order,
-          limit,
-          offset,
-          include: [
-            {
-              model: TransactionStatusModel,
-              as: "Transaction_status"
-            },
-            {
-              model: TransactionDetailModel,
-              as: "Transaction_Details",
-              include: [{
-                model: ProductModel,
-                as: "Product"
-              }]
-            },
-            {
-              model: AddressModel,
-              as: "alamat_pengiriman",
-            },
-            {
-              model: WarehouseModel,
-              as: "Warehouse",
-              attributes: ["warehouse_branch_name"],
-            }
-          ],
+      if (warehouse !== "" && typeof warehouse !== "undefined") {
+        filterWarehouse.warehouse_sender = warehouse;
+      }
+
+      if (role == 2) {
+        const find = await WarehouseAdminModel.findAll({
+          where: { id_user: req.decript.id_user },
         });
-    
-        const total_page = Math.ceil(transactions.count / limit);
-    
-        return res.status(200).send({ data: transactions.rows, total_page, page });
-      } catch (error) {
-        console.log(error);
-        return res.status(500).send(error);
+        warehouse = find[0].dataValues.id_warehouse;
+        filterWarehouse.warehouse_sender = warehouse;
       }
-    },
 
-    getOrderById: async (req, res) => {
-      try {
-        const id_user = req.decript.id_user;
-        const userRole = req.decript.role;
-        const id_transaction = req.query.id_transaction;
-  
-        const filter = {
-          include: [
-            {
-              model: TransactionStatusModel,
-            },
-            {
-              model: TransactionDetailModel,
-              include: [
-                {
-                  model: ProductModel,
-                  as: "Product",
-                },
-              ],
-            },
-            {
-              model: AddressModel,
-              as: "alamat_pengiriman", // Include UserModel
-            },
-            {
-              model: WarehouseModel, // Include WarehouseModel
-              as: "Warehouse", // Alias for the WarehouseModel
-              attributes: ["warehouse_branch_name"], // Select only the name attribute
-            },
-          ],
-          where: {
-            id_transaction: id_transaction,
+      const transactions = await TransactionModel.findAndCountAll({
+        where: {
+          ...filter,
+          ...filterWarehouse,
+        },
+        order: order,
+        limit,
+        offset,
+        include: [
+          {
+            model: TransactionStatusModel,
+            as: "Transaction_status",
           },
-        };
-  
-        if (userRole === 3) {
-          // Superadmin
-          // No additional filtering required
-        } else if (userRole === 2) {
-          // Warehouse admin
-          const warehouseAdmin = await WarehouseAdminModel.findOne({
-            where: { id_user: id_user },
-          });
-  
-          if (!warehouseAdmin) {
-            return res.status(404).json({ message: "Warehouse admin not found" });
-          }
-  
-          filter.where.warehouse_sender = warehouseAdmin.id_warehouse;
-        } else {
-          return res.status(403).json({ message: "Access denied" });
+          {
+            model: TransactionDetailModel,
+            as: "Transaction_Details",
+            include: [
+              {
+                model: ProductModel,
+                as: "Product",
+              },
+            ],
+          },
+          {
+            model: AddressModel,
+            as: "alamat_pengiriman",
+          },
+          {
+            model: WarehouseModel,
+            as: "Warehouse",
+            attributes: ["warehouse_branch_name"],
+          },
+        ],
+      });
+
+      const total_page = Math.ceil(transactions.count / limit);
+
+      return res
+        .status(200)
+        .send({ data: transactions.rows, total_page, page });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  },
+
+  getOrderById: async (req, res) => {
+    try {
+      const id_user = req.decript.id_user;
+      const userRole = req.decript.role;
+      const id_transaction = req.query.id_transaction;
+
+      const filter = {
+        include: [
+          {
+            model: TransactionStatusModel,
+          },
+          {
+            model: TransactionDetailModel,
+            include: [
+              {
+                model: ProductModel,
+                as: "Product",
+              },
+            ],
+          },
+          {
+            model: AddressModel,
+            as: "alamat_pengiriman", // Include UserModel
+          },
+          {
+            model: WarehouseModel, // Include WarehouseModel
+            as: "Warehouse", // Alias for the WarehouseModel
+            attributes: ["warehouse_branch_name"], // Select only the name attribute
+          },
+        ],
+        where: {
+          id_transaction: id_transaction,
+        },
+      };
+
+      if (userRole === 3) {
+        // Superadmin
+        // No additional filtering required
+      } else if (userRole === 2) {
+        // Warehouse admin
+        const warehouseAdmin = await WarehouseAdminModel.findOne({
+          where: { id_user: id_user },
+        });
+
+        if (!warehouseAdmin) {
+          return res.status(404).json({ message: "Warehouse admin not found" });
         }
-  
-        const order = await TransactionModel.findOne(filter);
-  
-        if (!order) {
-          return res.status(404).json({ message: "Order not found" });
-        }
-  
-        if (order.transaction_proof) {
-          const transactionProofPath = `${protocol}:${process.env.PORT}/img/transactions/${order.transaction_proof}`;
-          order.transaction_proof = transactionProofPath;
-        }
-  
-        return res.json(order);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+
+        filter.where.warehouse_sender = warehouseAdmin.id_warehouse;
+      } else {
+        return res.status(403).json({ message: "Access denied" });
       }
-    },
-  
+
+      const order = await TransactionModel.findOne(filter);
+
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      if (order.transaction_proof) {
+        const transactionProofPath = `${protocol}:${process.env.PORT}/img/transactions/${order.transaction_proof}`;
+        order.transaction_proof = transactionProofPath;
+      }
+
+      return res.json(order);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };

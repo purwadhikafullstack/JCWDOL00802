@@ -1,1 +1,1 @@
-export const API_URL = "https://jcwdol00802.purwadhikabootcamp.com";
+export const API_URL = "http://localhost:3600";

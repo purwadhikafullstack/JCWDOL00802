@@ -16,6 +16,7 @@ module.exports = {
   getProductSales: async (req, res) => {
     try {
       let role = req.decript.role;
+      let order = req.body.order;
       let warehouse = req.body.warehouse;
       let search = req.body.search;
       let category = req.body.category;
@@ -86,6 +87,7 @@ module.exports = {
         limit,
         page,
         offset,
+        order: [order],
         group: ["id_product"],
 
         subQuery: false,
@@ -97,6 +99,7 @@ module.exports = {
             where: {
               total_item: { [sequelize.Op.gt]: 0 },
             },
+
             attributes: [],
             include: [
               {
@@ -697,12 +700,14 @@ module.exports = {
       let limit = parseInt(req.query.limit);
       let page = parseInt(req.query.page);
       let offset = limit * page;
+      let order = req.body.order;
       let role = req.decript.role;
       let id_user = req.decript.id_user;
       let id_product = req.query.id_product;
       let warehouse = req.body.warehouse;
       let month = req.body.bulan;
       let year = req.body.tahun;
+      let productFilter = {};
 
       let defaultBulan = new Date().getMonth();
       let defaultYear = new Date().getFullYear();
@@ -738,6 +743,7 @@ module.exports = {
       };
       if (warehouse !== "" && typeof warehouse !== "undefined") {
         filterhistory.id_warehouse = warehouse;
+        productFilter.id_warehouse = warehouse;
       }
       if (role == 2) {
         let find = await WarehouseAdminModel.findAll({
@@ -745,6 +751,7 @@ module.exports = {
         });
         warehouse = find[0].dataValues.id_warehouse;
         filterhistory.id_warehouse = warehouse;
+        productFilter.id_warehouse = warehouse;
       }
       if (type !== "" && typeof type !== "undefined") {
         if (type === "allin") {
@@ -764,15 +771,35 @@ module.exports = {
         limit,
         offset,
         page,
+        order: [order],
         include: [{ model: StockHistoryTypeModel }, { model: ProductModel }],
       });
       let stockType = await StockHistoryTypeModel.findAll({ raw: true });
       let result = data.rows;
       let total_item = data.count;
       let total_page = Math.ceil(total_item / limit);
+      let productInfo = await ProductModel.findOne({
+        raw: true,
+        where: { id_product },
+        attributes: [
+          "id_product",
+          "name",
+          "price",
+          "product_picture",
+          [sequelize.fn("sum", sequelize.col("stocks.stock")), "stock"],
+        ],
+        include: [
+          {
+            model: StockModel,
+            as: "stocks",
+            where: productFilter,
+            attributes: [],
+          },
+        ],
+      });
       return res
         .status(201)
-        .send({ data: result, total_page, page, stockType });
+        .send({ data: result, total_page, page, stockType, productInfo });
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
@@ -793,6 +820,7 @@ module.exports = {
       let offset = page * limit;
       let month = req.body.bulan;
       let year = req.body.tahun;
+      let warehouseData = await WarehouseModel.findAll({ raw: true });
 
       let defaultBulan = new Date().getMonth();
       let defaultYear = new Date().getFullYear();
@@ -801,6 +829,7 @@ module.exports = {
       );
       let endDate = new Date();
       endDate.setDate(endDate.getDate() + 1);
+
       if (
         year !== "" &&
         typeof year !== "undefined" &&
@@ -816,6 +845,7 @@ module.exports = {
             ? new Date(`${tahun}-${bulan + 1}-01 07:00:00`)
             : new Date(`${tahun + 1}-1-01 07:00:00`);
       }
+
       let filterProduct = {};
       let orderFilter = ["id_product", "asc"];
       if (search !== "" && typeof search !== "undefined") {
@@ -823,9 +853,7 @@ module.exports = {
           [sequelize.Op.like]: [`%${search}%`],
         };
       }
-      if (order !== "" && typeof order !== "undefined") {
-        orderFilter = order;
-      }
+
       if (category !== "" && typeof category !== "undefined") {
         filterCategory.id_category = category;
       }
@@ -851,7 +879,7 @@ module.exports = {
         where: filterProduct,
 
         limit,
-        order: [orderFilter],
+        order: [order],
         page,
         offset,
         distinct: true,
@@ -964,11 +992,25 @@ module.exports = {
           limit: 1,
           order: [["date", "desc"]],
         });
-        if (last.length > 0) {
+        if (warehouse !== "" && typeof warehouse !== "undefined") {
           tempt.last = last[0].total;
         } else {
-          tempt.last = 0;
+          let lastResult = 0;
+          for (let i = 0; i < warehouseData.length; i++) {
+            filterhistory.id_warehouse = warehouseData[i].id_warehouse;
+            let lastall = await StockHistoryModel.findOne({
+              where: filterhistory,
+
+              order: [["date", "desc"]],
+            });
+            if (lastall) {
+              lastResult += parseInt(lastall.total);
+            }
+          }
+
+          tempt.last = lastResult;
         }
+
         if (out.length > 0) {
           tempt.out = parseInt(out[0].jumlah);
         } else {
@@ -1670,10 +1712,8 @@ module.exports = {
     }
   },
 
-  
   getProductUser: async (req, res) => {
     try {
-      
       let search = req.body.search;
       let category = req.body.category;
       let urut = req.body.order;

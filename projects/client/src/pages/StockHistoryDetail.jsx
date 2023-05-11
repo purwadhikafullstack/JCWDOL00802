@@ -4,17 +4,9 @@ import Axios from "axios";
 import { API_URL } from "../helper";
 import { format } from "date-fns";
 import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableCaption,
-  TableContainer,
-  Link,
+  Box, Image, Text ,useToast
 } from "@chakra-ui/react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import StockFilter from "../components/StockHistoryDetail/FilterStockHistory";
 import TableDetailReport from "../components/StockHistoryDetail/StockTable";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
@@ -35,13 +27,18 @@ function StockHistoryDetail() {
   const [totalPage, setTotalPage] = useState(0);
   const [limit, setLimit] = useState(5);
   const [type,setType]=useState([])
+  const [productData,setProductData]=useState([])
+  const [productChecker,setProductChecker]=useState([])
+  const [order, setOrder] = useState("asc");
+  const [sort, setSort] = useState("date");
   const { id_user, role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
       role: state.userReducer.role,
     };
   });
-
+  let userToken=localStorage.getItem("cnc_login")
+  const navigate = useNavigate()
   const { id } = useParams();
   const getTransaction = async () => {
     let getLocalStorage = localStorage.getItem("cnc_login");
@@ -54,6 +51,7 @@ function StockHistoryDetail() {
         tahun: tahun,
         type: selectedType,
         warehouse: selectedWarehouse,
+        order:[sort,order]
       },
       {
         headers: {
@@ -63,8 +61,12 @@ function StockHistoryDetail() {
     ).then((response) => {
       setSalesData(response.data.data);
       let type= response.data.stockType
-      setType([{type: "allin",description : "semua-masuk"},{type: "allout",description : "semua-keluar"}, ...type])
+      setType([{type: "",description : "semua jenis"},{type: "allin",description : "semua-masuk"},{type: "allout",description : "semua-keluar"}, ...type])
       setTotalPage(response.data.total_page);
+      setProductData(response.data.productInfo);
+      if(!response.data.productInfo.id_product){
+        setProductChecker(null)
+      } else{setProductChecker(["1"])}
       if (response.data.data.length > 0) {
         setDataExist(true);
       } else {
@@ -80,18 +82,47 @@ function StockHistoryDetail() {
         Authorization: `Bearer ${getLocalStorage}`,
       },
     }).then((response) => {
-      setDataWarehouse(response.data);
+      if(response.data.length == 1){
+      setDataWarehouse(response.data);}else if(response.data.length > 1){
+        let data = response.data
+        setDataWarehouse([{warehouse_branch_name: "Semua Gudang", id_warehouse :""},...data])
+      }
       
     });
   };
-
-
+  let toast = useToast() 
+  const toastMessage =(text,stat)=>{
+    toast({
+      title: text,
+      status: stat,
+      duration: 3000,
+      isClosable: true,
+      position:"top"
+    })
+  }
+  useEffect(() => {
+    let admin =[2,3]
+    ;
+    if(!productChecker){
+      navigate("/admin/stockhistory")
+      toastMessage("there is no product with that link", "error")
+    }
+    if(role && !admin.includes(role)){
+      navigate("/")
+      toastMessage("unAuthorized Access", "error")
+    }
+    if (!userToken){
+      navigate("/login")
+      toastMessage("Please Login First", "error")
+    }
+  }, [productChecker,role,userToken])
+  
   useEffect(() => {
     getWarehouse();
   }, [id_user]);
   useEffect(() => {
     getTransaction();
-  }, [bulan, tahun, , selectedWarehouse, limit, page, id,selectedType]);
+  }, [bulan, tahun, , selectedWarehouse, limit, page, id,selectedType,order,sort]);
 
   
   const handleApplyFilter = (value)=>{
@@ -109,10 +140,32 @@ function StockHistoryDetail() {
   return (
     <div className="row">
       <div className="col-7">
+        <div className="mx-3 p-1">
+        <Box
+      display="flex"
+      alignItems="center"
+      boxShadow="lg"
+      borderRadius="md"
+      p={4}
+      className="border rounded p-4"
+    >
+      <Image
+        src={`${API_URL}/img/product/${productData.product_picture}`}
+        alt={productData?.name}
+        width={120}
+        mr={4}
+        className="rounded"
+      />
+      <Box>
+        <Text fontWeight="bold">{productData?.name}</Text>
+        <Text fontSize="sm">Stock: {productData?.stock}</Text>
+      </Box>
+    </Box>
+        </div>
         <TableDetailReport data={salesData} />
         <div className="my-3"><PaginationOrder currentPage={parseInt(page)} totalPages={parseInt(totalPage)} onPageChange ={setPage} onLimitChange={handleLimit}/></div>
       </div>
-      <div className="col-4 mx-2"><StockFilter handleFilter={handleApplyFilter} warehouses={dataWarehouse} type={type}/></div>
+      <div className="col-4 mx-2"><StockFilter handleFilter={handleApplyFilter} warehouses={dataWarehouse} type={type} setOrder={setOrder} setSort={setSort} selectedOrder={order} selectedSort={sort}/></div>
       
     </div>
   );
