@@ -23,6 +23,7 @@ import FilterOrderList from "../components/OrderComponent/FilterOrderComponent";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
 import SidebarOrder from "../components/OrderComponent/SidebarOrderComponent";
 import { useNavigate } from "react-router-dom"
+import UploadProofModal from "../components/TransactionAdminComponent/UploadTransaksiModal";
 
 const OrderPage = (props) => {
   const [orderData, setOrderData] = useState(null);
@@ -30,8 +31,8 @@ const OrderPage = (props) => {
   const [dataSelected, setDataSelected] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [page,setPage] = useState(1)
-  const[totalPage,setTotalPage]= useState(0)
-  const[isFirstPage,setIsFirtsPage]= useState(false)
+  const [totalPage,setTotalPage]= useState(0)
+  const [isFirstPage,setIsFirtsPage]= useState(false)
   const [isLastPage, setIsLastPage]=useState(false)
   const [limit,Setlimit]=useState(5)
   const [month,setMonth]=useState("")
@@ -42,8 +43,14 @@ const OrderPage = (props) => {
   let toast = useToast() 
   let userToken =localStorage.getItem("cnc_login")
   let navigate=useNavigate()
+  const [isUploadProofModalOpen, setIsUploadProofModalOpen] = useState(false);
+  const [transactionId, setTransactionId] = useState(null);
   
-  
+  const handleUploadPembayaranClick = (transactionId) => {
+    setTransactionId(transactionId);
+    setIsUploadProofModalOpen(true);
+  };
+
   const { id_user, username,role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
@@ -270,9 +277,19 @@ const OrderPage = (props) => {
                           <Button variant="solid" colorScheme="orange" mx="1"onClick={()=>changeStatus(val.id_transaction,9)}>
                             cancel
                           </Button>
-                          <Button variant="solid" mx="1" colorScheme="orange">
-                            upload bukti
+                          <Button
+                            onClick={() =>
+                              handleUploadPembayaranClick(val.id_transaction)
+                            }
+                            colorScheme="orange"
+                          >
+                            Upload Pembayaran
                           </Button>
+                          <UploadProofModal
+                            isOpen={isUploadProofModalOpen}
+                            onClose={() => setIsUploadProofModalOpen(false)}
+                            transactionId={transactionId}
+                          />
                         </>
                       )}
                       {val.transaction_status == 8 && (

@@ -15,6 +15,21 @@ import {
   Input,
   Select,
   ButtonGroup,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  useToast,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
 
@@ -26,6 +41,15 @@ function AdminWarehouse() {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [adminList, setAdminList] = useState([]);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [currentWarehouseId, setCurrentWarehouseId] = useState(null);
+  const toast = useToast();
+  const [isOpenAlertDialog, setIsOpenAlertDialog] = useState(false);
+  const [warehouseIdToRemove, setWarehouseIdToRemove] = useState(null);
+  const [selectedAdminIndex, setSelectedAdminIndex] = useState(null);
+
   // GET DATA
   const getWarehouse = async () => {
     try {
@@ -40,6 +64,86 @@ function AdminWarehouse() {
       setLastPage(warehouse.data.total_page);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  
+  //for assign admin
+
+  const getAdminList = async () => {
+    try {
+      let getLocalStorage = localStorage.getItem("cnc_login");
+      let adminListResponse = await Axios.get(
+        API_URL + `/apis/warehouseAdmin/adminlist`
+      );
+      setAdminList(adminListResponse.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleAdminAssignment = async () => {
+    try {
+      let getLocalStorage = localStorage.getItem("cnc_login");
+      console.log(
+        `selectedAdmin: ${selectedAdmin}, currentWarehouseId: ${currentWarehouseId}`
+      );
+      await Axios.post(API_URL + `/apis/warehouseAdmin/assign`, {
+        id_user: selectedAdmin,
+        id_warehouse: currentWarehouseId,
+      });
+      toast({
+        title: "Success",
+        description: "Update Successfully",
+        status: "success",
+        duration: 1000,
+        isClosable: true,
+        position: "top",
+      });
+      getAdminList();
+      onClose();
+      getWarehouse();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const showToast = (title, description, status) => {
+    toast({
+      title: title,
+      description: description,
+      status: status,
+      duration: 3000,
+      isClosable: true,
+      position: "top",
+    });
+  };
+
+  const onRemoveAdmin = (id_warehouse) => {
+    setWarehouseIdToRemove(id_warehouse);
+    setIsOpenAlertDialog(true);
+  };
+
+  const onCancelRemoveAdmin = () => {
+    setIsOpenAlertDialog(false);
+  };
+
+  const onConfirmRemoveAdmin = async () => {
+    try {
+      let getLocalStorage = localStorage.getItem("cnc_login");
+      await Axios.delete(
+        API_URL +
+          `/apis/warehouseAdmin/remove?id_warehouse=${warehouseIdToRemove}`
+      );
+      getWarehouse();
+      getAdminList();
+      setIsOpenAlertDialog(false);
+      showToast("Success", "Admin removed successfully", "success");
+      setIsOpenAlertDialog(false);
+    } catch (error) {
+      console.log(error);
+      showToast("Error", "Failed to remove admin", "error");
+      setIsOpenAlertDialog(false);
     }
   };
 
@@ -62,6 +166,7 @@ function AdminWarehouse() {
   //   USE EFFECT
   useEffect(() => {
     getWarehouse();
+    getAdminList();
   }, [page, limit, onFilter]);
 
   //PRINT DATA
@@ -96,6 +201,31 @@ function AdminWarehouse() {
                 </Button>
               </Link>
             </Td>
+            <Td>
+              {val.status === 1 && (
+                <Button
+                  type="button"
+                  colorScheme="blue"
+                  variant="solid"
+                  onClick={() => {
+                    setCurrentWarehouseId(val.id_warehouse);
+                    onOpen();
+                  }}
+                >
+                  Assign Admin
+                </Button>
+              )}
+              {val.status === 2 && (
+                <Button
+                  type="button"
+                  colorScheme="red"
+                  variant="solid"
+                  onClick={() => onRemoveAdmin(val.id_warehouse)}
+                >
+                  Remove Admin
+                </Button>
+              )}
+            </Td>
           </Tr>
         );
       }
@@ -117,11 +247,101 @@ function AdminWarehouse() {
                   <Th color="#ffffff">Alamat</Th>
                   <Th color="#ffffff">Admin</Th>
                   <Th></Th>
+                  <Th></Th>
                 </Tr>
               </Thead>
               <Tbody className="tablebody">{printData()}</Tbody>
             </Table>
+            <Modal isOpen={isOpen} onClose={onClose}>
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>Assign Admin to Warehouse</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                  <Table>
+                    <Thead>
+                      <Tr>
+                        <Th>Admin Name</Th>
+                        <Th>Email</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {adminList.length > 0 ? (
+                        adminList.map((admin, index) => (
+                          <Tr
+                            key={admin.id_user}
+                            onClick={() => {
+                              setSelectedAdmin(admin.id_user);
+                              setSelectedAdminIndex(index);
+                            }}
+                            style={{
+                              cursor: "pointer",
+                              backgroundColor:
+                                selectedAdminIndex === index
+                                  ? "lightgray"
+                                  : "transparent",
+                            }}
+                          >
+                            <Td>{admin.full_name}</Td>
+                            <Td>{admin.email}</Td>
+                          </Tr>
+                        ))
+                      ) : (
+                        <Tr>
+                          <Td colSpan="3" textAlign="center">
+                            No available admins
+                          </Td>
+                        </Tr>
+                      )}
+                    </Tbody>
+                  </Table>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    colorScheme="blue"
+                    mr={3}
+                    onClick={handleAdminAssignment}
+                    isDisabled={
+                      adminList.length === 0 || selectedAdmin === null
+                    }
+                  >
+                    Assign
+                  </Button>
+                  <Button variant="ghost" onClick={onClose}>
+                    Cancel
+                  </Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
           </TableContainer>
+          <AlertDialog
+            isOpen={isOpenAlertDialog}
+            leastDestructiveRef={undefined}
+            onClose={onCancelRemoveAdmin}
+          >
+            <AlertDialogOverlay>
+              <AlertDialogContent>
+                <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                  Remove Admin
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                  Are you sure you want to remove the admin from this warehouse?
+                </AlertDialogBody>
+                <AlertDialogFooter>
+                  <Button variant="ghost" onClick={onCancelRemoveAdmin}>
+                    Cancel
+                  </Button>
+                  <Button
+                    colorScheme="red"
+                    onClick={onConfirmRemoveAdmin}
+                    ml={3}
+                  >
+                    Remove
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogOverlay>
+          </AlertDialog>
           <div
             className="d-flex my-5"
             style={{ alignContent: "center", justifyContent: "center" }}

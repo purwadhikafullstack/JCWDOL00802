@@ -8,6 +8,7 @@ const cartRouter = require("./cart");
 const addressRouter = require("./address");
 const dashboardRouter = require("./dashboard");
 const promoRouter = require("./promos");
+const warehouseAdminRouter = require("./warehouseAdmin");
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/cart", cartRouter);
 router.use("/address", addressRouter);
 router.use("/promo", promoRouter);
 router.use("/dashboard", dashboardRouter);
+router.use("/warehouseAdmin", warehouseAdminRouter);
 
 module.exports = router;
