@@ -12,11 +12,18 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../helper";
 import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
+import { useSelector } from "react-redux";
 
 const ResetPassword = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   let token = location.search.split("=")[1];
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
 
   const [visible, setVisible] = useState("password");
   const [visible2, setVisible2] = useState("password");
@@ -43,6 +50,7 @@ const ResetPassword = (props) => {
     )
       .then((response) => {
         alert("Reset Password Success Success ✅");
+        navigate("/");
       })
       .catch((error) => {
         console.log(error);
@@ -82,7 +90,37 @@ const ResetPassword = (props) => {
     }
   }, [touched]);
 
-  //use callback & use memorize
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Reset Password";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (role && role == 1) {
+      navigate("/");
+    } else if (role == 2 || role == 3) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">

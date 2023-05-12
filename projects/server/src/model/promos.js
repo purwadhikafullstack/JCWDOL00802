@@ -40,6 +40,12 @@ const PromosModel = dbSequelize.define(
     discounted_percentage: {
       type: DataTypes.INTEGER,
     },
+    count_user: {
+      type: DataTypes.INTEGER,
+    },
+    category: {
+      type: DataTypes.INTEGER,
+    },
   },
   { timestamps: false }
 );

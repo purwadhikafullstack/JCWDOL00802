@@ -14,6 +14,7 @@ import {
   FaChevronDown,
   FaPlus,
   FaFolder,
+  FaMoneyCheck,
 } from "react-icons/fa";
 import { Link } from "@chakra-ui/react";
 import { useLocation } from "react-router-dom";
@@ -144,11 +145,8 @@ const Sidebar = (props) => {
                     Manage User
                   </div>
                 </Link>
-                <Link
-                  href="/admin/orderlist"
-                  className="link"
-                >
-                  <FaMoneyBillWave />
+                <Link href="/admin/orderlist" className="link">
+                  <FaMoneyCheck />
                   <div
                     style={{ display: isOpen ? "block" : "none" }}
                     className="link_text"

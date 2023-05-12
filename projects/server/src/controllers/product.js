@@ -12,6 +12,7 @@ const StockHistoryModel = require("../model/stock_history");
 const StockHistoryTypeModel = require("../model/stock_history_type");
 const { WarehouseMutationModel } = require("../model");
 const WarehouseMutationStatusModel = require("../model/warehouse_mutation_status");
+const fs = require("fs");
 module.exports = {
   getProductSales: async (req, res) => {
     try {
@@ -428,6 +429,18 @@ module.exports = {
         id_category,
       } = req.body;
       if (req.file) {
+        let oldpic = await ProductModel.findOne({ where: { id_product } });
+        if (oldpic.dataValues.product_picture) {
+          const filePath =
+            "./src/public/img/product/" + oldpic.dataValues.product_picture;
+          fs.exists(filePath, function (exists) {
+            if (exists) {
+              fs.unlinkSync(filePath);
+            } else {
+              console.log("File not found.");
+            }
+          });
+        }
         product_picture = req.file.filename;
       }
       let data = await ProductModel.findAll({
@@ -641,6 +654,18 @@ module.exports = {
     try {
       let { id_category, category, category_picture } = req.body;
       if (req.file) {
+        let oldpic = await CategoryModel.findOne({ where: { id_category } });
+        if (oldpic.dataValues.category_picture) {
+          const filePath =
+            "./src/public/img/category/" + oldpic.dataValues.category_picture;
+          fs.exists(filePath, function (exists) {
+            if (exists) {
+              fs.unlinkSync(filePath);
+            } else {
+              console.log("File not found.");
+            }
+          });
+        }
         category_picture = req.file.filename;
       }
       let check = await CategoryModel.findAll({
@@ -1657,6 +1682,26 @@ module.exports = {
             amount: input,
             total: hasil,
           });
+
+          // CHECK PUNYA KODE TRANSAKSI ATAU GA
+          let barang = await WarehouseMutationModel.findAll({
+            where: { id_mutation },
+          });
+          let kode = barang[0].dataValues.reference;
+          if (kode) {
+            let id_transaction = parseInt(kode);
+            let refe = await WarehouseMutationModel.findAll({
+              where: {
+                [Op.and]: [{ reference: kode, status: { [Op.lt]: 6 } }],
+              },
+            });
+            if (refe.length == 0) {
+              let dikemas = await TransactionModel.update(
+                { transaction_status: 5 },
+                { where: { id_transaction } }
+              );
+            }
+          }
 
           res.status(200).send("success");
         } else {

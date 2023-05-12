@@ -1,5 +1,6 @@
 const PromosModel = require("../model/promos");
 const { Op } = require("sequelize");
+const fs = require("fs");
 
 module.exports = {
   addPromo: async (req, res) => {
@@ -11,6 +12,8 @@ module.exports = {
         promo_picture,
         expire_date,
         limitation,
+        category,
+        count_user,
       } = req.body;
 
       if (req.file) {
@@ -38,6 +41,8 @@ module.exports = {
           limitation,
           count: 0,
           status: 1,
+          count_user,
+          category,
         });
 
         res.status(200).send({
@@ -138,12 +143,26 @@ module.exports = {
       let max_count = parseInt(req.body.max_count);
       let limitation = parseInt(req.body.limitation);
       let status = parseInt(req.body.status);
+      let category = parseInt(req.body.category);
+      let count_user = parseInt(req.body.count_user);
 
       let filterCheck = {};
       filterCheck.promo_code = promo_code;
       filterCheck.id_promo = { [Op.ne]: [id_promo] };
 
       if (req.file) {
+        let oldpic = await PromosModel.findOne({ where: { id_promo } });
+        if (oldpic.dataValues.promo_picture) {
+          const filePath =
+            "./src/public/img/promo/" + oldpic.dataValues.promo_picture;
+          fs.exists(filePath, function (exists) {
+            if (exists) {
+              fs.unlinkSync(filePath);
+            } else {
+              console.log("File not found.");
+            }
+          });
+        }
         promo_picture = req.file.filename;
       }
       //
@@ -165,6 +184,8 @@ module.exports = {
             expire_date,
             limitation,
             status,
+            category,
+            count_user,
           },
           { where: { id_promo } }
         );

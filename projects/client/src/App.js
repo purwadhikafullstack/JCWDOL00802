@@ -42,6 +42,7 @@ import Product from "./pages/Product";
 import AdminUserList from "./pages/AdminUserList";
 import AdminOrderList from "./pages/AdminOrderList";
 import AdminOrderListDetail from "./pages/AdminOrderDetail.jsx";
+import RequestReset from "./pages/RequestReset";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -105,6 +106,7 @@ function App() {
           <Route path="/regis" element={<Register />} />
           <Route path="/newuser" element={<NewUser />} />
           <Route path="/resetPassword" element={<ResetPassword />} />
+          <Route path="/requestreset" element={<RequestReset />} />
           <Route path="/checkout/" element={<CheckOut />} />
           <Route path="/product" element={<Product />} />
           <Route path="/product/detail/:id" element={<DetailPage />} />

@@ -20,6 +20,7 @@ import {
   PopoverContent,
   IconButton,
   Divider,
+  Link,
 } from "@chakra-ui/react";
 import {
   AiOutlineSearch,
@@ -28,7 +29,7 @@ import {
   AiOutlineClose,
   AiOutlineLogout,
 } from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutAction } from "../actions/userAction";
 import { API_URL } from "../helper";
@@ -42,6 +43,7 @@ const Navbar = (props) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState("");
   const [dataCategory, setDataCategory] = useState([]);
+  const [search, setSearch] = useState("");
 
   const { id_user, email, role, profile_picture } = useSelector((state) => {
     return {
@@ -51,7 +53,9 @@ const Navbar = (props) => {
       profile_picture: state.userReducer.profile_picture,
     };
   });
-  let navigate=useNavigate()
+
+  let navigate = useNavigate();
+
   useEffect(() => {
     if (id_user) {
       const getUserById = async (id_user) => {
@@ -127,9 +131,16 @@ const Navbar = (props) => {
     }
   };
   const handleMenuItemClick = (categoryId) => {
-    navigate("/product",{state:{id_category:categoryId}})
-   ;
-  }
+    navigate("/product", { state: { id_category: categoryId } });
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      console.log(search);
+      navigate("/product", { state: { search: search } });
+    }
+  };
+
   useEffect(() => {
     getCategory();
   }, []);
@@ -140,14 +151,18 @@ const Navbar = (props) => {
       <MenuList>
         {data.map((val, idx) => {
           if (idx < 10) {
-            return <MenuItem onClick={() => handleMenuItemClick(val.id_category)}>{val.category}</MenuItem>;
+            return (
+              <MenuItem onClick={() => handleMenuItemClick(val.id_category)}>
+                {val.category}
+              </MenuItem>
+            );
           }
         })}
         {data.length >= 10 && (
           <>
             <hr />
             <MenuItem>
-              <Link to="/product">Lihat Semua Kategori</Link>
+              <Link href="/product">Lihat Semua Kategori</Link>
             </MenuItem>
           </>
         )}
@@ -162,7 +177,7 @@ const Navbar = (props) => {
         style={{ alignItems: "center", justifyContent: "center" }}
       >
         {/* Logo */}
-        <Link to="/" className="mx-2">
+        <Link href="/" className="mx-2">
           <img
             src={require("../Assets/logotengah2.png")}
             alt="Click N Collect"
@@ -188,7 +203,12 @@ const Navbar = (props) => {
             pointerEvents="none"
             children={<AiOutlineSearch />}
           />
-          <Input placeholder="Ketik kata kunci" style={{ width: "100%" }} />
+          <Input
+            placeholder="Ketik kata kunci"
+            style={{ width: "100%" }}
+            onKeyDown={handleKeyDown}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </InputGroup>
 
         {/* Gambar notification, cart, dan transaction */}
@@ -270,7 +290,7 @@ const Navbar = (props) => {
                 </Box>
               </PopoverContent>
             </Popover>
-            <Link to="/cart">
+            <Link href="/cart">
               <AiOutlineShopping size={40} color={"#f96c08"} className="mx-2" />
             </Link>
           </div>
@@ -298,34 +318,34 @@ const Navbar = (props) => {
               </MenuButton>
               {/* Drop Down */}
               <MenuList textColor="black">
-                <Link to="profile">
+                <Link href="profile">
                   <MenuItem>{email}</MenuItem>
                 </Link>
                 <MenuDivider />
                 {/* Bila admin, tapi nanti di back end harus ganti super admin rolenya jadi 3 aja */}
                 {role == 2 || role == 3 ? (
                   <div>
-                    <Link to="/admin">
+                    <Link href="/admin">
                       <MenuItem>Dashboard</MenuItem>
                     </Link>
                   </div>
                 ) : (
                   // Bila user, karena user kodenya 1, jadi semua yg lbh dr 1 itu admin atau super admin
                   <div>
-                    <Link to="/transaction">
+                    <Link href="/transaction">
                       <MenuItem>Transaksi Pembelian</MenuItem>
                     </Link>
-                    <Link to="/wishlist">
+                    <Link href="/wishlist">
                       <MenuItem>Wishlist</MenuItem>
                     </Link>
-                    <Link to="/profile">
+                    <Link href="/profile">
                       <MenuItem>Akun Saya</MenuItem>
                     </Link>
                   </div>
                 )}
                 <MenuDivider />
                 {/* Logout */}
-                <Link to="/">
+                <Link href="/">
                   <MenuItem onClick={() => dispatch(logoutAction())}>
                     Logout
                     <AiOutlineLogout className="ms-2" />
@@ -336,12 +356,12 @@ const Navbar = (props) => {
           ) : (
             // Bila login bersifat false, keluar tombol utk login dan regis
             <ButtonGroup>
-              <Link to="/login">
+              <Link href="/login">
                 <Button type="button" colorScheme="orange" variant="solid">
                   Masuk
                 </Button>
               </Link>
-              <Link to="/regis">
+              <Link href="/regis">
                 <Button type="button" colorScheme="orange" variant="outline">
                   Daftar
                 </Button>
@@ -349,6 +369,7 @@ const Navbar = (props) => {
             </ButtonGroup>
           )}
         </form>
+        <div className="mx-3"></div>
       </div>
     </nav>
   );

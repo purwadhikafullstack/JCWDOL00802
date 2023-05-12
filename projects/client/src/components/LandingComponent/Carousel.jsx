@@ -3,9 +3,9 @@ import Axios from "axios";
 import { API_URL } from "../../helper";
 
 function Carousel() {
-  const [first, setFirst] = useState("hitam.jpg");
-  const [second, setSecond] = useState("hitam.jpg");
-  const [third, setThird] = useState("hitam.jpg");
+  const [first, setFirst] = useState("");
+  const [second, setSecond] = useState("");
+  const [third, setThird] = useState("");
 
   const getPromo = async () => {
     try {

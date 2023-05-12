@@ -2,12 +2,9 @@ const { hashPassword } = require("../config/encript");
 const UserModel = require("../model/user");
 const { Op } = require("sequelize");
 const bcrypt = require("bcrypt");
-const sequelize = require("sequelize");
 const { cetakToken } = require("../config/encript");
-const jwt = require("jsonwebtoken");
-const REACT_URL = "http://localhost:3000";
+const REACT_URL = "https://jcwdol00802.purwadhikabootcamp.com";
 const { transporter } = require("../config/nodemailer");
-const protocol = "http://localhost";
 
 module.exports = {
   getDataUser: async (req, res) => {
@@ -23,22 +20,36 @@ module.exports = {
     try {
       let { email } = req.body;
       let data = await UserModel.findAll({
-        where: {
-          [Op.or]: [{ email }],
-        },
+        where: { email },
       });
       if (data.length > 0) {
-        res.status(400).send({
-          success: false,
-          msg: "Email already registered",
-        });
+        if (data[0].dataValues.status == 3) {
+          //kirim email
+          let tokenEmail = cetakToken({ email });
+          transporter.sendMail({
+            from: "ClickNCollect",
+            to: email,
+            subject: "Account Reactivation",
+            html: `<div>
+          //   <h3>Click this link to reactivate your account and reset your password</h3>
+          //   <a href="${REACT_URL}/resetPassword?t=${tokenEmail}">Reset my password</a>
+          //   </div>`,
+          });
+          res.status(400).send({
+            success: false,
+            msg: "Check your email for re-activation",
+          });
+        } else {
+          res.status(400).send({
+            success: false,
+            msg: "Email already registered",
+          });
+        }
       } else {
         let results = await UserModel.create({
           email,
         });
-
         //kirim email
-
         let tokenEmail = cetakToken({ email });
         //perlu tambahin id tp belom utk cetak token
         transporter.sendMail({
@@ -95,26 +106,61 @@ module.exports = {
           msg: "Account not found",
         });
       } else {
-        if (checkPass) {
+        if (get[0].dataValues.status == 4) {
+          res.status(400).send({
+            success: false,
+            msg: "Your Account is SUSPENDED. Please make a request to reset your password.",
+          });
+        } else if (get[0].dataValues.status == 3) {
+          //kirim email
+          let tokenEmail = cetakToken({ email });
+          transporter.sendMail({
+            from: "ClickNCollect",
+            to: email,
+            subject: "Account Reactivation",
+            html: `<div>
+          //   <h3>Click this link to reactivate your account and reset your password</h3>
+          //   <a href="${REACT_URL}/resetPassword?t=${tokenEmail}">Reset my password</a>
+          //   </div>`,
+          });
+          res.status(400).send({
+            success: false,
+            msg: "Check your email for re-activation",
+          });
+        } else if (checkPass) {
+          let results = await UserModel.update(
+            {
+              reset_request: 0,
+              count: 0,
+            },
+            { where: { id_user: get[0].dataValues.id_user } }
+          );
           delete get[0].dataValues.password;
           let token = cetakToken({ ...get[0].dataValues });
           res.status(200).send({ ...get[0].dataValues, token });
         } else {
-          if (get[0].dataValues.status == 3) {
+          if (get[0].dataValues.count == 3) {
             let results = await UserModel.update(
               {
-                status: 5,
+                status: 4,
               },
-              { where: { id: get[0].dataValues.id } }
+              { where: { id_user: get[0].dataValues.id_user } }
             );
             res.status(400).send({
               success: false,
-              msg: "Your Account is DELETED",
+              msg: "Your Account is SUSPENDED. Please make a request to reset your password.",
             });
           } else {
+            let results = await UserModel.update(
+              {
+                count: get[0].dataValues.count + 1,
+              },
+              { where: { id_user: get[0].dataValues.id_user } }
+            );
             res.status(400).send({
               success: false,
               msg: "Your password is wrong",
+              failed_login: get[0].dataValues.count + 1,
             });
           }
         }
@@ -138,32 +184,45 @@ module.exports = {
   requestReset: async (req, res) => {
     try {
       let email = req.body.email;
-      //patch disini
-      let resetUser = await UserModel.update(
-        //status diganti jadi req. reset pass supaya gabisa request reset lagi
-        { status: 4 },
-        {
-          where: { email },
+      let check = await UserModel.findAll({
+        where: { email },
+      });
+      if (check.length == 0) {
+        res.status(401).send({
+          success: false,
+          msg: "Account not found",
+        });
+      } else {
+        if (check[0].dataValues.reset_request == 1) {
+          res.status(401).send({
+            success: false,
+            msg: "Reset password already requested",
+          });
+        } else {
+          let resetUser = await UserModel.update(
+            { reset_request: 1 },
+            {
+              where: { email },
+            }
+          );
+          //kirim email
+          let tokenEmail = cetakToken({ email });
+          //perlu tambahin id tp belom utk cetak token
+          transporter.sendMail({
+            from: "ClickNCollect",
+            to: email,
+            subject: "Reset Password Request",
+            html: `<div>
+              //   <h3>Click this link to reset your password</h3>
+              //   <a href="${REACT_URL}/resetPassword?t=${tokenEmail}">Reset my password</a>
+              //   </div>`,
+          });
+          res.status(200).send({
+            success: true,
+            msg: "Reset password Requested",
+          });
         }
-      );
-      //kirim email
-
-      let tokenEmail = cetakToken({ email });
-      //perlu tambahin id tp belom utk cetak token
-      transporter.sendMail({
-        from: "ClickNCollect",
-        to: email,
-        subject: "Reset Password Request",
-        html: `<div>
-          //   <h3>Click this link to reset your password</h3>
-          //   <a href="${REACT_URL}/resetPassword?t=${tokenEmail}">Reset my password</a>
-          //   </div>`,
-      });
-
-      res.status(200).send({
-        success: true,
-        msg: "Reset password Success",
-      });
+      }
     } catch (error) {
       res.status(500).send(error);
     }
@@ -175,12 +234,16 @@ module.exports = {
       let { password } = req.body;
       //patch disini
       let newUser = await UserModel.update(
-        { password: hashPassword(password), status: 2 },
+        {
+          password: hashPassword(password),
+          status: 2,
+          reset_request: 0,
+          count: 0,
+        },
         {
           where: { email },
         }
       );
-
       res.status(200).send({
         success: true,
         msg: "Reset Password Success",
@@ -247,7 +310,7 @@ module.exports = {
         profilePicture = `${profilePicture}`;
       }
 
-      const picPath = `${protocol}:${process.env.PORT}/img/profile/${profilePicture}`;
+      const picPath = `https://jcwdol00802.purwadhikabootcamp.com/img/profile/${profilePicture}`;
       response.profile_picture = picPath;
 
       res.json(response);
@@ -257,7 +320,6 @@ module.exports = {
     }
   },
 
-   
   getUserList: async (req, res) => {
     try {
       let search = req.body.search;
@@ -265,11 +327,11 @@ module.exports = {
       let limit = parseInt(req.body.limit);
       let page = req.body.page;
       let offset = page * limit;
-  
+
       let filterName = {};
-  
+
       let order = [["id_user"]];
-  
+
       if (urut == 0) {
         order = [["id_user"]];
       } else if (urut == 1) {
@@ -277,13 +339,13 @@ module.exports = {
       } else if (urut == 2) {
         order = [["full_name", "DESC"]];
       }
-  
+
       if (search !== "" && typeof search !== "undefined") {
         filterName.full_name = {
           [Op.like]: `%${search}%`,
         };
       }
-  
+
       filterName.role = {
         [Op.ne]: 3,
       };
@@ -292,7 +354,7 @@ module.exports = {
       filterName.status = {
         [Op.or]: [1, 2],
       };
-  
+
       let data = await UserModel.findAndCountAll({
         where: filterName,
         limit,
@@ -300,32 +362,32 @@ module.exports = {
         order,
         raw: true,
       });
-  
+
       // Format profile_picture for each user
       const formattedUsers = data.rows.map((user) => {
         let profilePicture = user.profile_picture;
-  
+
         if (!profilePicture) {
           profilePicture = "default.png";
         } else {
           profilePicture = `${profilePicture}`;
         }
-  
+
         const picPath = `${protocol}:${process.env.PORT}/img/profile/${profilePicture}`;
         user.profile_picture = picPath;
-  
+
         return user;
       });
-  
+
       const total_page = Math.ceil(data.count / limit);
-  
+
       res.status(200).send({ data: formattedUsers, total_page, page });
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
     }
   },
-  
+
   deleteUser: async (req, res) => {
     try {
       const adminId = req.decript.id_user;
@@ -335,13 +397,17 @@ module.exports = {
           .status(400)
           .json({ message: "You cannot delete your own account" });
       }
-      const adminUser = await UserModel.findOne({ where: { id_user: adminId } });
+      const adminUser = await UserModel.findOne({
+        where: { id_user: adminId },
+      });
       if (adminUser.role !== 3) {
         return res.status(403).json({
           message: "You do not have permission to perform this action",
         });
       }
-      const userToDelete = await UserModel.findOne({ where: { id_user: userIdToDelete } });
+      const userToDelete = await UserModel.findOne({
+        where: { id_user: userIdToDelete },
+      });
       if (!userToDelete) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -354,30 +420,35 @@ module.exports = {
       res.status(500).json({ message: "Server error" });
     }
   },
-  
+
   updateUser: async (req, res) => {
     try {
       const id_user = req.decript.id_user;
       const superAdmin = await UserModel.findOne({ where: { id_user } });
-  
+
       if (!superAdmin || superAdmin.role !== 3) {
-        return res
-          .status(403)
-          .json({
-            message: "You do not have permission to perform this action",
-          });
+        return res.status(403).json({
+          message: "You do not have permission to perform this action",
+        });
       }
-  
-      const { target_id_user, username, phone_number, full_name, role, password, email } =
-        req.body;
+
+      const {
+        target_id_user,
+        username,
+        phone_number,
+        full_name,
+        role,
+        password,
+        email,
+      } = req.body;
       const user = await UserModel.findOne({
         where: { id_user: target_id_user },
       });
-  
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-  
+
       const updateData = {};
       if (username !== undefined && username !== "") {
         updateData.username = username;
@@ -404,11 +475,11 @@ module.exports = {
       if (req.file) {
         updateData.profile_picture = req.file.filename;
       }
-  
+
       const updateUser = await UserModel.update(updateData, {
         where: { id_user: target_id_user },
       });
-  
+
       res.status(201).json({
         message: "Success",
         data: updateUser,
@@ -417,27 +488,27 @@ module.exports = {
       console.log(error.message);
       res.status(500).json({ message: "Something went wrong" });
     }
-  },  
-  
+  },
+
   getUserByID: async (req, res) => {
     try {
       const target_id_user = req.query.id_user;
       const user = await UserModel.findOne({
         where: { id_user: target_id_user },
       });
-  
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-  
+
       let profilePicture = user.profile_picture;
-  
+
       if (!profilePicture) {
         profilePicture = "default.png";
       } else {
         profilePicture = `${profilePicture}`;
       }
-  
+
       const picPath = `${protocol}:${process.env.PORT}/img/profile/${profilePicture}`;
       user.profile_picture = picPath;
 
@@ -455,35 +526,41 @@ module.exports = {
     try {
       const id_user = req.decript.id_user;
       const superAdmin = await UserModel.findOne({ where: { id_user } });
-  
+
       if (!superAdmin || superAdmin.role !== 3) {
-        return res
-          .status(403)
-          .json({
-            message: "You do not have permission to perform this action",
-          });
+        return res.status(403).json({
+          message: "You do not have permission to perform this action",
+        });
       }
-  
-      const { username, phone_number, full_name, role, password, email } = req.body;
-  
-      if (!username || !phone_number || !full_name || !role || !password || !email) {
+
+      const { username, phone_number, full_name, role, password, email } =
+        req.body;
+
+      if (
+        !username ||
+        !phone_number ||
+        !full_name ||
+        !role ||
+        !password ||
+        !email
+      ) {
         return res.status(400).json({ message: "Missing required fields" });
       }
-  
+
       const existingUser = await UserModel.findOne({ where: { username } });
-  
+
       if (existingUser) {
         return res.status(409).json({ message: "Username already exists" });
       }
-  
+
       const parsedRole = parseInt(role, 10);
-  
+
       if (parsedRole !== 1 && parsedRole !== 2) {
         return res.status(400).json({ message: "Invalid role" });
       }
-  
+
       const hashedPassword = await bcrypt.hash(password, 10);
-  
+
       const newUser = {
         username,
         phone_number,
@@ -493,15 +570,15 @@ module.exports = {
         email,
         status: 2, // Set status to 2 (verified)
       };
-  
+
       if (req.file) {
         newUser.profile_picture = req.file.filename;
       } else {
         newUser.profile_picture = "default.png";
       }
-  
+
       const createdUser = await UserModel.create(newUser);
-  
+
       res.status(201).json({
         message: "User created successfully",
         data: createdUser,

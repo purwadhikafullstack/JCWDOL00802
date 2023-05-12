@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Axios from "axios";
 import { API_URL } from "../../helper";
-import { Link } from "react-router-dom";
-import { Image, Text } from "@chakra-ui/react";
+import { Link, useNavigate } from "react-router-dom";
+import { Card, Image, Text } from "@chakra-ui/react";
 
 function AllCategory() {
   const [page, setPage] = useState(1);
@@ -11,6 +11,7 @@ function AllCategory() {
   const [dataCategoryFirst, setDataCategoryFirst] = useState([]);
   const [dataCategorySecond, setDataCategorySecond] = useState([]);
   const [dataCategoryThird, setDataCategoryThird] = useState([]);
+  let navigate = useNavigate();
 
   const getCategory = async (type, halaman) => {
     try {
@@ -31,6 +32,10 @@ function AllCategory() {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleMenuItemClick = (categoryId) => {
+    navigate("/product", { state: { id_category: categoryId } });
   };
 
   useEffect(() => {
@@ -84,7 +89,7 @@ function AllCategory() {
 
     return data.map((val, idx) => {
       return (
-        <Link
+        <Card
           className="card bg-white p-3 m-1 shadow d-flex "
           activeclassName="active"
           boxSize="150px"
@@ -93,6 +98,7 @@ function AllCategory() {
             justifyContent: "center",
             alignItems: "center",
           }}
+          onClick={() => handleMenuItemClick(val.id_category)}
         >
           <Image
             src={`${API_URL}/img/category/${val.category_picture}`}
@@ -106,7 +112,7 @@ function AllCategory() {
           <Text fontSize="sm" color="black">
             {val.category}
           </Text>
-        </Link>
+        </Card>
       );
     });
   };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Axios from "axios";
 import { API_URL } from "../../helper";
 import { Link } from "react-router-dom";
-import { Image, Text } from "@chakra-ui/react";
+import { Badge, Image, Text } from "@chakra-ui/react";
 
 function LandingProduct() {
   const [dataProduct, setDataProduct] = useState([]);
@@ -28,6 +28,7 @@ function LandingProduct() {
 
     return data.map((val, idx) => {
       let link = `/product/detail/${val.id_product}`;
+      let nama = val.name;
       return (
         <Link
           to={link}
@@ -51,11 +52,11 @@ function LandingProduct() {
             borderWidth="1px"
           />
           <Text fontSize="sm" color="black" className="m-3">
-            {val.name}
+            {nama.substring(0, 30)}
           </Text>
 
           <Text fontSize="sm" color="black" className="m-3">
-            Rp. {val.price}
+            Rp. {Intl.NumberFormat().format(val.price)}
           </Text>
         </Link>
       );
@@ -64,9 +65,16 @@ function LandingProduct() {
 
   return (
     <div className="productbox">
-      <Text fontSize="2xl" color="#f96c08" className="py-2 px-3">
-        Produk Terbaru
-      </Text>
+      <div className="d-flex justify-content-between">
+        <Text fontSize="2xl" color="#f96c08" className="py-2 px-3">
+          Produk Terbaru
+        </Text>
+        <a href="/product" className="my-2">
+          <Badge colorScheme="orange" style={{ height: "auto" }}>
+            All Products →
+          </Badge>
+        </a>
+      </div>
       <div
         className="d-flex flex-wrap"
         style={{ alignItems: "center", justifyContent: "center" }}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Axios from "axios";
+import { useSelector } from "react-redux";
 import {
   Button,
   ButtonGroup,
@@ -15,6 +16,12 @@ import { basicSchema } from "../schemas";
 import { API_URL } from "../helper";
 const EditProduct = () => {
   const navigate = useNavigate();
+  let userToken = localStorage.getItem("cnc_login");
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
 
   //STATE PRODUCT
   const [idEdit, setIdEdit] = useState("");
@@ -58,6 +65,7 @@ const EditProduct = () => {
   });
 
   // GET NOMOR ID PRODUK DARI QUERY
+  const [productChecker, setProductChecker] = useState([]);
   const location = useLocation();
   let idProd = location.search.split("=")[1];
 
@@ -85,6 +93,11 @@ const EditProduct = () => {
       );
       setIsEdit(products.data.edit);
       setDataStock(products.data.data.stock);
+      if (!products.data.data.id_product) {
+        setProductChecker(null);
+      } else {
+        setProductChecker(["1"]);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -384,6 +397,44 @@ const EditProduct = () => {
       });
     }
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Detail Produk";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  useEffect(() => {
+    let admin = [2, 3];
+    if (!productChecker) {
+      navigate("/admin/products");
+    }
+    if (role && !admin.includes(role)) {
+      navigate("/");
+    }
+    if (!userToken) {
+      navigate("/login");
+    }
+  }, [productChecker, role, userToken]);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  //SCROLL TO TOP
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   return (
     <div className="paddingmain">
