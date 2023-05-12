@@ -373,7 +373,7 @@ module.exports = {
           profilePicture = `${profilePicture}`;
         }
 
-        const picPath = `${protocol}:${process.env.PORT}/img/profile/${profilePicture}`;
+        const picPath = `https://jcwdol00802.purwadhikabootcamp.com/img/profile/${profilePicture}`;
         user.profile_picture = picPath;
 
         return user;
@@ -509,7 +509,7 @@ module.exports = {
         profilePicture = `${profilePicture}`;
       }
 
-      const picPath = `${protocol}:${process.env.PORT}/img/profile/${profilePicture}`;
+      const picPath = `https://jcwdol00802.purwadhikabootcamp.com/img/profile/${profilePicture}`;
       user.profile_picture = picPath;
 
       res.status(200).json({
