@@ -11,7 +11,6 @@ const CartModel = require("../model/Cart");
 const AddressModel = require("../model/address");
 const WarehouseAdminModel = require("../model/Warehouse_admin");
 const UserModel = require("../model/user");
-const protocol = "http://localhost";
 const { transporter } = require("../config/nodemailer");
 const { Op } = require("sequelize");
 
@@ -1054,7 +1053,7 @@ module.exports = {
       }
 
       if (order.transaction_proof) {
-        const transactionProofPath = `${protocol}:${process.env.PORT}/img/transactions/${order.transaction_proof}`;
+        const transactionProofPath = `https://jcwdol00802.purwadhikabootcamp.com/img/transactions/${order.transaction_proof}`;
         order.transaction_proof = transactionProofPath;
       }
 
