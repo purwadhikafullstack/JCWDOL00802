@@ -15,20 +15,27 @@ import {
   ButtonGroup,
   Input,
   useColorModeValue,
-  IconButton,
+  IconButton,useToast
 } from "@chakra-ui/react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { API_URL } from "../helper";
 import Axios from "axios";
-import { FiHeart } from "react-icons/fi";
+import { AiFillHeart } from "react-icons/ai";
 
 import { useSelector, useDispatch } from "react-redux";
+import { useState } from "react";
 
 const DetailPage = (props) => {
-  const navigate = useNavigate;
+  const navigate = useNavigate();
   const [productData, setProductData] = React.useState({});
   const [cartData, setCartData] = React.useState(null);
-  const [qty, setQty] = React.useState(0);
+  const [qty, setQty] = React.useState(1);
+  const [stock,setStock]=useState(0)
+  const [cart,setCart]=useState(0)
+  const [stockOut,setStockOut]=useState(false)
+  const [disableMinus,setDisableMinus]= useState(false)
+  const [disablePlus,setDisablePlus]= useState(false)
+  const [disableAdd, setDisableAdd]=useState(false)
   const { id } = useParams();
   const [isLoved, setIsLoved] = React.useState(false);
 
@@ -38,10 +45,13 @@ const DetailPage = (props) => {
       status: state.userReducer.status,
     };
   });
+  let userToken =localStorage.getItem("cnc_login")
+  let toast=useToast()
   const getProductDetail = () => {
     Axios.get(`${API_URL}/apis/product/detail?id=${id}`)
       .then((response) => {
         setProductData(response.data);
+        setStock(parseInt(response.data.stock));
       })
       .catch((error) => {
         console.log(error);
@@ -52,10 +62,42 @@ const DetailPage = (props) => {
     getProductDetail();
   }, []);
 
+  useEffect(() => {
+    let total = qty+cart
+    
+    ;
+    if(total >= stock){
+      setDisablePlus(true)
+    }else setDisablePlus(false)
+    if(qty<=1){
+      setDisableMinus(true)
+    } else{setDisableMinus(false)}
+
+    
+    if(qty == 0){
+      setDisableAdd(true)
+      setDisablePlus(true)
+    }
+    if(productData && productData.stock==0){
+    setDisableAdd(true)
+    setStockOut(true)
+    setDisablePlus(true)
+    setDisableMinus(true)
+    setQty(0)}
+    ;
+  }, [qty,productData,cart])
+  
+
   const getCartDetail = async () => {
     await Axios.get(`${API_URL}/apis/cart/detail/?id=${id_user}&prod=${id}`)
       .then((response) => {
-        setCartData(response.data);
+        setCartData(response.data)
+        
+        if(!response.data){
+          setCart(0);
+        }else{
+          setCart(response.data.total_item);
+        }
       })
       .catch((error) => {
         console.log(error);
@@ -94,47 +136,54 @@ const DetailPage = (props) => {
       setQty(qty - 1);
     }
   };
-  const addToCart = () => {
+  const toastMessage=(text,stat)=>{
+    toast({
+      title: text,
+      status: stat,
+      duration: 3000,
+      isClosable: true,
+      position:"top"
+    })
+    
+  }
+  const addToCart = async () => {
+    
     if (parseInt(productData.stock) == 0) {
       alert("stock kosong nih bos");
     } else if (qty == 0) {
       alert("jumlahnya masih 0, tolong isi dulu ya");
-    } else if (status == 2 && parseInt(productData.stock) !== 0) {
-      let id_product = productData.id_product;
+    } else if (status == 2 && parseInt(productData.stock) !== 0 &&userToken) {
+      try {
+        let id_product = productData.id_product;
       let total_item = qty;
-      Axios.post(API_URL + "/apis/cart/addtocart", {
+      let addCart =await Axios.post(API_URL + "/apis/cart/addtocart", {
         id_user,
         id_product,
         total_item,
       })
-        .then((res) => {
-          alert(res.data.message);
-          getCartDetail();
-          setQty(0);
-
-          if (res.data.success) {
-            navigate("/cart");
-          }
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } else if (parseInt(productData.stock) == 0) {
-      alert("stock abis bos");
-    } else {
+        toastMessage(addCart.data.message,"success")
+        getCartDetail()
+      } catch (error) {
+        toastMessage(error.response.data.message,"error")
+      }
+    }else if(!userToken){
       navigate("/login", { replace: true });
     }
   };
 
-  const checkTotal = () => {
-    if (cartData == null) {
-      alert("on cart = 0");
-    } else alert(` on cart = ${cartData.total_item}`);
-  };
+ 
 
   const toggleLove = () => {
-    setIsLoved((prevState) => !prevState);
+    ;
     //Logic Buat Wishlist
+    if(isLoved &&userToken){
+      removeWishlist()
+    }else if(!isLoved &&userToken){
+      addToWishlist()
+    }else if(!userToken){
+      navigate("/login")
+    }
+    setIsLoved((prevState) => !prevState)
   };
 
   //SCROLL TO TOP
@@ -145,6 +194,51 @@ const DetailPage = (props) => {
     });
   };
 
+  const getChecker = async ()=>{
+    try {
+      let checker = await Axios.get(`${API_URL}/apis/wishlist/checker?id=${id}`,{
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      })
+      
+      setIsLoved(checker.data.isWishlisted)
+    } catch (error) {
+      
+    }
+  }
+  const addToWishlist = async ()=>{
+    try {
+      let add = await Axios.post(`${API_URL}/apis/wishlist/wish?id=${id}`,{},{
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      })
+      ;
+      
+    } catch (error) {
+      
+    }
+  }
+  const removeWishlist = async ()=>{
+    try {
+      let remove = await Axios.delete(`${API_URL}/apis/wishlist/wish?id=${id}`,{
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      })
+      
+      
+    } catch (error) {
+      
+    }
+  }
+  useEffect(() => {
+    if(id){
+      getChecker()
+    }
+  }, [id])
+  
   useEffect(() => {
     scrollToTop();
   }, []);
@@ -165,6 +259,7 @@ const DetailPage = (props) => {
               fit={"cover"}
               align={"center"}
               w={"100%"}
+              className= {stockOut? "gambarUnavailable": ""}
               h={{ base: "100%", sm: "400px", lg: "500px" }}
             />
           </VStack>
@@ -200,7 +295,7 @@ const DetailPage = (props) => {
 
           <Divider />
           <HStack maxW="180px">
-            <Button onClick={onInc}>+</Button>
+            <Button onClick={onDec} isDisabled={disableMinus}>-</Button>
             <Input
               type="number"
               value={qty}
@@ -208,15 +303,17 @@ const DetailPage = (props) => {
               focusBorderColor="blue.500"
               onChange={(e) => {}}
             />
-            <Button onClick={onDec}>-</Button>
+            <Button onClick={onInc}isDisabled={disablePlus}>+</Button>
+            
           </HStack>
           <ButtonGroup spacing={2}>
-            <Button colorScheme="orange" variant="solid" onClick={addToCart}>
+            <Button colorScheme="orange" variant={disableAdd?"ghost":"outline"} onClick={addToCart} isDisabled={disableAdd}>
               Add To Cart
             </Button>
             <IconButton
               aria-label="Add to wishlist"
-              icon={<FiHeart />}
+              icon={<AiFillHeart />}
+              variant={isLoved? "ghost":"outline"}
               colorScheme={isLoved ? "red" : "gray"}
               onClick={toggleLove}
             />

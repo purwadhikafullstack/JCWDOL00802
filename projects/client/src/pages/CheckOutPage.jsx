@@ -74,7 +74,7 @@ const CheckOut = (props) => {
 
   const resetPageTitle = () => {
     document.title = "Cnc-ecommerce";
-    // unselectAll();
+    unselectAll();
   };
   let getLocalStorage = localStorage.getItem("cnc_login");
 

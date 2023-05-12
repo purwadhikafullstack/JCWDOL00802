@@ -9,6 +9,7 @@ const addressController = require("./address");
 const dashboardController = require("./dashboard");
 const PromosController = require("./promos");
 const warehouseAdminController = require("./warehouseAdmin");
+const wishlistController = require("./wishlist");
 
 module.exports = {
   userController,
@@ -21,5 +22,6 @@ module.exports = {
   addressController,
   dashboardController,
   PromosController,
-  warehouseAdminController
+  warehouseAdminController,
+  wishlistController,
 };

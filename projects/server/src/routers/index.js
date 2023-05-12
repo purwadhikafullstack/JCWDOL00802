@@ -9,6 +9,7 @@ const addressRouter = require("./address");
 const dashboardRouter = require("./dashboard");
 const promoRouter = require("./promos");
 const warehouseAdminRouter = require("./warehouseAdmin");
+const wishlistRouter = require("./wishlist");
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use("/address", addressRouter);
 router.use("/promo", promoRouter);
 router.use("/dashboard", dashboardRouter);
 router.use("/warehouseAdmin", warehouseAdminRouter);
+router.use("/wishlist", wishlistRouter);
 
 module.exports = router;

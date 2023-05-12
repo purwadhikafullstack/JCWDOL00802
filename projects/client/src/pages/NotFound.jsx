@@ -1,18 +1,36 @@
-import { Button, Text } from "@chakra-ui/react";
+import React from "react";
+import { Box, Center, Heading, Text, Button} from "@chakra-ui/react";
+import { Container } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
-export default function NotFound() {
+const NotFound = () => {
   const navigate = useNavigate();
+
+  const handleBackHome = () => {
+    navigate("/");
+  };
   return (
-    <div className="bg-white my-5 w-100 p-5 m-auto shadow">
-      <Text>Oops! Not Found!!!!!!!!!!!!!</Text>
-      <Button
-        onClick={() => {
-          navigate("/");
-        }}
-      >
-        Ke Halaman Utama
-      </Button>
-    </div>
+    <Box bg="white" h="100%">
+      <Container>
+        <Center h="100%">
+          <Box textAlign="center" color="orange">
+            <Heading as="h1" mb={6} fontSize="6xl">
+              404 Not Found
+            </Heading>
+            <Text fontSize="2xl" fontWeight="bold" mb={6}>
+              Oops! Looks like the page you are looking for doesn't exist.
+            </Text>
+            <Text fontSize="xl" mb={6}>
+              Please check the URL or go back to the homepage.
+            </Text>
+            <Button onClick={handleBackHome} colorScheme="orange">
+              Back to Home
+            </Button>
+          </Box>
+        </Center>
+      </Container>
+    </Box>
   );
-}
+};
+
+export default NotFound;

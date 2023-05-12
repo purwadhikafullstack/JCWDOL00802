@@ -1019,6 +1019,7 @@ module.exports = {
         });
         if (warehouse !== "" && typeof warehouse !== "undefined") {
           tempt.last = last[0].total;
+          console.log("total", id_product, last[0].total);
         } else {
           let lastResult = 0;
           for (let i = 0; i < warehouseData.length; i++) {

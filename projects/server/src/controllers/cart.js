@@ -7,24 +7,51 @@ module.exports = {
   AddtoCart: async (req, res) => {
     try {
       let { id_product, id_user, total_item } = req.body;
-      let data = await CartModel.findAll({
+      let data = await CartModel.findOne({
         where: {
           [sequelize.Op.and]: [{ id_product }, { id_user }],
         },
+        raw: true,
       });
-      if (data.length > 0) {
-        let result = await CartModel.increment(
-          { total_item: req.body.total_item },
-          {
-            where: {
-              [sequelize.Op.and]: [{ id_product }, { id_user }],
+      if (data) {
+        let getStock = await ProductModel.findOne({
+          where: {
+            id_product,
+          },
+          attributes: [
+            "id_product",
+            [sequelize.fn("sum", sequelize.col("stocks.stock")), "stock"],
+          ],
+          include: [
+            {
+              model: StockModel,
+              as: "stocks",
+              attributes: [],
             },
-          }
-        );
-        return res.status(200).send({
-          success: true,
-          message: "added to cart",
+          ],
         });
+        let totalNext = data.total_item + req.body.total_item;
+
+        let totalStock = parseInt(getStock.dataValues.stock);
+        if (totalNext <= totalStock) {
+          let result = await CartModel.increment(
+            { total_item: req.body.total_item },
+            {
+              where: {
+                [sequelize.Op.and]: [{ id_product }, { id_user }],
+              },
+            }
+          );
+          return res.status(200).send({
+            success: true,
+            message: "berhasil menambahkan jumlah dikeranjang",
+          });
+        } else {
+          return res.status(500).send({
+            success: false,
+            message: "sudah maksimal dikeranjang",
+          });
+        }
       } else {
         try {
           let data = await CartModel.findAll();
@@ -35,7 +62,7 @@ module.exports = {
           });
           return res.status(200).send({
             success: true,
-            message: "Added to cart",
+            message: "berhasil menambahkan barang ke keranjang",
           });
         } catch (error) {
           console.log(error);

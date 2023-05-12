@@ -21,12 +21,13 @@ import { FaTrash } from "react-icons/fa";
 import { RiShoppingCartLine } from "react-icons/ri";
 
 import { useNavigate, useParams } from "react-router-dom";
-import WishlistItem from "../components/cartComponent/Wishlist";
+import Wishlist from "../components/cartComponent/Wishlist";
 
 const Cart = (props) => {
   const userToken = localStorage.getItem("cnc_login");
 
   const [cartData, setCartData] = React.useState([]);
+  const [wishlistData,setWishlistData]=useState([])
   const [dataExist, setDataExist] = useState(false);
   const [productData, setProductData] = React.useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -61,6 +62,24 @@ const Cart = (props) => {
       role: state.userReducer.role,
     };
   });
+  const getData = async ()=>{
+    try {
+      let data = await Axios.get(`${API_URL}/apis/wishlist/`,{
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      })
+      if (data.data.data.length >0){
+        
+        setWishlistData(data.data.data)
+      } else{
+        
+        setWishlistData(null)
+      }
+    } catch (error) {
+      
+    }
+  }
   const messageAuthorize = () => {
     if (!userToken) {
       toast({
@@ -102,6 +121,7 @@ const Cart = (props) => {
 
   useEffect(() => {
     getCart();
+    getData()
   }, []);
 
   useEffect(() => {
@@ -184,7 +204,7 @@ const Cart = (props) => {
         },
       })
         .then((response) => {
-          toastMessage(response.data.message, "warning");
+          toastMessage(response.data.message, "success");
           getCart();
         })
         .catch((error) => {
@@ -303,7 +323,7 @@ const Cart = (props) => {
             <Spacer />
             <Box display="flex" alignItems="center" pr={4}>
               <IconButton
-                aria-label="decrement"
+                
                 icon={<Text fontSize="2xl">-</Text>}
                 colorScheme="orange"
                 isRound
@@ -315,7 +335,7 @@ const Cart = (props) => {
                 {val.total_item}
               </Text>
               <IconButton
-                aria-label="increment"
+                isDisabled={val.total_item == parseInt(val.Product.stock)}
                 icon={<Text fontSize="2xl">+</Text>}
                 colorScheme="orange"
                 isRound
@@ -397,9 +417,15 @@ const Cart = (props) => {
               </Checkbox>
             )}
             <div className="col-12">{printData()}</div>
-            <div>
-              <WishlistItem product={cartData} />
-            </div>
+
+        <div className="col-12 my-5">
+            <h3><strong>Wishlist Item</strong></h3>
+          
+          <div className="my-1 py-1">
+          <Wishlist  wishlist={wishlistData} getData={getData} getCart={getCart}/>
+          </div>
+        </div>
+    
           </div>
         </div>
         {/* bagian kanan */}
