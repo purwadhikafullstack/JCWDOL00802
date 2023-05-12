@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from "react";
 import Axios from "axios";
-import { Button, Text, Textarea, Input, Image } from "@chakra-ui/react";
+import {
+  Button,
+  Text,
+  Textarea,
+  Input,
+  Image,
+  CheckboxGroup,
+  Checkbox,
+} from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { API_URL } from "../helper";
 import { basicSchema } from "../schemas";
 import { useSelector } from "react-redux";
 
-const NewPromo = (props) => {
+const NewPromo = () => {
   const navigate = useNavigate();
   let userToken = localStorage.getItem("cnc_login");
   const { role } = useSelector((state) => {
@@ -15,8 +23,8 @@ const NewPromo = (props) => {
       role: state.userReducer.role,
     };
   });
-  // STATE
 
+  // STATE
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
     initialValues: {
       promoCode: "",
@@ -33,6 +41,7 @@ const NewPromo = (props) => {
   const [expire, setExpire] = useState(null);
   const [dataCategory, setDataCategory] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(0);
+  const [email, setEmail] = useState(false);
 
   // GET
 
@@ -62,6 +71,7 @@ const NewPromo = (props) => {
         limitation: values.promoLimit,
         category: selectedCategory,
         count_user: values.count,
+        email,
       },
       {
         headers: {
@@ -335,6 +345,17 @@ const NewPromo = (props) => {
                 type="file"
                 id="formFile"
               />
+            </div>
+            <div className="my-2">
+              <CheckboxGroup colorScheme="orange" size="sm">
+                <Checkbox
+                  onChange={(e) => {
+                    setEmail(e.target.checked);
+                  }}
+                >
+                  Send email to subs
+                </Checkbox>
+              </CheckboxGroup>
             </div>
             <Button
               type="button"

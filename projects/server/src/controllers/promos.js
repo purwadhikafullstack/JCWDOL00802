@@ -2,6 +2,10 @@ const PromosModel = require("../model/promos");
 const { Op } = require("sequelize");
 const fs = require("fs");
 
+const REACT_URL = "https://jcwdol00802.purwadhikabootcamp.com";
+const { transporter } = require("../config/nodemailer");
+const { UserModel } = require("../model");
+
 module.exports = {
   addPromo: async (req, res) => {
     try {
@@ -14,6 +18,7 @@ module.exports = {
         limitation,
         category,
         count_user,
+        email,
       } = req.body;
 
       if (req.file) {
@@ -45,6 +50,24 @@ module.exports = {
           category,
         });
 
+        if (email) {
+          const subbers = await UserModel.findAll({
+            where: { subs: 1 },
+          });
+          subbers.map((val, idx) => {
+            transporter.sendMail({
+              from: "ClickNCollect",
+              to: val.dataValues.email,
+              subject: "PROMO REMINDER",
+              html: `<div>
+            //   <h6>NIKMATI PROMO SAAT BERBELANJA DI CLICK N COLLECT</h6>
+            //   <h3>${promo_code}</h3>
+            //   <h6>${description}</h6>
+            //   <a href="${REACT_URL}">Belanja Sekarang</a>
+            //   </div>`,
+            });
+          });
+        }
         res.status(200).send({
           success: true,
           msg: "Add Promo Success",
@@ -54,6 +77,7 @@ module.exports = {
       console.log(error);
     }
   },
+
   getPromo: async (req, res) => {
     try {
       let getData = await PromosModel.findAll({
@@ -220,6 +244,39 @@ module.exports = {
     } catch (error) {
       console.log(error);
       return res.status(500).send(error);
+    }
+  },
+  emailPromo: async (req, res) => {
+    try {
+      let { id_promo } = req.body;
+
+      let get = await PromosModel.findOne({
+        where: {
+          id_promo,
+        },
+      });
+      const subbers = await UserModel.findAll({
+        where: { subs: 1 },
+      });
+      subbers.map((val, idx) => {
+        transporter.sendMail({
+          from: "ClickNCollect",
+          to: val.dataValues.email,
+          subject: "PROMO REMINDER",
+          html: `<div>
+            //   <h6>NIKMATI PROMO SAAT BERBELANJA DI CLICK N COLLECT</h6>
+            //   <h3>${get.dataValues.promo_code}</h3>
+            //   <h6>${get.dataValues.description}</h6>
+            //   <a href="${REACT_URL}">Belanja Sekarang</a>
+            //   </div>`,
+        });
+      });
+      res.status(200).send({
+        success: true,
+        msg: "Send Mail Promo Success",
+      });
+    } catch (error) {
+      console.log(error);
     }
   },
 };
