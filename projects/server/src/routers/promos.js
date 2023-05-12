@@ -17,20 +17,21 @@ route.post(
   authorizeController.authSuperAdmin,
   PromosController.getPromoList
 );
-
 route.get(
   "/detailpromo",
   authorizeController.authSuperAdmin,
   PromosController.getIdPromo
 );
-
 route.post(
   "/editpromo",
   authorizeController.authSuperAdmin,
   uploader("/promo").single("promo_picture"),
   PromosController.editPromo
 );
-
+route.post(
+  "/emailpromo",
+  authorizeController.authSuperAdmin,
+  PromosController.emailPromo
+);
 route.get("/getpromolanding", PromosController.getPromoLanding);
-
 module.exports = route;

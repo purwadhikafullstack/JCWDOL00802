@@ -6,7 +6,8 @@ import { useSelector } from "react-redux";
 import { useFormik } from "formik";
 import { basicSchema } from "../schemas";
 import { API_URL } from "../helper";
-const EditPromo = (props) => {
+import { ButtonGroup } from "reactstrap";
+const EditPromo = () => {
   const navigate = useNavigate();
   let userToken = localStorage.getItem("cnc_login");
   const { role } = useSelector((state) => {
@@ -27,6 +28,7 @@ const EditPromo = (props) => {
   const [preview, setPreview] = useState("https://fakeimg.pl/350x200/");
   const [promoPicture, setPromoPicture] = useState("");
   const [cpu, setCpu] = useState(0);
+
   //FORMIK
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
     initialValues: {
@@ -85,6 +87,7 @@ const EditPromo = (props) => {
   useEffect(() => {
     getPromo();
   }, []);
+
   useEffect(() => {
     getCategory();
   }, []);
@@ -129,6 +132,28 @@ const EditPromo = (props) => {
         }
       ).then((response) => {
         alert("Edit promo Success ✅");
+        navigate("/admin/promo");
+      });
+    } catch (error) {
+      console.log(error);
+      alert(error.response.data.msg);
+    }
+  };
+
+  const onMail = async () => {
+    try {
+      await Axios.post(
+        API_URL + `/apis/promo/emailpromo`,
+        {
+          id_promo: idPromo,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
+          },
+        }
+      ).then((response) => {
+        alert("Email to subs Success ✅");
         navigate("/admin/promo");
       });
     } catch (error) {
@@ -378,16 +403,25 @@ const EditPromo = (props) => {
             </div>
           </div>
           <div>
-            <Button
-              type="button"
-              colorScheme="orange"
-              variant={buttonDisabled ? "outline" : "solid"}
-              isDisabled={buttonDisabled}
-              onClick={() => onEdit()}
-            >
-              Edit Promo
-            </Button>
-
+            <ButtonGroup>
+              <Button
+                type="button"
+                colorScheme="orange"
+                variant={buttonDisabled ? "outline" : "solid"}
+                isDisabled={buttonDisabled}
+                onClick={() => onEdit()}
+              >
+                Edit Promo
+              </Button>
+              <Button
+                type="button"
+                colorScheme="orange"
+                onClick={() => onMail()}
+                className="mx-2"
+              >
+                Send Email to Subs
+              </Button>
+            </ButtonGroup>
             {buttonDisabled && (
               <Text fontSize="small" className="error">
                 Please complete the form
