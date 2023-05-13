@@ -58,10 +58,9 @@ module.exports = {
   getIdWarehouse: async (req, res) => {
     try {
       let id_warehouse = req.query.id_warehouse;
-      let data = await WarehouseModel.findAll({
+      let data = await WarehouseModel.findOne({
         where: { id_warehouse },
       });
-
       res.status(200).send(data);
     } catch (error) {
       console.log(error);

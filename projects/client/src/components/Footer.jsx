@@ -18,7 +18,7 @@ const Footer = () => {
         </ul>
         <ul style={{ listStyleType: "none" }} className="d-none d-md-block">
           <li>
-            <b>Transaksi</b>
+            <a href="/transaction">Transaksi</a>
           </li>
           <li>
             <a href="/product">Belanja Sekarang</a>
@@ -31,8 +31,12 @@ const Footer = () => {
             <a href="https://www.facebook.com/clickncollect23/">
               <AiFillFacebook size={42} color="#f96c08" />
             </a>
-            <AiFillInstagram size={42} color="#f96c08" />
-            <AiFillTwitterCircle size={42} color="#f96c08" />
+            <a href="https://www.instagram.com/">
+              <AiFillInstagram size={42} color="#f96c08" />
+            </a>
+            <a href="https://www.twitter.com/">
+              <AiFillTwitterCircle size={42} color="#f96c08" />
+            </a>
           </div>
         </div>
         <span className="navbar-brand btn">

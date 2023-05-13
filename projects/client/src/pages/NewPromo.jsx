@@ -86,7 +86,7 @@ const NewPromo = () => {
       })
       .catch((error) => {
         console.log(error);
-        alert("Add Promo Fail");
+        alert(error.response.data.msg);
       });
   };
 

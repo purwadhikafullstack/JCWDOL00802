@@ -144,6 +144,7 @@ const NewWarehouse = (props) => {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
@@ -215,7 +216,7 @@ const NewWarehouse = (props) => {
               Nomor Telepon
             </label>
             <Input
-              type="text"
+              type="tel"
               id="phone"
               placeholder="Nomor Telepon"
               value={values.phone}
@@ -262,7 +263,7 @@ const NewWarehouse = (props) => {
             <label className="form-label fw-bold text-muted">Propinsi</label>
             <select
               onChange={(e) => onGetCity(e.target.value)}
-              className="form-control form-control-lg"
+              className="form-control"
             >
               <option>Pilih Propinsi</option>
               {printDataProvince()}
@@ -272,7 +273,7 @@ const NewWarehouse = (props) => {
             <label className="form-label fw-bold text-muted">Kota</label>
             <select
               onChange={(e) => onGetPostal(e.target.value)}
-              className="form-control form-control-lg"
+              className="form-control"
             >
               <option>Pilih Kota</option>
               {printDataCity()}
@@ -280,23 +281,13 @@ const NewWarehouse = (props) => {
           </div>
           <div className="my-3 ">
             <label className="form-label fw-bold text-muted">Postal Code</label>
-            {selectedCity !== null && (
-              <input
-                type="text"
-                className="form-control  p-3"
-                placeholder="Kode pos"
-                value={selectedCity.postal_code}
-                disabled
-              />
-            )}
-            {selectedCity == null && (
-              <input
-                type="text"
-                className="form-control p-3"
-                placeholder="Kode pos"
-                disabled
-              />
-            )}
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Kode pos"
+              value={selectedCity?.postal_code}
+              disabled
+            />
           </div>
           <Button
             type="button"

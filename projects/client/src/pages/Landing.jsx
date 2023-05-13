@@ -17,6 +17,19 @@ const Landing = (props) => {
     scrollToTop();
   }, []);
 
+  // ACCESS
+  useEffect(() => {
+    document.title = "Click N Collect";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
   return (
     <div>
       <Carousel />

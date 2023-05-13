@@ -151,7 +151,7 @@ module.exports = {
   getIdPromo: async (req, res) => {
     try {
       let id_promo = req.query.id_promo;
-      let data = await PromosModel.findAll({
+      let data = await PromosModel.findOne({
         where: { id_promo },
       });
       res.status(200).send(data);
@@ -174,21 +174,6 @@ module.exports = {
       filterCheck.promo_code = promo_code;
       filterCheck.id_promo = { [Op.ne]: [id_promo] };
 
-      if (req.file) {
-        let oldpic = await PromosModel.findOne({ where: { id_promo } });
-        if (oldpic.dataValues.promo_picture) {
-          const filePath =
-            "./src/public/img/promo/" + oldpic.dataValues.promo_picture;
-          fs.exists(filePath, function (exists) {
-            if (exists) {
-              fs.unlinkSync(filePath);
-            } else {
-              console.log("File not found.");
-            }
-          });
-        }
-        promo_picture = req.file.filename;
-      }
       //
       let data = await PromosModel.findAll({
         where: filterCheck,
@@ -199,6 +184,21 @@ module.exports = {
           msg: "code already registered",
         });
       } else {
+        if (req.file) {
+          let oldpic = await PromosModel.findOne({ where: { id_promo } });
+          if (oldpic.dataValues.promo_picture) {
+            const filePath =
+              "./src/public/img/promo/" + oldpic.dataValues.promo_picture;
+            fs.exists(filePath, function (exists) {
+              if (exists) {
+                fs.unlinkSync(filePath);
+              } else {
+                console.log("File not found.");
+              }
+            });
+          }
+          promo_picture = req.file.filename;
+        }
         let editPromo = await PromosModel.update(
           {
             promo_code,

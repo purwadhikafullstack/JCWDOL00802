@@ -12,13 +12,16 @@ export const basicSchema = yup.object().shape({
     .string()
     .min(8)
     .max(16)
-    .matches(passwordRules, { message: "Kata sandi kurang kuat" })
+    .matches(passwordRules, {
+      message:
+        "Kata sandi minimal harus ada 1 huruf besar,1 huruf kecil, dan 1 angka atau simbol",
+    })
     .required("Masukan Kata Sandi"),
   confirmPassword: yup
     .string()
     .oneOf([yup.ref("password"), null], "Kata sandi tidak sama")
     .required("Masukan ulang kata sandi"),
-
+  login: yup.string().min(8).max(16).required("Masukan Kata Sandi"),
   // PRODUCT
   productName: yup.string().max(100).required("Masukan nama produk"),
   productDescription: yup.string().max(500),

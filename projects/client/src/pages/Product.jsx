@@ -180,6 +180,19 @@ function Products() {
     scrollToTop();
   }, []);
 
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Semua Produk";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
   return (
     <div className="bg-white w-100 m-auto">
       <Box pl={10}>
@@ -190,32 +203,36 @@ function Products() {
           <Flex className=" d-flex" flexWrap="wrap" justifyContent="center">
             {printData()}
           </Flex>
-          <div
-            className="d-flex my-5"
-            style={{ alignContent: "center", justifyContent: "center" }}
-          >
-            <PaginationOrder
-              currentPage={parseInt(page)}
-              totalPages={parseInt(lastPage)}
-              onPageChange={setPage}
-              maxLimit={0}
-            />
+          {dataProduct?.length > 0 ? (
             <div
-              className="d-flex mx-5"
-              style={{ alignItems: "center", justifyContent: "center" }}
+              className="d-flex my-5"
+              style={{ alignContent: "center", justifyContent: "center" }}
             >
-              menampilkan
-              <Input
-                type="text"
-                className="form-control"
-                placeholder="limit"
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)}
-                style={{ width: "60px" }}
+              <PaginationOrder
+                currentPage={parseInt(page)}
+                totalPages={parseInt(lastPage)}
+                onPageChange={setPage}
+                maxLimit={0}
               />
-              barang
+              <div
+                className="d-flex mx-5"
+                style={{ alignItems: "center", justifyContent: "center" }}
+              >
+                menampilkan
+                <Input
+                  type="text"
+                  className="form-control"
+                  placeholder="limit"
+                  value={limit}
+                  onChange={(e) => setLimit(e.target.value)}
+                  style={{ width: "60px" }}
+                />
+                barang
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="d-flex justify-content-center">Tidak ada data</div>
+          )}
         </div>
         <div className="col-3 rounded shadow mt-3 p-3 filterbox">
           <div>Filter</div>

@@ -30,7 +30,7 @@ const Login = () => {
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
     initialValues: {
       email: "",
-      password: "",
+      login: "",
     },
     validationSchema: basicSchema,
   });
@@ -38,10 +38,9 @@ const Login = () => {
   const [visible, setVisible] = useState("password");
 
   const onBtnLogin = () => {
-    // Melakukan request data ke server
     Axios.post(API_URL + `/apis/user/login`, {
       email: values.email,
-      pass: values.password,
+      pass: values.login,
     })
       .then((response) => {
         dispatch(loginAction(response.data));
@@ -70,7 +69,7 @@ const Login = () => {
   const [firstLaunch, setFirstLaunch] = useState(true);
 
   useEffect(() => {
-    if (errors.password || errors.email) {
+    if (errors.login || errors.email) {
       setButtonDisabled(true);
     } else {
       setButtonDisabled(false);
@@ -78,7 +77,7 @@ const Login = () => {
   }, [errors]);
 
   useEffect(() => {
-    if (touched.password || touched.email) {
+    if (touched.login || touched.email) {
       setFirstLaunch(false);
     }
   }, [touched]);
@@ -155,15 +154,13 @@ const Login = () => {
           <label className="form-label fw-bold text-muted">Password</label>
           <InputGroup className="input-group border rounded">
             <Input
-              id="password"
+              id="login"
               type={visible}
-              className={
-                errors.password && touched.password ? "input-error" : ""
-              }
+              className={errors.login && touched.login ? "input-error" : ""}
               placeholder="8-16 character"
               onChange={handleChange}
               onBlur={handleBlur}
-              value={values.password}
+              value={values.login}
             />
             <InputRightElement
               onClick={() => onVisibility()}
@@ -177,9 +174,9 @@ const Login = () => {
               )}
             </InputRightElement>
           </InputGroup>
-          {errors.password && touched.password && (
+          {errors.login && touched.login && (
             <Text fontSize="small" className="error">
-              {errors.password}
+              {errors.login}
             </Text>
           )}
         </div>

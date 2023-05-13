@@ -1,12 +1,12 @@
 const express = require("express");
 const { wishlistController } = require("../controllers");
-const { authUser } = require("../controllers/authorize");
+const { authNonAdmin } = require("../controllers/authorize");
 const route = express.Router();
 
-route.get("/", authUser, wishlistController.getWishlist);
-route.get("/checker", authUser, wishlistController.checkerWishlist);
-route.post("/wish", authUser, wishlistController.addWishlist);
-route.post("/cart", authUser, wishlistController.moveToCart);
-route.delete("/wish", authUser, wishlistController.removeWishist);
+route.get("/", authNonAdmin, wishlistController.getWishlist);
+route.get("/checker", authNonAdmin, wishlistController.checkerWishlist);
+route.post("/wish", authNonAdmin, wishlistController.addWishlist);
+route.post("/cart", authNonAdmin, wishlistController.moveToCart);
+route.delete("/wish", authNonAdmin, wishlistController.removeWishist);
 
 module.exports = route;

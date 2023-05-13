@@ -28,11 +28,12 @@ const Register = () => {
       email: values.email,
     })
       .then((response) => {
-        alert("Register Success ✅");
+        alert("Register Success ✅ Cek Email anda!");
         navigate("/");
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
@@ -95,7 +96,7 @@ const Register = () => {
               <div className="my-3">
                 <label className="form-label fw-bold text-muted">Email</label>
                 <Input
-                  type="text"
+                  type="email"
                   id="email"
                   placeholder="email"
                   value={values.email}

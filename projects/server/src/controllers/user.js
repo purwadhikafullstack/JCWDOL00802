@@ -7,15 +7,6 @@ const REACT_URL = "https://jcwdol00802.purwadhikabootcamp.com";
 const { transporter } = require("../config/nodemailer");
 
 module.exports = {
-  getDataUser: async (req, res) => {
-    try {
-      let data = await UserModel.findAll();
-      res.status(200).send(data);
-    } catch (error) {
-      res.status(500).send(error);
-    }
-  },
-
   regis: async (req, res) => {
     try {
       let { email } = req.body;

@@ -19,7 +19,8 @@ import {
   AiOutlineCarryOut,
 } from "react-icons/ai";
 import { API_URL } from "../helper";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const DashboardCard = ({ title, value, icon }) => {
   return (
@@ -47,6 +48,13 @@ const Dashboard = () => {
     return {
       id_user: state.userReducer.id_user,
       userRole: state.userReducer.role,
+    };
+  });
+  let userToken = localStorage.getItem("cnc_login");
+  let navigate = useNavigate();
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
     };
   });
 
@@ -144,6 +152,26 @@ const Dashboard = () => {
 
     fetchData();
   }, [userRole]);
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Dashboard Admin";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+  useEffect(() => {
+    let admin = [2, 3];
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && !admin.includes(role)) {
+      navigate("/");
+    }
+  }, [role, userToken]);
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
 
   return (
     <Flex

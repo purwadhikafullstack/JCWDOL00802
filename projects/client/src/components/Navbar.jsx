@@ -141,6 +141,11 @@ const Navbar = (props) => {
     }
   };
 
+  const onClickLogout = () => {
+    dispatch(logoutAction());
+    navigate("/");
+  };
+
   useEffect(() => {
     getCategory();
   }, []);
@@ -322,7 +327,6 @@ const Navbar = (props) => {
                   <MenuItem>{email}</MenuItem>
                 </Link>
                 <MenuDivider />
-                {/* Bila admin, tapi nanti di back end harus ganti super admin rolenya jadi 3 aja */}
                 {role == 2 || role == 3 ? (
                   <div>
                     <Link href="/admin">
@@ -330,7 +334,6 @@ const Navbar = (props) => {
                     </Link>
                   </div>
                 ) : (
-                  // Bila user, karena user kodenya 1, jadi semua yg lbh dr 1 itu admin atau super admin
                   <div>
                     <Link href="/transaction">
                       <MenuItem>Transaksi Pembelian</MenuItem>
@@ -341,12 +344,15 @@ const Navbar = (props) => {
                     <Link href="/profile">
                       <MenuItem>Akun Saya</MenuItem>
                     </Link>
+                    <Link href="/address">
+                      <MenuItem>Alamat</MenuItem>
+                    </Link>
                   </div>
                 )}
                 <MenuDivider />
                 {/* Logout */}
                 <Link href="/">
-                  <MenuItem onClick={() => dispatch(logoutAction())}>
+                  <MenuItem onClick={() => onClickLogout()}>
                     Logout
                     <AiOutlineLogout className="ms-2" />
                   </MenuItem>

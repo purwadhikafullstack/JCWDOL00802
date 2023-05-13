@@ -1,35 +1,29 @@
 import { useDispatch, useSelector } from "react-redux";
-import React, { useState, useEffect, componentDidMount } from "react";
+import React, { useState, useEffect } from "react";
 import Axios from "axios";
 import { API_URL } from "../helper";
 import {
   Text,
   Button,
-  ButtonGroup,
-  Link,
   Box,
   Flex,
-  Card,
   Image,
   IconButton,
-  HStack,
   Checkbox,
   Spacer,
   useToast,
 } from "@chakra-ui/react";
 import { FaTrash } from "react-icons/fa";
 import { RiShoppingCartLine } from "react-icons/ri";
-
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Wishlist from "../components/cartComponent/Wishlist";
 
 const Cart = (props) => {
   const userToken = localStorage.getItem("cnc_login");
 
   const [cartData, setCartData] = React.useState([]);
-  const [wishlistData,setWishlistData]=useState([])
+  const [wishlistData, setWishlistData] = useState([]);
   const [dataExist, setDataExist] = useState(false);
-  const [productData, setProductData] = React.useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalBarang, setTotalBarang] = useState(0);
   const [selectedAll, setSelectedAll] = useState(false);
@@ -62,24 +56,20 @@ const Cart = (props) => {
       role: state.userReducer.role,
     };
   });
-  const getData = async ()=>{
+  const getData = async () => {
     try {
-      let data = await Axios.get(`${API_URL}/apis/wishlist/`,{
+      let data = await Axios.get(`${API_URL}/apis/wishlist/`, {
         headers: {
           Authorization: `Bearer ${userToken}`,
         },
-      })
-      if (data.data.data.length >0){
-        
-        setWishlistData(data.data.data)
-      } else{
-        
-        setWishlistData(null)
+      });
+      if (data.data.data.length > 0) {
+        setWishlistData(data.data.data);
+      } else {
+        setWishlistData(null);
       }
-    } catch (error) {
-      
-    }
-  }
+    } catch (error) {}
+  };
   const messageAuthorize = () => {
     if (!userToken) {
       toast({
@@ -89,7 +79,7 @@ const Cart = (props) => {
         isClosable: true,
         position: "top",
       });
-    } else if (role && (role !== 1)) {
+    } else if (role && role !== 1) {
       toast({
         title: "Admin tidak bisa mengakses ini!",
         status: "error",
@@ -121,7 +111,7 @@ const Cart = (props) => {
 
   useEffect(() => {
     getCart();
-    getData()
+    getData();
   }, []);
 
   useEffect(() => {
@@ -323,7 +313,6 @@ const Cart = (props) => {
             <Spacer />
             <Box display="flex" alignItems="center" pr={4}>
               <IconButton
-                
                 icon={<Text fontSize="2xl">-</Text>}
                 colorScheme="orange"
                 isRound
@@ -418,17 +407,21 @@ const Cart = (props) => {
             )}
             <div className="col-12">{printData()}</div>
 
-              {wishlistData &&
+            {wishlistData && (
               <div className="col-12 my-5">
-              <h3><strong>Wishlist Item</strong></h3>
-            
-            <div className="my-1 py-1">
-            <Wishlist  wishlist={wishlistData} getData={getData} getCart={getCart}/>
-            </div>
-          </div>
+                <h3>
+                  <strong>Wishlist Item</strong>
+                </h3>
 
-              }
-    
+                <div className="my-1 py-1">
+                  <Wishlist
+                    wishlist={wishlistData}
+                    getData={getData}
+                    getCart={getCart}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {/* bagian kanan */}

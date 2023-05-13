@@ -42,6 +42,19 @@ const OrderListDetail = () => {
     fetchOrderDetails();
   }, [orderId]);
 
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Admin Order Detail";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
   const fetchOrderDetails = async () => {
     let getLocalStorage = localStorage.getItem("cnc_login");
     const response = await fetch(
@@ -57,7 +70,6 @@ const OrderListDetail = () => {
   };
 
   const handleButtonClick = (action) => {
-    console.log("Button clicked:", action);
     setCurrentAction(action);
     setModalTitle(action.title);
     setAcceptLabel(action.acceptLabel);
@@ -102,7 +114,6 @@ const OrderListDetail = () => {
         const responseData = await response.json();
         // assuming the API returns success field
         if (responseData.success) {
-          console.log("Package sent");
         } else {
           console.error("Failed to send package");
         }
@@ -115,7 +126,6 @@ const OrderListDetail = () => {
   };
 
   const handleProofAccept = async () => {
-    console.log("Proof accepted");
     setTransactionProofModalVisible(false);
 
     let getLocalStorage = localStorage.getItem("cnc_login");
@@ -124,23 +134,20 @@ const OrderListDetail = () => {
       const response = await Axios.post(
         `${API_URL}/apis/trans/acctrans?id=${orderId}`
       );
-      
+
       const responseData = response.data;
       // assuming the API returns success field
       if (responseData.success) {
-        console.log("Transaction accepted");
       } else {
         console.error("Failed to accept transaction");
       }
-    
     } catch (error) {
       console.error("API request failed");
       console.error(error);
-    }    
+    }
   };
 
   const handleProofReject = async () => {
-    console.log("Proof rejected");
     setTransactionProofModalVisible(false);
 
     let getLocalStorage = localStorage.getItem("cnc_login");
@@ -153,7 +160,6 @@ const OrderListDetail = () => {
         const responseData = await response.json();
         // assuming the API returns success field
         if (responseData.success) {
-          console.log("Transaction rejected");
         } else {
           console.error("Failed to reject transaction");
         }
@@ -174,7 +180,6 @@ const OrderListDetail = () => {
         {}
       );
       if (response.data.success) {
-        console.log("Transaction cancelled");
         // Refresh order details after cancelling the transaction
         fetchOrderDetails();
       } else {

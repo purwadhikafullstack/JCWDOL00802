@@ -382,7 +382,7 @@ module.exports = {
         filterWarehouse.id_warehouse = getWarehouse.id_warehouse;
       }
 
-      let data = await ProductModel.findAll({
+      let data = await ProductModel.findOne({
         where: {
           id_product,
         },
@@ -410,8 +410,7 @@ module.exports = {
           },
         ],
       });
-
-      res.status(200).send({ data: data[0], edit });
+      res.status(200).send({ data, edit });
     } catch (error) {
       console.log(error);
       res.status(500).send(error);
@@ -428,21 +427,7 @@ module.exports = {
         product_picture,
         id_category,
       } = req.body;
-      if (req.file) {
-        let oldpic = await ProductModel.findOne({ where: { id_product } });
-        if (oldpic.dataValues.product_picture) {
-          const filePath =
-            "./src/public/img/product/" + oldpic.dataValues.product_picture;
-          fs.exists(filePath, function (exists) {
-            if (exists) {
-              fs.unlinkSync(filePath);
-            } else {
-              console.log("File not found.");
-            }
-          });
-        }
-        product_picture = req.file.filename;
-      }
+
       let data = await ProductModel.findAll({
         where: {
           [Op.and]: [{ name, id_product: { [Op.ne]: id_product } }],
@@ -454,6 +439,22 @@ module.exports = {
           msg: "Name already registered",
         });
       } else {
+        if (req.file) {
+          let oldpic = await ProductModel.findOne({ where: { id_product } });
+          if (oldpic.dataValues.product_picture) {
+            const filePath =
+              "./src/public/img/product/" + oldpic.dataValues.product_picture;
+            fs.exists(filePath, function (exists) {
+              if (exists) {
+                fs.unlinkSync(filePath);
+              } else {
+                console.log("File not found.");
+              }
+            });
+          }
+          product_picture = req.file.filename;
+        }
+
         let editProd = await ProductModel.update(
           { name, description, price, weight, product_picture },
           {
@@ -653,21 +654,7 @@ module.exports = {
   editCategory: async (req, res) => {
     try {
       let { id_category, category, category_picture } = req.body;
-      if (req.file) {
-        let oldpic = await CategoryModel.findOne({ where: { id_category } });
-        if (oldpic.dataValues.category_picture) {
-          const filePath =
-            "./src/public/img/category/" + oldpic.dataValues.category_picture;
-          fs.exists(filePath, function (exists) {
-            if (exists) {
-              fs.unlinkSync(filePath);
-            } else {
-              console.log("File not found.");
-            }
-          });
-        }
-        category_picture = req.file.filename;
-      }
+
       let check = await CategoryModel.findAll({
         where: {
           [Op.and]: [{ category, id_category: { [Op.ne]: id_category } }],
@@ -680,6 +667,21 @@ module.exports = {
           msg: "Name already registered",
         });
       } else {
+        if (req.file) {
+          let oldpic = await CategoryModel.findOne({ where: { id_category } });
+          if (oldpic.dataValues.category_picture) {
+            const filePath =
+              "./src/public/img/category/" + oldpic.dataValues.category_picture;
+            fs.exists(filePath, function (exists) {
+              if (exists) {
+                fs.unlinkSync(filePath);
+              } else {
+                console.log("File not found.");
+              }
+            });
+          }
+          category_picture = req.file.filename;
+        }
         let editCategory = await CategoryModel.update(
           {
             category,

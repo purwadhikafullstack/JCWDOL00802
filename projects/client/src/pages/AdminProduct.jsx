@@ -49,6 +49,9 @@ function AdminProducts() {
       },
     }).then((response) => {
       setDataWarehouse(response.data);
+      if (response.data.length == 1) {
+        setSelectedWarehouse(response.data[0]);
+      }
     });
   };
 
@@ -240,32 +243,36 @@ function AdminProducts() {
               <Tbody className="tablebody">{printData()}</Tbody>
             </Table>
           </TableContainer>
-          <div
-            className="d-flex my-5"
-            style={{ alignContent: "center", justifyContent: "center" }}
-          >
-            <PaginationOrder
-              currentPage={parseInt(page)}
-              totalPages={parseInt(lastPage)}
-              onPageChange={setPage}
-              maxLimit={0}
-            />
+          {dataProduct?.length > 0 ? (
             <div
-              className="d-flex mx-5"
-              style={{ alignItems: "center", justifyContent: "center" }}
+              className="d-flex my-5"
+              style={{ alignContent: "center", justifyContent: "center" }}
             >
-              menampilkan
-              <Input
-                type="text"
-                className="form-control"
-                placeholder="limit"
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)}
-                style={{ width: "60px" }}
+              <PaginationOrder
+                currentPage={parseInt(page)}
+                totalPages={parseInt(lastPage)}
+                onPageChange={setPage}
+                maxLimit={0}
               />
-              barang
+              <div
+                className="d-flex mx-5"
+                style={{ alignItems: "center", justifyContent: "center" }}
+              >
+                menampilkan
+                <Input
+                  type="number"
+                  className="form-control"
+                  placeholder="limit"
+                  value={limit}
+                  onChange={(e) => setLimit(e.target.value)}
+                  style={{ width: "60px" }}
+                />
+                barang
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="d-flex justify-content-center">Tidak ada data</div>
+          )}
         </div>
         <div className="col-3 rounded shadow mt-3 p-3 filterbox">
           <div>Gudang</div>
@@ -284,7 +291,7 @@ function AdminProducts() {
           <div>Filter</div>
           <div className="inputfilter">
             <Input
-              type="text"
+              type="search"
               className="form-control mt-3"
               placeholder="Cari nama produk"
               value={search}
@@ -323,7 +330,7 @@ function AdminProducts() {
           </div>
           <div className="inputfilter">
             <Input
-              type="text"
+              type="number"
               placeholder="harga min"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
@@ -332,7 +339,7 @@ function AdminProducts() {
           </div>
           <div className="inputfilter">
             <Input
-              type="text"
+              type="number"
               placeholder="harga max"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}

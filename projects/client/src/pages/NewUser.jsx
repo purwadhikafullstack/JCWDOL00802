@@ -20,7 +20,6 @@ const NewUser = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   let token = location.search.split("=")[1];
-  let userToken = localStorage.getItem("cnc_login");
   const { role } = useSelector((state) => {
     return {
       role: state.userReducer.role,
@@ -63,6 +62,7 @@ const NewUser = (props) => {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 

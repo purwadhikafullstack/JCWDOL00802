@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import React from "react";
 import { API_URL } from "../helper";
 import Axios from "axios";
@@ -19,19 +17,11 @@ import {
   Flex,
   Spacer,
   VStack,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useEffect } from "react";
 
 function Address() {
-  const navigate = useNavigate();
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] =
     React.useState(false);
   const [dataAddress, setDataAddress] = React.useState(null);
@@ -39,9 +29,6 @@ function Address() {
   const [selectedAddressId, setSelectedAddressId] = React.useState(null);
   const onClose = () => setIsOpen(false);
   const cancelRef = React.useRef();
-  const [isAddAddressModalOpen, setIsAddAddressModalOpen] =
-    React.useState(false);
-
   const [addressListRefresh, setAddressListRefresh] = React.useState(false);
 
   const triggerAddressListRefresh = () => {
@@ -196,6 +183,19 @@ function Address() {
         </>
       );
     });
+  };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Address";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
   };
 
   return (
