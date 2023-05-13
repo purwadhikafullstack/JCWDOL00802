@@ -203,19 +203,6 @@ const OrderPage = (props) => {
     if (data !== null) {
       return data.map((val, idx) => {
         let gambar = `${API_URL}/img/product/${val.Transaction_Details[0].Product.product_picture}`;
-        // Calculate remaining days for 'menunggu pembayaran' and 'terkirim' statuses
-        let remainingDays;
-        if (val.transaction_status === 1) {
-          let orderDate = new Date(val.date);
-          orderDate.setDate(orderDate.getDate() + 2); // Add 2 days
-          let now = new Date();
-          remainingDays = Math.ceil((orderDate - now) / (1000 * 60 * 60 * 24));
-        } else if (val.transaction_status === 6) {
-          let sentDate = new Date(val.date_send);
-          sentDate.setDate(sentDate.getDate() + 7); // Add 7 days
-          let now = new Date();
-          remainingDays = Math.ceil((sentDate - now) / (1000 * 60 * 60 * 24));
-        }
         return (
           <div className="shadow p-3 mb-5 bg-body-tertiary rounded" key={val.id_transaction}>
             <div className="row">
@@ -263,11 +250,6 @@ const OrderPage = (props) => {
                       {parseInt(val.number_item)-1 > 0 && (
                         <Text py="2">
                           {val.number_item - 1} barang lainnya
-                        </Text>
-                      )}
-                      {remainingDays && (
-                        <Text py="2">
-                          Time Remaining: {remainingDays} day(s)
                         </Text>
                       )}
                     </CardBody>

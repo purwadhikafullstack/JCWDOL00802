@@ -341,9 +341,6 @@ const Navbar = (props) => {
                     <Link href="/profile">
                       <MenuItem>Akun Saya</MenuItem>
                     </Link>
-                    <Link href="/address">
-                      <MenuItem>Address List</MenuItem>
-                    </Link>
                   </div>
                 )}
                 <MenuDivider />

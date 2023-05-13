@@ -16,7 +16,6 @@ import {
   Container,
   Heading,
   Button,
-  useToast
 } from "@chakra-ui/react";
 import { API_URL } from "../helper";
 import { useLocation } from "react-router-dom";
@@ -38,7 +37,6 @@ const OrderListDetail = () => {
   const [acceptLabel, setAcceptLabel] = useState("");
   const [showResiInput, setShowResiInput] = useState(false);
   const [currentAction, setCurrentAction] = useState(null);
-  const toast = useToast();
 
   useEffect(() => {
     fetchOrderDetails();
@@ -84,9 +82,9 @@ const OrderListDetail = () => {
   const handleSendPackage = async (resi) => {
     setIsModalOpen(false);
     setResiModalVisible(false);
-  
+
     let getLocalStorage = localStorage.getItem("cnc_login");
-  
+
     try {
       const response = await Axios.post(
         `${API_URL}/apis/trans/sending`,
@@ -100,37 +98,19 @@ const OrderListDetail = () => {
           },
         }
       );
-      if (response.status === 200) {
-        toast({
-          title: "Package sent successfully.",
-          description: "The resi number has been recorded and the package has been marked as sent.",
-          status: "success",
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        });
-        fetchOrderDetails(); // This function should refresh the order details
+      if (response.ok) {
+        const responseData = await response.json();
+        // assuming the API returns success field
+        if (responseData.success) {
+          console.log("Package sent");
+        } else {
+          console.error("Failed to send package");
+        }
       } else {
-        console.error("Failed to send package");
-        toast({
-          title: "Error",
-          description: "Failed to send package.",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        });
+        console.error("API request failed");
       }
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error",
-        description: "An error occurred while sending the package.",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-        position: "top",
-      });
     }
   };
 
@@ -142,30 +122,13 @@ const OrderListDetail = () => {
 
     try {
       const response = await Axios.post(
-        `${API_URL}/apis/trans/acctrans?id=${orderId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${getLocalStorage}`,
-          },
-        }
+        `${API_URL}/apis/trans/acctrans?id=${orderId}`
       );
       
       const responseData = response.data;
       // assuming the API returns success field
       if (responseData.success) {
         console.log("Transaction accepted");
-        // Display success toast
-        toast({
-          title: "Transaction accepted",
-          description: "Payment has been successfully accepted.",
-          status: "success",
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        });
-        // Refresh order details
-        fetchOrderDetails();
       } else {
         console.error("Failed to accept transaction");
       }
@@ -184,88 +147,44 @@ const OrderListDetail = () => {
 
     try {
       const response = await Axios.post(
-        `${API_URL}/apis/trans/reject?id=${orderId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${getLocalStorage}`,
-          },
-        }
+        `${API_URL}/apis/trans/reject?id=${orderId}`
       );
-      
-      const responseData = response.data;
-      // assuming the API returns success field
-      if (responseData.success) {
-        console.log("Transaction rejected");
-        // Display success toast
-        toast({
-          title: "Transaction rejected",
-          description: "Payment has been successfully rejected.",
-          status: "success",
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        });
-        // Refresh order details
-        fetchOrderDetails();
+      if (response.ok) {
+        const responseData = await response.json();
+        // assuming the API returns success field
+        if (responseData.success) {
+          console.log("Transaction rejected");
+        } else {
+          console.error("Failed to reject transaction");
+        }
       } else {
-        console.error("Failed to reject transaction");
+        console.error("API request failed");
       }
-    
     } catch (error) {
-      console.error("API request failed");
       console.error(error);
     }
   };
-
 
   const handleCancelTransaction = async () => {
     let getLocalStorage = localStorage.getItem("cnc_login");
-  
+
     try {
       const response = await Axios.post(
         `${API_URL}/apis/trans/cancel?id=${orderId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${getLocalStorage}`,
-          },
-        }
+        {}
       );
       if (response.data.success) {
         console.log("Transaction cancelled");
-        toast({
-          title: "Transaction cancelled successfully.",
-          description: "The transaction has been cancelled.",
-          status: "success",
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        });
-        fetchOrderDetails(); // This function should refresh the order details
+        // Refresh order details after cancelling the transaction
+        fetchOrderDetails();
       } else {
         console.error("Failed to cancel transaction");
-        toast({
-          title: "Error",
-          description: "Failed to cancel transaction.",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
-          position: "top",
-        });
       }
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error",
-        description: "An error occurred while cancelling the transaction.",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-      });
     }
   };
-  
+
   if (!orderDetails) {
     return <Text>Loading...</Text>;
   }
@@ -380,7 +299,6 @@ const OrderListDetail = () => {
             id_transaction={orderId}
             setTransactionProofModalVisible={setTransactionProofModalVisible}
             setResiModalVisible={setResiModalVisible}
-            fetchOrderDetails={fetchOrderDetails}
           />
           {orderDetails.Transaction_status.status >= 3 &&
             orderDetails.Transaction_status.status <= 5 && (
