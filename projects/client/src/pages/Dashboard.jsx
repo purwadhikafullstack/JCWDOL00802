@@ -56,11 +56,6 @@ const Dashboard = () => {
       const apiEndpoints = [
         { key: "totalUsersAndAdmins", path: "/total-users", role: [3] },
         { key: "totalIncome", path: "/total-income", role: [2, 3] },
-        {
-          key: "totalWarehousesWithoutAdmin",
-          path: "/total-warehouses-withoutadmin",
-          role: [3],
-        },
         { key: "totalOrders", path: "/total-orders", role: [2, 3] },
         { key: "pendingRequests", path: "/pending-requests", role: [2] },
         { key: "emptyStock", path: "/empty-stock", role: [2] },
@@ -106,10 +101,6 @@ const Dashboard = () => {
                 data.totalIncomeAllWarehouses =
                   result.totalIncomeAllWarehouses || 0;
               }
-              break;
-            case "totalWarehousesWithoutAdmin":
-              data.totalWarehousesWithoutAdmin =
-                result.totalWarehousesWithoutAdmin;
               break;
             case "totalOrders":
               if (userRole === 2) {
@@ -160,18 +151,8 @@ const Dashboard = () => {
               icon={AiOutlineUser}
             />
             <DashboardCard
-              title="Total Warehouse Admins"
-              value={data.totalWarehouseAdmins || 0}
-              icon={AiOutlineUser}
-            />
-            <DashboardCard
               title="Total Warehouses"
               value={data.totalWarehouses || 0}
-              icon={AiOutlineShop}
-            />
-            <DashboardCard
-              title="Total Warehouses Without Admin"
-              value={data.totalWarehousesWithoutAdmin || 0}
               icon={AiOutlineShop}
             />
           </>
@@ -189,7 +170,7 @@ const Dashboard = () => {
           icon={AiFillDollarCircle}
         />
         <DashboardCard
-          title="Total Orders"
+          title="Total Order Selesai"
           value={
             userRole === 2
               ? data.totalOrders || 0
@@ -214,12 +195,12 @@ const Dashboard = () => {
         {userRole === 2 && (
           <>
             <DashboardCard
-              title="New Orders"
+              title="Pesanan Baru"
               value={data.newOrdersCount || 0}
               icon={AiOutlineShoppingCart}
             />
             <DashboardCard
-              title="Ready for Shipment"
+              title="Siap Untuk Dikirim"
               value={data.readyToShipmentCount || 0}
               icon={AiOutlineCarryOut}
             />

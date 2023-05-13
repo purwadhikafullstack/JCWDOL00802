@@ -29,6 +29,8 @@ function AdminOrderList() {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const [status, setStatus] = useState("");
+
   const { role } = useSelector((state) => {
     return {
       role: state.userReducer.role,
@@ -56,6 +58,7 @@ function AdminOrderList() {
           warehouse: selectedWarehouse,
           order,
           limit,
+          status,
           page: parseInt(page) - 1,
         },
         { headers: { Authorization: `Bearer ${getLocalStorage}` } }
@@ -80,25 +83,27 @@ function AdminOrderList() {
   const onSetFilter = () => {
     if (
       search != "" ||
-      order != 0 ||""
+      order != 0 ||
+      status != ""
     ) {
       setPage(1);
       setOnFilter(true);
       getTransaction();
     }
   };
-
+  
   const onResetFilter = () => {
     setSearch("");
     setOrder(0);
     setOnFilter(false);
+    setStatus("");
   };
 
   //USE EFFECT
   useEffect(() => {
     getWarehouse();
   }, []);
-
+  
   useEffect(() => {
     getTransaction();
   }, [selectedWarehouse, page, limit, onFilter]);
@@ -128,7 +133,6 @@ function AdminOrderList() {
       let detailpage = `/admin/order-detail?id_transaction=${val.id_transaction}`;
       return (
         <Tr>
-          <Td>{val.id_transaction}</Td>
           <Td>{val.alamat_pengiriman.receiver}</Td>
           <Td>{val.Transaction_status.description}</Td>
           <Td>
@@ -156,7 +160,6 @@ function AdminOrderList() {
             <Table size="sm">
               <Thead>
                 <Tr className="tablehead">
-                  <Th color="#ffffff">ID Transaksi</Th>
                   <Th color="#ffffff">Nama Penerima</Th>
                   <Th color="#ffffff">Status Transaksi</Th>
                   <Th></Th>
@@ -169,7 +172,7 @@ function AdminOrderList() {
             className="d-flex my-5"
             style={{ alignContent: "center", justifyContent: "center" }}
           >
-              <PaginationOrder
+            <PaginationOrder
               currentPage={parseInt(page)}
               totalPages={parseInt(lastPage)}
               onPageChange={setPage}
@@ -188,7 +191,7 @@ function AdminOrderList() {
                 onChange={(e) => setLimit(e.target.value)}
                 style={{ width: "60px" }}
               />
-              list 
+              list
             </div>
           </div>
         </div>
@@ -217,57 +220,70 @@ function AdminOrderList() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="inputfilter">
-          </div>
+          <div className="inputfilter" />
           <div className="inputfilter">
             <Select
               onChange={(e) => setOrder(e.target.value)}
-              className="form-control form-control-lg mt-3
-          "
+              className="form-control form-control-lg mt-3"
             >
               <option value={0}>Urutkan</option>
               <option value={1} selected={order == 1}>
-                ID Transaksi: ASC
-              </option>
-              <option value={2} selected={order == 2}>
-                ID Transaksi: DESC
-              </option>
-              <option value={3} selected={order == 3}>
                 Nama Penerima: ASC
               </option>
-              <option value={4} selected={order == 4}>
+              <option value={2} selected={order == 2}>
                 Nama Penerima: DESC
               </option>
-              <option value={5} selected={order == 5}>
+              <option value={3} selected={order == 3}>
                 Status Transaksi: ASC
               </option>
-              <option value={6} selected={order == 6}>
+              <option value={4} selected={order == 4}>
                 Status Transaksi: DESC
               </option>
             </Select>
-          <br />
-          <ButtonGroup>
-            <Button
-              type="button"
-              colorScheme="orange"
-              variant="solid"
-              onClick={() => onSetFilter()}
-            >
-              Set Filter
-            </Button>
-            <Button
-              type="button"
-              colorScheme="orange"
-              variant={onFilter ? "solid" : "outline"}
-              onClick={() => onResetFilter()}
-              isDisabled={!onFilter}
-            >
-              Reset Filter
-            </Button>
-          </ButtonGroup>
+
+            <div className="inputfilter">
+              <Select
+                onChange={(e) => setStatus(e.target.value)}
+                className="form-control form-control-lg mt-3"
+              >
+                <option value="">Filter Status Transaksi</option>
+                <option value={2} selected={status == 2}>
+                  Proses Pengecekan Pembayaran
+                </option>
+                <option value={3} selected={status == 3}>
+                  Pembayaran Diterima
+                </option>
+                <option value={4} selected={status == 4}>
+                  Diproses
+                </option>
+                <option value={5} selected={status == 5}>
+                  Dikemas
+                </option>
+              </Select>
+            </div>
+            <br />
+            <ButtonGroup>
+              <Button
+                type="button"
+                colorScheme="orange"
+                variant="solid"
+                onClick={() => onSetFilter()}
+              >
+                Set Filter
+              </Button>
+              <Button
+                type="button"
+                colorScheme="orange"
+                variant={onFilter ? "solid" : "outline"}
+                onClick={() => onResetFilter()}
+                isDisabled={!onFilter}
+              >
+                Reset Filter
+              </Button>
+            </ButtonGroup>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
