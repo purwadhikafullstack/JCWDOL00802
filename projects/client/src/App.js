@@ -43,6 +43,7 @@ import AdminUserList from "./pages/AdminUserList";
 import AdminOrderList from "./pages/AdminOrderList";
 import AdminOrderListDetail from "./pages/AdminOrderDetail.jsx";
 import RequestReset from "./pages/RequestReset";
+import WishlistPage from "./pages/Wishlist";
 
 function App() {
   // KODE DARI PURWADHIKA
@@ -118,6 +119,7 @@ function App() {
             element={<StockHistoryDetail />}
           />
           <Route path="/admin/salesreport" element={<ReportSales />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           {/* semua yang butuh login user taruh dalam <></> bawah ini */}
           {role == 1 && (
             <>

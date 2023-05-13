@@ -8,6 +8,7 @@ const CategoryProductModel = require("./Category_Product");
 const StockHistoryModel = require("./stock_history");
 const WarehouseMutationModel = require("./warehouse_mutation");
 const WarehouseMutationStatusModel = require("./warehouse_mutation_status");
+const WishlistModel = require("./Wishlist");
 
 const ProductModel = dbSequelize.define(
   "Product",
@@ -108,6 +109,16 @@ WarehouseMutationModel.hasOne(WarehouseMutationStatusModel, {
   sourceKey: "status",
 });
 StockHistoryModel.hasOne(ProductModel, {
+  foreignKey: "id_product",
+  sourceKey: "id_product",
+  targetKey: "id_product",
+});
+ProductModel.hasMany(WishlistModel, {
+  foreignKey: "id_product",
+  sourceKey: "id_product",
+  targetKey: "id_product",
+});
+WishlistModel.hasOne(ProductModel, {
   foreignKey: "id_product",
   sourceKey: "id_product",
   targetKey: "id_product",

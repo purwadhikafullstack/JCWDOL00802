@@ -24,9 +24,4 @@ const WishlistModel = dbSequelize.define(
 
 UserModel.hasMany(WishlistModel, { foreignKey: "id_user" });
 WishlistModel.belongsTo(UserModel, { foreignKey: "id_user" });
-WishlistModel.belongsTo(ProductModel, {
-  foreignKey: "id_product",
-});
-ProductModel.hasMany(WishlistModel, { foreignKey: "id_product" });
-
 module.exports = WishlistModel;

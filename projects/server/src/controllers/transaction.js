@@ -835,7 +835,7 @@ module.exports = {
               order: [["date", "desc"]],
               where: { id_product, id_warehouse },
             });
-            let newTotal = totalCek[0].total - amount;
+            let newTotal = totalCek[0].total + amount;
             let updateStockHistory = await StockHistoryModel.create({
               id_product,
               id_warehouse,
@@ -858,7 +858,7 @@ module.exports = {
           order: [["date", "desc"]],
           where: { id_product, id_warehouse: id },
         });
-        let newTotal = totalCek[0].total - total;
+        let newTotal = totalCek[0].total + total;
         let updateStockWarehouseSender = await StockHistoryModel.create({
           id_product,
           id_warehouse: id,

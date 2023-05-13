@@ -103,7 +103,11 @@ function StockHistory() {
         Authorization: `Bearer ${getLocalStorage}`,
       },
     }).then((response) => {
-      setDataWarehouse(response.data);
+      if(response.data.length == 1){
+        setDataWarehouse(response.data);}else if(response.data.length > 1){
+          let data = response.data
+          setDataWarehouse([{warehouse_branch_name: "Semua Gudang", id_warehouse :""},...data])
+        }
     });
   };
 

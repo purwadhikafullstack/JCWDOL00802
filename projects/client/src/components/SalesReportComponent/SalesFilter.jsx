@@ -30,7 +30,7 @@ const SalesFilter = ({
  
 
   const month = [
-    { value: "", name: "Month" },
+    { value: "", name: "Bulan" },
     { value: 1, name: "January" },
     { value: 2, name: "February" },
     { value: 3, name: "March" },
@@ -58,7 +58,7 @@ const SalesFilter = ({
   const yearListDefault = () => {
     const year = new Date().getFullYear();
     let baseYear = 2022;
-    let dataYear = [{label:"year", value :""}];
+    let dataYear = [{label:"Tahun", value :""}];
     for (let i = parseInt(year); i >= baseYear; i--) {
       dataYear.push({label :i, value:i});
     }
@@ -105,7 +105,9 @@ const SalesFilter = ({
     setSearchTerm("");
     setSelectedYear("");
     setSelectedMonth("");
-    setSelectedWarehouse("");
+    if(warehouses?.length> 1){
+      setSelectedWarehouse("");
+    }
     setSelectedCategory("");
     setResetDisable(true);
     
@@ -152,11 +154,12 @@ const SalesFilter = ({
           </Select>
         </FormControl>
         <FormControl>
-          <Select placeholder="Warehouse" onChange={handleWarehouseChange}>
+        <Select onChange={handleWarehouseChange}isDisabled={warehouses?.length ==1}>
             {warehouses?.map((warehouse) => (
               <option
                 key={warehouse.id_warehouse}
                 value={warehouse.id_warehouse}
+                selected ={warehouse.id_warehouse == selectedWarehouse}
               >
                 {warehouse.warehouse_branch_name}
               </option>

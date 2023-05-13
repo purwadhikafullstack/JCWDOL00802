@@ -323,10 +323,10 @@ const OrderPage = (props) => {
       <div className="row">
         {/* side bar kiri */}
         
-        <div className="col-3 row">
-          <div className=" col-3 position-fixed start-2">
+        <div className="col-2 row">
+          
       <SidebarOrder onWaitClick={handleWaiting} /></div>
-    </div>
+    
         {/* side tengah */}
         <div className="col-8  position-relative mx-2 pb-2 start-2">
           <h1 className="ms-2 mt-2 fs-2">
