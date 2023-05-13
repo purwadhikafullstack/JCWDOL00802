@@ -46,7 +46,7 @@ const Sidebar = (props) => {
   // SHOW SIDEBAR IF ADMIN
   const [show, setShow] = useState(false);
   const checkLink = () => {
-    if (window.location.pathname.includes("/admin")) {
+    if (window.location.pathname.includes("/admin") &&roleAdmin) {
       setShow(true);
     } else if (!window.location.pathname.includes("/admin")) {
       setShow(false);

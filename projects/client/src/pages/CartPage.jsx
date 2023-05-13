@@ -89,7 +89,7 @@ const Cart = (props) => {
         isClosable: true,
         position: "top",
       });
-    } else if (role & (role !== 1)) {
+    } else if (role && (role !== 1)) {
       toast({
         title: "Admin tidak bisa mengakses ini!",
         status: "error",
@@ -418,13 +418,16 @@ const Cart = (props) => {
             )}
             <div className="col-12">{printData()}</div>
 
-        <div className="col-12 my-5">
-            <h3><strong>Wishlist Item</strong></h3>
-          
-          <div className="my-1 py-1">
-          <Wishlist  wishlist={wishlistData} getData={getData} getCart={getCart}/>
+              {wishlistData &&
+              <div className="col-12 my-5">
+              <h3><strong>Wishlist Item</strong></h3>
+            
+            <div className="my-1 py-1">
+            <Wishlist  wishlist={wishlistData} getData={getData} getCart={getCart}/>
+            </div>
           </div>
-        </div>
+
+              }
     
           </div>
         </div>

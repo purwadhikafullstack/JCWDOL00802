@@ -38,11 +38,13 @@ const DetailPage = (props) => {
   const [disableAdd, setDisableAdd]=useState(false)
   const { id } = useParams();
   const [isLoved, setIsLoved] = React.useState(false);
+  const [disableWishlist, setDisableWishlist]=useState(false)
 
-  const { id_user, status } = useSelector((state) => {
+  const { id_user, status,role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
       status: state.userReducer.status,
+      role : state.userReducer.role
     };
   });
   let userToken =localStorage.getItem("cnc_login")
@@ -64,8 +66,11 @@ const DetailPage = (props) => {
 
   useEffect(() => {
     let total = qty+cart
-    
-    ;
+    let admin= [2,3]
+    if(admin.includes(role)){
+      setDisableAdd(true)
+      setDisableWishlist(true)
+    }
     if(total >= stock){
       setDisablePlus(true)
     }else setDisablePlus(false)
@@ -85,11 +90,18 @@ const DetailPage = (props) => {
     setDisableMinus(true)
     setQty(0)}
     ;
-  }, [qty,productData,cart])
+  }, [qty,productData,cart,role])
   
 
   const getCartDetail = async () => {
-    await Axios.get(`${API_URL}/apis/cart/detail/?id=${id_user}&prod=${id}`)
+    if(userToken){
+    await Axios.get(`${API_URL}/apis/cart/detail/?id=${id_user}&prod=${id}`,{
+        
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    
+    })
       .then((response) => {
         setCartData(response.data)
         
@@ -101,11 +113,12 @@ const DetailPage = (props) => {
       })
       .catch((error) => {
         console.log(error);
-      });
+        setCart(0)
+      });}
   };
   useEffect(() => {
     getCartDetail();
-  }, [id_user]);
+  }, [id_user,userToken]);
 
   const onInc = () => {
     if (cartData == null) {
@@ -160,6 +173,12 @@ const DetailPage = (props) => {
         id_user,
         id_product,
         total_item,
+      },{
+        
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      
       })
         toastMessage(addCart.data.message,"success")
         getCartDetail()
@@ -311,6 +330,7 @@ const DetailPage = (props) => {
               Add To Cart
             </Button>
             <IconButton
+              isDisabled={disableWishlist}
               aria-label="Add to wishlist"
               icon={<AiFillHeart />}
               variant={isLoved? "ghost":"outline"}

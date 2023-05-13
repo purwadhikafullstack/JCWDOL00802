@@ -186,10 +186,10 @@ module.exports = {
           where: { id_cart },
         }
       );
-      return res.status(200).send("oke");
+      return res.status(200).send("success");
     } catch (error) {
       console.log(error);
-      return res.status(401).send("ea");
+      return res.status(401).send("unsuccess");
     }
   },
   cartAllSelected: async (req, res) => {
@@ -200,10 +200,10 @@ module.exports = {
           where: { id_user: req.decript.id_user },
         }
       );
-      return res.status(200).send("oke");
+      return res.status(200).send("success");
     } catch (error) {
       console.log(error);
-      return res.status(401).send("ea");
+      return res.status(401).send("unsuccess");
     }
   },
   cartAllUnselected: async (req, res) => {
@@ -214,10 +214,10 @@ module.exports = {
           where: { id_user: req.decript.id_user },
         }
       );
-      return res.status(200).send("oke");
+      return res.status(200).send("success");
     } catch (error) {
       console.log(error);
-      return res.status(401).send("ea");
+      return res.status(401).send("unsuccess");
     }
   },
 

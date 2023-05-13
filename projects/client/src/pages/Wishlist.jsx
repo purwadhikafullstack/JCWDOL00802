@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { AiOutlineDelete } from 'react-icons/ai'
 import { useNavigate } from "react-router-dom";
 import { RiShoppingCartLine } from "react-icons/ri"
+import { useSelector } from "react-redux";
 
 function WishlistPage(){
     const [wishlistData,setWishlistData]=useState([])
@@ -73,10 +74,43 @@ function WishlistPage(){
     useEffect(() => {
       if(userToken){
         getData()
-      }else if(!userToken){
-        navigate("/")
       }
     }, [userToken])
+    const messageAuthorize = () => {
+      if (!userToken) {
+        toast({
+          title: "Silahkan login dulu",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          position: "top",
+        });
+      } else if (role && (role !== 1)) {
+        toast({
+          title: "Admin tidak bisa mengakses ini!",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+          position: "top",
+        });
+      }
+    };
+    const { status, role } = useSelector((state) => {
+      return {
+        status: state.userReducer.status,
+        role: state.userReducer.role,
+      };
+    })
+    useEffect(() => {
+      if (!userToken) {
+        navigate("/login");
+      } else if (role && role !== 1) {
+        navigate("/");
+      } else if (status && status == 1) {
+        navigate("/");
+      }
+      messageAuthorize();
+    }, [role, userToken, status])
     
 
     return <div className="container">
@@ -138,7 +172,7 @@ function WishlistPage(){
               {item?.Product.name.substring(0,15)}
             </Text>
             <Text color="orange" fontSize="lg" fontWeight="bold" mb={2}>
-              {item?.Product.price}
+              Rp.{item?.Product?.price}
             </Text>
             <Flex mt="auto" justifyContent="space-between" alignItems="center" width="100%">
             <Button colorScheme="orange" variant="solid" mr={2} onClick={()=>{addToCart(item.id_wishlist)}}>
