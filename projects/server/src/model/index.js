@@ -8,6 +8,7 @@ const UserStatusModel = require("./user_status");
 const WarehouseModel = require("./warehouse");
 const WarehouseMutationModel = require("./warehouse_mutation");
 const AddressModel = require("./address");
+const StockHistoryModel = require("./stock_history");
 
 module.exports = {
   UserModel,
@@ -20,4 +21,5 @@ module.exports = {
   WarehouseAdminModel,
   AddressModel,
   WarehouseMutationModel,
+  StockHistoryModel,
 };

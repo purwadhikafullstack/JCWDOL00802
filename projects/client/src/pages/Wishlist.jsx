@@ -172,7 +172,7 @@ function WishlistPage(){
               {item?.Product.name.substring(0,15)}
             </Text>
             <Text color="orange" fontSize="lg" fontWeight="bold" mb={2}>
-              {item?.Product.price}
+              Rp.{item?.Product?.price}
             </Text>
             <Flex mt="auto" justifyContent="space-between" alignItems="center" width="100%">
             <Button colorScheme="orange" variant="solid" mr={2} onClick={()=>{addToCart(item.id_wishlist)}}>

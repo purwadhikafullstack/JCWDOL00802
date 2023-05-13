@@ -333,7 +333,7 @@ const CheckOut = (props) => {
                 >
                   {shipment?.map((val, index) => (
                     <option key={index} value={val?.service}>
-                      {val?.service}, {val?.cost[0].value}, {val?.cost[0].etd}
+                      {val?.service}, {val?.cost[0].value}, est.{val?.cost[0].etd}days
                     </option>
                   ))}
                 </Select>
