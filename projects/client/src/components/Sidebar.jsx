@@ -46,7 +46,8 @@ const Sidebar = (props) => {
   // SHOW SIDEBAR IF ADMIN
   const [show, setShow] = useState(false);
   const checkLink = () => {
-    if (window.location.pathname.includes("/admin") &&roleAdmin) {
+    let admin = [2, 3];
+    if (window.location.pathname.includes("/admin") && admin.includes(role)) {
       setShow(true);
     } else if (!window.location.pathname.includes("/admin")) {
       setShow(false);
@@ -55,7 +56,7 @@ const Sidebar = (props) => {
 
   useEffect(() => {
     checkLink();
-  }, [useLocation()]);
+  }, [useLocation(), role]);
 
   // DROPDOWN CONDITION
   const [isOpenPromo, setIsOpenPromo] = useState(false);
