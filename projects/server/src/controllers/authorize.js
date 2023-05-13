@@ -120,4 +120,24 @@ module.exports = {
       }
     });
   },
+  authNonAdmin: (req, res, next) => {
+    jwt.verify(req.token, "cnc!", (err, decript) => {
+      if (err) {
+        return res.status(401).send({
+          success: false,
+          message: "Authenticate token failed",
+        });
+      }
+      let admin = [2, 3];
+      if (!admin.includes(decript.role)) {
+        req.decript = decript;
+        next();
+      } else {
+        return res.status(401).send({
+          success: false,
+          message: "admin tidak dapat melakukan ini",
+        });
+      }
+    });
+  },
 };

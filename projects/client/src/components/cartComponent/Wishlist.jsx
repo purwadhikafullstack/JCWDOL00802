@@ -23,7 +23,7 @@ const Wishlist = ({
   const printData = () => {
     let data = wishlist;
     
-
+    if(wishlist){
     return <Flex flexWrap="wrap" >
     {data.map((val, idx) => {
       let image = `${API_URL}/img/product/${val.Product.product_picture}`;
@@ -78,7 +78,7 @@ const Wishlist = ({
           </Flex>
         </Box>
       );
-    })}</Flex>
+    })}</Flex>}
   };
   const addToCart = async(id)=>{
     try {

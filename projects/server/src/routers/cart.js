@@ -5,16 +5,17 @@ const {
   authUser,
   authUserCart,
   authUserCartDel,
+  authNonAdmin,
 } = require("../controllers/authorize");
 
-route.post("/addtocart", cartController.AddtoCart);
-route.get("/getcart", authUser, cartController.getCart);
-route.get("/selected", authUser, cartController.getCartSelected);
-route.get("/detail/", cartController.getCartDetail);
+route.post("/addtocart", authNonAdmin, cartController.AddtoCart);
+route.get("/getcart", authNonAdmin, cartController.getCart);
+route.get("/selected", authNonAdmin, cartController.getCartSelected);
+route.get("/detail/", authNonAdmin, cartController.getCartDetail);
 route.post("/inc", authUserCart, cartController.cartIncrement);
 route.post("/dec", authUserCart, cartController.cartDecrement);
-route.post("/updatecart", cartController.cartSelected);
-route.get("/allcartselect", authUser, cartController.cartAllSelected);
-route.get("/allcartunselect", authUser, cartController.cartAllUnselected);
+route.post("/updatecart", authNonAdmin, cartController.cartSelected);
+route.get("/allcartselect", authNonAdmin, cartController.cartAllSelected);
+route.get("/allcartunselect", authNonAdmin, cartController.cartAllUnselected);
 route.delete("/", authUserCartDel, cartController.cartDelete);
 module.exports = route;
