@@ -333,7 +333,8 @@ const CheckOut = (props) => {
                 >
                   {shipment?.map((val, index) => (
                     <option key={index} value={val?.service}>
-                      {val?.service}, {val?.cost[0].value}, est.{val?.cost[0].etd}days
+                      {val?.service}, {val?.cost[0].value}, est.
+                      {val?.cost[0].etd}days
                     </option>
                   ))}
                 </Select>
@@ -405,7 +406,13 @@ const CheckOut = (props) => {
                   <div className="px-4">
                     <Box>
                       <Box top="20px" right="0">
-                        <NewAddressModal />
+                        <Button
+                          type="button"
+                          colorScheme="orange"
+                          onClick={() => navigate("/address")}
+                        >
+                          Tambah Alamat
+                        </Button>
                       </Box>
                     </Box>
                   </div>

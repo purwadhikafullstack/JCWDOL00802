@@ -75,9 +75,11 @@ function RequestStock() {
       },
     }).then((response) => {
       setDataWarehouseReceive(response.data);
-      setSelectedWarehouseReceive(response.data[0].id_warehouse);
       setDataWarehouseSend(response.data);
-      setSelectedWarehouseSend(response.data[0].id_warehouse);
+      if (response.data.length == 1) {
+        setSelectedWarehouseReceive(response.data[0].id_warehouse);
+        setSelectedWarehouseSend(response.data[0].id_warehouse);
+      }
     });
   };
 
@@ -177,6 +179,7 @@ function RequestStock() {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
@@ -206,6 +209,7 @@ function RequestStock() {
         })
         .catch((error) => {
           console.log(error);
+          alert(error.response.data.msg);
         });
     }
   };
@@ -232,6 +236,7 @@ function RequestStock() {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
@@ -261,6 +266,7 @@ function RequestStock() {
         })
         .catch((error) => {
           console.log(error);
+          alert(error.response.data.msg);
         });
     }
   };
@@ -590,7 +596,11 @@ function RequestStock() {
         <ModalFooter>
           {approve && (
             <ButtonGroup>
-              <Button colorScheme="orange" className="mx-2" onClick={onApprove}>
+              <Button
+                colorScheme="orange"
+                className="mx-2"
+                onClick={() => onApprove()}
+              >
                 Setuju
               </Button>
               <Button colorScheme="red" onClick={() => onReject()}>
@@ -639,7 +649,7 @@ function RequestStock() {
             </ButtonGroup>
           )}
           <Button color="secondary" onClick={() => setModal(false)}>
-            Cancel
+            Close
           </Button>
         </ModalFooter>
       </Modal>
@@ -655,9 +665,10 @@ function RequestStock() {
     };
   }, []);
   useEffect(() => {
+    let admin = [2, 3];
     if (!userToken) {
       navigate("/login");
-    } else if (role && role == 1) {
+    } else if (role && !admin.includes(role)) {
       navigate("/");
     }
   }, [role, userToken]);
@@ -738,17 +749,22 @@ function RequestStock() {
         </div>
         <hr className="dividervertikal" />
         <div className="my-2  d-flex">{printDataSend()}</div>
-        <div
-          className="d-flex"
-          style={{ alignItems: "center", justifyContent: "center" }}
-        >
-          <PaginationOrder
-            currentPage={parseInt(pageSend)}
-            totalPages={parseInt(lastPageSend)}
-            onPageChange={setPageSend}
-            maxLimit={0}
-          />
-        </div>
+        {dataSend?.length > 0 ? (
+          <div
+            className="d-flex"
+            style={{ alignItems: "center", justifyContent: "center" }}
+          >
+            <PaginationOrder
+              currentPage={parseInt(pageSend)}
+              totalPages={parseInt(lastPageSend)}
+              onPageChange={setPageSend}
+              maxLimit={0}
+            />
+          </div>
+        ) : (
+          <div className="d-flex justify-content-center">Tidak ada data</div>
+        )}
+
         <br />
       </div>
       <hr className="dividerarea" />
@@ -812,17 +828,22 @@ function RequestStock() {
         </div>
         <hr className="dividervertikal" />
         <div className="my-2  d-flex">{printDataReceive()}</div>
-        <div
-          className="d-flex"
-          style={{ alignItems: "center", justifyContent: "center" }}
-        >
-          <PaginationOrder
-            currentPage={parseInt(pageReceive)}
-            totalPages={parseInt(lastPageReceive)}
-            onPageChange={setPageReceive}
-            maxLimit={0}
-          />
-        </div>
+        {dataReceive?.length > 0 ? (
+          <div
+            className="d-flex"
+            style={{ alignItems: "center", justifyContent: "center" }}
+          >
+            <PaginationOrder
+              currentPage={parseInt(pageReceive)}
+              totalPages={parseInt(lastPageReceive)}
+              onPageChange={setPageReceive}
+              maxLimit={0}
+            />
+          </div>
+        ) : (
+          <div className="d-flex justify-content-center">Tidak ada data</div>
+        )}
+
         <br />
       </div>
       {/* MODAL */}

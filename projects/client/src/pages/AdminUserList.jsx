@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../helper";
 import Axios from "axios";
@@ -15,7 +15,6 @@ import {
   Input,
   Select,
   ButtonGroup,
-  Avatar,
   AlertDialog,
   AlertDialogOverlay,
   AlertDialogContent,
@@ -24,8 +23,9 @@ import {
   AlertDialogFooter,
 } from "@chakra-ui/react";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
-import EditUserModal from "../components/UserListComponent/EditUserModal"; 
+import EditUserModal from "../components/UserListComponent/EditUserModal";
 import AddUserModal from "../components/UserListComponent/AddUserModal";
+import { useSelector } from "react-redux";
 
 function AdminUserList() {
   // STATE
@@ -40,12 +40,17 @@ function AdminUserList() {
   const onClose = () => setIsOpen(false);
   const cancelRef = React.useRef();
   const [updateTrigger, setUpdateTrigger] = useState(false);
-   
+  let userToken = localStorage.getItem("cnc_login");
+  let navigate = useNavigate();
+  const { role } = useSelector((state) => {
+    return {
+      role: state.userReducer.role,
+    };
+  });
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const handleAddUserClick = () => {
     setIsAddUserModalOpen(true);
   };
-  
 
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const handleEditUserClick = (id_user) => {
@@ -124,12 +129,11 @@ function AdminUserList() {
     let data = dataExist ? dataUser : [];
     // let num = 0;
     return data.map((val, idx) => {
-      
-        return (
-            <Tr>
+      return (
+        <Tr>
           <Td>{val.full_name}</Td>
           <Td>{val.email}</Td>
-          <Td>{val.role === 1 ? 'User' : 'Warehouse Admin'}</Td>    
+          <Td>{val.role === 1 ? "User" : "Warehouse Admin"}</Td>
           <Td>
             <Button
               type="button"
@@ -155,27 +159,48 @@ function AdminUserList() {
     });
   };
 
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Admin User List";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+  useEffect(() => {
+    if (!userToken) {
+      navigate("/login");
+    } else if (role && role == 1) {
+      navigate("/");
+    } else if (role && role == 2) {
+      navigate("/admin");
+    }
+  }, [role, userToken]);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
   return (
     <div className="bg-white w-100 m-auto ">
       <div className="d-flex">
         <div className="col-9 rounded p-3 tablebox">
-          
           <TableContainer className="rounded">
-          <div className="d-flex justify-content-between align-items-center">
-      <Text fontSize="2xl">User List</Text>
-      <Button colorScheme="blue" onClick={handleAddUserClick}>
-        Add User
-      </Button>
-    </div>
+            <div className="d-flex justify-content-between align-items-center">
+              <Text fontSize="2xl">User List</Text>
+              <Button colorScheme="blue" onClick={handleAddUserClick}>
+                Add User
+              </Button>
+            </div>
 
-    {isAddUserModalOpen && (
-      <AddUserModal
-        isOpen={isAddUserModalOpen}
-        onClose={() => setIsAddUserModalOpen(false)}
-        onUserAdded={() => setUpdateTrigger(!updateTrigger)}
-        setUpdateTrigger={setUpdateTrigger}
-      />
-    )}
+            {isAddUserModalOpen && (
+              <AddUserModal
+                isOpen={isAddUserModalOpen}
+                onClose={() => setIsAddUserModalOpen(false)}
+                onUserAdded={() => setUpdateTrigger(!updateTrigger)}
+                setUpdateTrigger={setUpdateTrigger}
+              />
+            )}
             <Table>
               <Thead>
                 <Tr className="tablehead">
@@ -189,31 +214,35 @@ function AdminUserList() {
               <Tbody className="tablebody">{printData()}</Tbody>
             </Table>
           </TableContainer>
-          <div
-            className="d-flex my-5"
-            style={{ alignContent: "center", justifyContent: "center" }}
-          >
-            <PaginationOrder
-              currentPage={parseInt(page)}
-              totalPages={parseInt(lastPage)}
-              onPageChange={setPage}
-              maxLimit={0}
-            />
+          {dataUser?.length > 0 ? (
             <div
-              className="d-flex mx-5"
-              style={{ alignItems: "center", justifyContent: "center" }}
+              className="d-flex my-5"
+              style={{ alignContent: "center", justifyContent: "center" }}
             >
-              menampilkan
-              <Input
-                type="text"
-                placeholder="limit"
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)}
-                style={{ width: "60px" }}
+              <PaginationOrder
+                currentPage={parseInt(page)}
+                totalPages={parseInt(lastPage)}
+                onPageChange={setPage}
+                maxLimit={0}
               />
-              user
+              <div
+                className="d-flex mx-5"
+                style={{ alignItems: "center", justifyContent: "center" }}
+              >
+                menampilkan
+                <Input
+                  type="text"
+                  placeholder="limit"
+                  value={limit}
+                  onChange={(e) => setLimit(e.target.value)}
+                  style={{ width: "60px" }}
+                />
+                user
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="d-flex justify-content-center">Tidak ada data</div>
+          )}
         </div>
         <div className="col-3 rounded shadow mt-3 p-3 filterbox">
           <div className="inputfilter">
@@ -261,49 +290,49 @@ function AdminUserList() {
             </Button>
           </ButtonGroup>
           <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete User
-            </AlertDialogHeader>
+            isOpen={isOpen}
+            leastDestructiveRef={cancelRef}
+            onClose={onClose}
+          >
+            <AlertDialogOverlay>
+              <AlertDialogContent>
+                <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                  Delete User
+                </AlertDialogHeader>
 
-            <AlertDialogBody>
-              Are you sure you want to delete this User ?
-            </AlertDialogBody>
+                <AlertDialogBody>
+                  Are you sure you want to delete this User ?
+                </AlertDialogBody>
 
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={() => {
-                  onDelete(selectedUserId);
-                  onClose();
-                }}
-                ml={3}
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
+                <AlertDialogFooter>
+                  <Button ref={cancelRef} onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button
+                    colorScheme="red"
+                    onClick={() => {
+                      onDelete(selectedUserId);
+                      onClose();
+                    }}
+                    ml={3}
+                  >
+                    Delete
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialogOverlay>
+          </AlertDialog>
         </div>
       </div>
       {isEditUserModalOpen && (
-      <EditUserModal
-        id_user={selectedUserId}
-        isOpen={isEditUserModalOpen}
-        onClose={handleEditUserClose}
-        updateTrigger={updateTrigger}
-        setUpdateTrigger={setUpdateTrigger}
-      />
-    )}
+        <EditUserModal
+          id_user={selectedUserId}
+          isOpen={isEditUserModalOpen}
+          onClose={handleEditUserClose}
+          updateTrigger={updateTrigger}
+          setUpdateTrigger={setUpdateTrigger}
+        />
+      )}
     </div>
   );
 }

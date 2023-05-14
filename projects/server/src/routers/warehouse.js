@@ -19,13 +19,16 @@ route.post(
   warehouseController.deleteWarehouse
 );
 
-//AUTH MINIMAL ADMIN
 route.get(
   "/detailwarehouse",
   authorizeController.authSuperAdmin,
   warehouseController.getIdWarehouse
 );
-route.get("/postal", warehouseController.getPostalWarehouse);
+route.get(
+  "/postal",
+  authorizeController.authSuperAdmin,
+  warehouseController.getPostalWarehouse
+);
 route.post(
   "/editwarehouse",
   authorizeController.authSuperAdmin,

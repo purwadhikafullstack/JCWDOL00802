@@ -32,12 +32,13 @@ const RequestReset = () => {
       })
       .catch((error) => {
         console.log(error);
+        alert(error.response.data.msg);
       });
   };
 
   // ACCESS
   useEffect(() => {
-    document.title = "Cnc || Register";
+    document.title = "Cnc || Request Reset Password";
     window.addEventListener("beforeunload", resetPageTitle);
     return () => {
       window.removeEventListener("beforeunload", resetPageTitle());
@@ -95,7 +96,7 @@ const RequestReset = () => {
               <div className="my-3">
                 <label className="form-label fw-bold text-muted">Email</label>
                 <Input
-                  type="text"
+                  type="email"
                   id="email"
                   placeholder="email"
                   value={values.email}

@@ -72,7 +72,7 @@ const NewProduct = (props) => {
       })
       .catch((error) => {
         console.log(error);
-        alert("Add Product Fail");
+        alert(error.response.data.msg);
       });
   };
 
@@ -249,7 +249,7 @@ const NewProduct = (props) => {
               <label className="form-label fw-bold text-muted">Kategori</label>
               <select
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="form-control form-control-lg"
+                className="form-control"
               >
                 <option value={0}>Select Category</option>
                 {printCategory()}

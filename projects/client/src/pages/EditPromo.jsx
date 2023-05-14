@@ -28,6 +28,7 @@ const EditPromo = () => {
   const [preview, setPreview] = useState("https://fakeimg.pl/350x200/");
   const [promoPicture, setPromoPicture] = useState("");
   const [cpu, setCpu] = useState(0);
+  const [checker, setChecker] = useState([]);
 
   //FORMIK
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
@@ -63,16 +64,21 @@ const EditPromo = () => {
           Authorization: `Bearer ${getLocalStorage}`,
         },
       });
-      setKode(promo.data[0].promo_code);
-      setDeskripsi(promo.data[0].description);
-      setMaxPromo(promo.data[0].max_count);
-      setLimitPromo(promo.data[0].limitation);
-      setStatusPromo(promo.data[0].status);
-      setPreview(`${API_URL}/img/promo/${promo.data[0].promo_picture}`);
-      setPromoPicture(promo.data[0].promo_picture);
-      setExpirePromo(promo.data[0].expire_date.split("T")[0]);
-      setCpu(promo.data[0].count_user);
-      setSelectedCategory(promo.data[0].category);
+      if (!promo.data) {
+        setChecker(null);
+      } else {
+        setChecker(["1"]);
+        setKode(promo.data.promo_code);
+        setDeskripsi(promo.data.description);
+        setMaxPromo(promo.data.max_count);
+        setLimitPromo(promo.data.limitation);
+        setStatusPromo(promo.data.status);
+        setPreview(`${API_URL}/img/promo/${promo.data.promo_picture}`);
+        setPromoPicture(promo.data.promo_picture);
+        setExpirePromo(promo.data.expire_date.split("T")[0]);
+        setCpu(promo.data.count_user);
+        setSelectedCategory(promo.data.category);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -196,8 +202,10 @@ const EditPromo = () => {
       navigate("/");
     } else if (role && role == 2) {
       navigate("/admin");
+    } else if (!checker && role == 3) {
+      navigate("/admin/promo");
     }
-  }, [role, userToken]);
+  }, [checker, role, userToken]);
   const resetPageTitle = () => {
     document.title = "Cnc-ecommerce";
   };

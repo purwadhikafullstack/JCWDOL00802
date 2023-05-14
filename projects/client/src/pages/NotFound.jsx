@@ -1,5 +1,5 @@
-import React from "react";
-import { Box, Center, Heading, Text, Button} from "@chakra-ui/react";
+import React, { useEffect } from "react";
+import { Box, Center, Heading, Text, Button } from "@chakra-ui/react";
 import { Container } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,6 +9,20 @@ const NotFound = () => {
   const handleBackHome = () => {
     navigate("/");
   };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Not Found";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
   return (
     <Box bg="white" h="100%">
       <Container>

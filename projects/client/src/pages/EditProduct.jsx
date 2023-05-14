@@ -65,7 +65,7 @@ const EditProduct = () => {
   });
 
   // GET NOMOR ID PRODUK DARI QUERY
-  const [productChecker, setProductChecker] = useState([]);
+  const [checker, setChecker] = useState([]);
   const location = useLocation();
   let idProd = location.search.split("=")[1];
 
@@ -81,22 +81,24 @@ const EditProduct = () => {
           Authorization: `Bearer ${getLocalStorage}`,
         },
       });
-      setIdEdit(products.data.data.id_product);
-      setNameEdit(products.data.data.name);
-      setDescriptionEdit(products.data.data.description);
-      setPriceEdit(products.data.data.price);
-      setWeightEdit(products.data.data.weight);
-      setProductPicture(products.data.data.product_picture);
-      setSelectedCategory(products.data.data.Category_Products[0].id_category);
-      setPreview(
-        `${API_URL}/img/product/${products.data.data.product_picture}`
-      );
-      setIsEdit(products.data.edit);
-      setDataStock(products.data.data.stock);
-      if (!products.data.data.id_product) {
-        setProductChecker(null);
+      if (!products.data.data) {
+        setChecker(null);
       } else {
-        setProductChecker(["1"]);
+        setChecker(["1"]);
+        setIdEdit(products.data.data.id_product);
+        setNameEdit(products.data.data.name);
+        setDescriptionEdit(products.data.data.description);
+        setPriceEdit(products.data.data.price);
+        setWeightEdit(products.data.data.weight);
+        setProductPicture(products.data.data.product_picture);
+        setSelectedCategory(
+          products.data.data.Category_Products[0].id_category
+        );
+        setPreview(
+          `${API_URL}/img/product/${products.data.data.product_picture}`
+        );
+        setIsEdit(products.data.edit);
+        setDataStock(products.data.data.stock);
       }
     } catch (error) {
       console.log(error);
@@ -117,7 +119,9 @@ const EditProduct = () => {
       },
     }).then((response) => {
       setDataWarehouse(response.data);
-      setSelectedWarehouse(response.data[0].id_warehouse);
+      if (response.data.length == 1) {
+        setSelectedWarehouse(response.data[0].id_warehouse);
+      }
     });
   };
 
@@ -409,7 +413,7 @@ const EditProduct = () => {
 
   useEffect(() => {
     let admin = [2, 3];
-    if (!productChecker) {
+    if (!checker) {
       navigate("/admin/products");
     }
     if (role && !admin.includes(role)) {
@@ -418,7 +422,7 @@ const EditProduct = () => {
     if (!userToken) {
       navigate("/login");
     }
-  }, [productChecker, role, userToken]);
+  }, [checker, role, userToken]);
 
   const resetPageTitle = () => {
     document.title = "Cnc-ecommerce";
@@ -483,6 +487,7 @@ const EditProduct = () => {
                     className="form-control"
                     type="file"
                     id="formFile"
+                    disabled={!isEdit}
                   />
                 </div>
               )}
@@ -498,6 +503,7 @@ const EditProduct = () => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.price}
+                  disabled={!isEdit}
                 />
                 {errors.price && touched.price && (
                   <Text fontSize="small" className="error">
@@ -517,6 +523,7 @@ const EditProduct = () => {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   value={values.weight}
+                  disabled={!isEdit}
                 />
                 {errors.weight && touched.weight && (
                   <Text fontSize="small" className="error">
@@ -530,7 +537,7 @@ const EditProduct = () => {
                 </label>
                 <select
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="form-control form-control-lg mt-3"
+                  className="form-control"
                   disabled={!isEdit}
                 >
                   <option value={0}>Select Category</option>
@@ -551,6 +558,7 @@ const EditProduct = () => {
               className={
                 errors.productName && touched.productName ? "input-error" : ""
               }
+              disabled={!isEdit}
             />
             {errors.productName && touched.productName && (
               <Text fontSize="small" className="error">
@@ -576,6 +584,7 @@ const EditProduct = () => {
               value={values.productDescription}
               onChange={handleChange}
               onBlur={handleBlur}
+              disabled={!isEdit}
             />
             {errors.productDescription && touched.productDescription && (
               <Text fontSize="small" className="error">
@@ -626,7 +635,7 @@ const EditProduct = () => {
             >
               <label className="form-label fw-bold text-muted">Warehouse</label>
               <select
-                className="form-control form-control-lg p-3 mx-3 my-2"
+                className="form-control mx-3 my-2"
                 onChange={(e) => setSelectedWarehouse(e.target.value)}
               >
                 {isEdit && <option value="">all warehouse</option>}
@@ -640,7 +649,7 @@ const EditProduct = () => {
               <label className="form-label fw-bold text-muted">Stock</label>
               <input
                 type="text"
-                className="form-control p-3 mx-3 my-2"
+                className="form-control mx-3"
                 placeholder="jmlh stok"
                 value={dataStock}
                 disabled
@@ -690,7 +699,7 @@ const EditProduct = () => {
                       TIPE PERUBAHAN
                     </label>
                     <select
-                      className="form-control form-control-lg"
+                      className="form-control"
                       onChange={(e) => setType(e.target.value)}
                     >
                       <option value="" selected hidden>
@@ -734,7 +743,7 @@ const EditProduct = () => {
                         Minta Stok Warehouse
                       </label>
                       <select
-                        className="form-control form-control-lg "
+                        className="form-control"
                         onChange={(e) => setIdWarehouseFrom(e.target.value)}
                       >
                         <option>Pilih Gudang</option>
@@ -761,9 +770,10 @@ const EditProduct = () => {
                     <input
                       placeholder="jumlah produk "
                       type="number"
-                      className="form-control p-3"
+                      className="form-control"
                       value={inputChange}
                       onChange={(e) => setInputChange(e.target.value)}
+                      max={stockWarehouseFrom}
                     />
                     <label className="form-label fw-bold text-muted my-2">
                       Catatan

@@ -15,7 +15,8 @@ import {
   ButtonGroup,
   Input,
   useColorModeValue,
-  IconButton,useToast
+  IconButton,
+  useToast,
 } from "@chakra-ui/react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { API_URL } from "../helper";
@@ -30,25 +31,25 @@ const DetailPage = (props) => {
   const [productData, setProductData] = React.useState({});
   const [cartData, setCartData] = React.useState(null);
   const [qty, setQty] = React.useState(1);
-  const [stock,setStock]=useState(0)
-  const [cart,setCart]=useState(0)
-  const [stockOut,setStockOut]=useState(false)
-  const [disableMinus,setDisableMinus]= useState(false)
-  const [disablePlus,setDisablePlus]= useState(false)
-  const [disableAdd, setDisableAdd]=useState(false)
+  const [stock, setStock] = useState(0);
+  const [cart, setCart] = useState(0);
+  const [stockOut, setStockOut] = useState(false);
+  const [disableMinus, setDisableMinus] = useState(false);
+  const [disablePlus, setDisablePlus] = useState(false);
+  const [disableAdd, setDisableAdd] = useState(false);
   const { id } = useParams();
   const [isLoved, setIsLoved] = React.useState(false);
-  const [disableWishlist, setDisableWishlist]=useState(false)
+  const [disableWishlist, setDisableWishlist] = useState(false);
 
-  const { id_user, status,role } = useSelector((state) => {
+  const { id_user, status, role } = useSelector((state) => {
     return {
       id_user: state.userReducer.id_user,
       status: state.userReducer.status,
-      role : state.userReducer.role
+      role: state.userReducer.role,
     };
   });
-  let userToken =localStorage.getItem("cnc_login")
-  let toast=useToast()
+  let userToken = localStorage.getItem("cnc_login");
+  let toast = useToast();
   const getProductDetail = () => {
     Axios.get(`${API_URL}/apis/product/detail?id=${id}`)
       .then((response) => {
@@ -65,60 +66,59 @@ const DetailPage = (props) => {
   }, []);
 
   useEffect(() => {
-    let total = qty+cart
-    let admin= [2,3]
-    if(admin.includes(role)){
-      setDisableAdd(true)
-      setDisableWishlist(true)
+    let total = qty + cart;
+    let admin = [2, 3];
+    if (admin.includes(role)) {
+      setDisableAdd(true);
+      setDisableWishlist(true);
     }
-    if(total >= stock){
-      setDisablePlus(true)
-    }else setDisablePlus(false)
-    if(qty<=1){
-      setDisableMinus(true)
-    } else{setDisableMinus(false)}
+    if (total >= stock) {
+      setDisablePlus(true);
+    } else setDisablePlus(false);
+    if (qty <= 1) {
+      setDisableMinus(true);
+    } else {
+      setDisableMinus(false);
+    }
 
-    
-    if(qty == 0){
-      setDisableAdd(true)
-      setDisablePlus(true)
+    if (qty == 0) {
+      setDisableAdd(true);
+      setDisablePlus(true);
     }
-    if(productData && productData.stock==0){
-    setDisableAdd(true)
-    setStockOut(true)
-    setDisablePlus(true)
-    setDisableMinus(true)
-    setQty(0)}
-    ;
-  }, [qty,productData,cart,role])
-  
+    if (productData && productData.stock == 0) {
+      setDisableAdd(true);
+      setStockOut(true);
+      setDisablePlus(true);
+      setDisableMinus(true);
+      setQty(0);
+    }
+  }, [qty, productData, cart, role]);
 
   const getCartDetail = async () => {
-    if(userToken){
-    await Axios.get(`${API_URL}/apis/cart/detail/?id=${id_user}&prod=${id}`,{
-        
-      headers: {
-        Authorization: `Bearer ${userToken}`,
-      },
-    
-    })
-      .then((response) => {
-        setCartData(response.data)
-        
-        if(!response.data){
-          setCart(0);
-        }else{
-          setCart(response.data.total_item);
-        }
+    if (userToken) {
+      await Axios.get(`${API_URL}/apis/cart/detail/?id=${id_user}&prod=${id}`, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
       })
-      .catch((error) => {
-        console.log(error);
-        setCart(0)
-      });}
+        .then((response) => {
+          setCartData(response.data);
+
+          if (!response.data) {
+            setCart(0);
+          } else {
+            setCart(response.data.total_item);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          setCart(0);
+        });
+    }
   };
   useEffect(() => {
     getCartDetail();
-  }, [id_user,userToken]);
+  }, [id_user, userToken]);
 
   const onInc = () => {
     if (cartData == null) {
@@ -149,60 +149,57 @@ const DetailPage = (props) => {
       setQty(qty - 1);
     }
   };
-  const toastMessage=(text,stat)=>{
+  const toastMessage = (text, stat) => {
     toast({
       title: text,
       status: stat,
       duration: 3000,
       isClosable: true,
-      position:"top"
-    })
-    
-  }
+      position: "top",
+    });
+  };
   const addToCart = async () => {
-    
     if (parseInt(productData.stock) == 0) {
       alert("stock kosong nih bos");
     } else if (qty == 0) {
       alert("jumlahnya masih 0, tolong isi dulu ya");
-    } else if (status == 2 && parseInt(productData.stock) !== 0 &&userToken) {
+    } else if (status == 2 && parseInt(productData.stock) !== 0 && userToken) {
       try {
         let id_product = productData.id_product;
-      let total_item = qty;
-      let addCart =await Axios.post(API_URL + "/apis/cart/addtocart", {
-        id_user,
-        id_product,
-        total_item,
-      },{
-        
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      
-      })
-        toastMessage(addCart.data.message,"success")
-        getCartDetail()
+        let total_item = qty;
+        let addCart = await Axios.post(
+          API_URL + "/apis/cart/addtocart",
+          {
+            id_user,
+            id_product,
+            total_item,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
+        );
+        toastMessage(addCart.data.message, "success");
+        getCartDetail();
       } catch (error) {
-        toastMessage(error.response.data.message,"error")
+        toastMessage(error.response.data.message, "error");
       }
-    }else if(!userToken){
+    } else if (!userToken) {
       navigate("/login", { replace: true });
     }
   };
 
- 
-
   const toggleLove = () => {
-    ;
     //Logic Buat Wishlist
-    if(isLoved &&userToken){
-      removeWishlist()
-    }else if(!isLoved &&userToken){
-      addToWishlist()
-    }else if(!userToken){
-      navigate("/login")
+    if (isLoved && userToken) {
+      removeWishlist();
+    } else if (!isLoved && userToken) {
+      addToWishlist();
+    } else if (!userToken) {
+      navigate("/login");
     }
-    setIsLoved((prevState) => !prevState)
+    setIsLoved((prevState) => !prevState);
   };
 
   //SCROLL TO TOP
@@ -213,51 +210,64 @@ const DetailPage = (props) => {
     });
   };
 
-  const getChecker = async ()=>{
-    try {
-      let checker = await Axios.get(`${API_URL}/apis/wishlist/checker?id=${id}`,{
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      })
-      
-      setIsLoved(checker.data.isWishlisted)
-    } catch (error) {
-      
-    }
-  }
-  const addToWishlist = async ()=>{
-    try {
-      let add = await Axios.post(`${API_URL}/apis/wishlist/wish?id=${id}`,{},{
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      })
-      ;
-      
-    } catch (error) {
-      
-    }
-  }
-  const removeWishlist = async ()=>{
-    try {
-      let remove = await Axios.delete(`${API_URL}/apis/wishlist/wish?id=${id}`,{
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-      })
-      
-      
-    } catch (error) {
-      
-    }
-  }
+  // ACCESS
   useEffect(() => {
-    if(id){
-      getChecker()
+    document.title = "Cnc || Produk Detail";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
+  };
+
+  const getChecker = async () => {
+    try {
+      let checker = await Axios.get(
+        `${API_URL}/apis/wishlist/checker?id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+
+      setIsLoved(checker.data.isWishlisted);
+    } catch (error) {}
+  };
+  const addToWishlist = async () => {
+    try {
+      let add = await Axios.post(
+        `${API_URL}/apis/wishlist/wish?id=${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+    } catch (error) {}
+  };
+  const removeWishlist = async () => {
+    try {
+      let remove = await Axios.delete(
+        `${API_URL}/apis/wishlist/wish?id=${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      );
+    } catch (error) {}
+  };
+  useEffect(() => {
+    if (id) {
+      getChecker();
     }
-  }, [id])
-  
+  }, [id]);
+
   useEffect(() => {
     scrollToTop();
   }, []);
@@ -278,7 +288,7 @@ const DetailPage = (props) => {
               fit={"cover"}
               align={"center"}
               w={"100%"}
-              className= {stockOut? "gambarUnavailable": ""}
+              className={stockOut ? "gambarUnavailable" : ""}
               h={{ base: "100%", sm: "400px", lg: "500px" }}
             />
           </VStack>
@@ -314,7 +324,9 @@ const DetailPage = (props) => {
 
           <Divider />
           <HStack maxW="180px">
-            <Button onClick={onDec} isDisabled={disableMinus}>-</Button>
+            <Button onClick={onDec} isDisabled={disableMinus}>
+              -
+            </Button>
             <Input
               type="number"
               value={qty}
@@ -322,18 +334,24 @@ const DetailPage = (props) => {
               focusBorderColor="blue.500"
               onChange={(e) => {}}
             />
-            <Button onClick={onInc}isDisabled={disablePlus}>+</Button>
-            
+            <Button onClick={onInc} isDisabled={disablePlus}>
+              +
+            </Button>
           </HStack>
           <ButtonGroup spacing={2}>
-            <Button colorScheme="orange" variant={disableAdd?"ghost":"outline"} onClick={addToCart} isDisabled={disableAdd}>
+            <Button
+              colorScheme="orange"
+              variant={disableAdd ? "ghost" : "outline"}
+              onClick={addToCart}
+              isDisabled={disableAdd}
+            >
               Add To Cart
             </Button>
             <IconButton
               isDisabled={disableWishlist}
               aria-label="Add to wishlist"
               icon={<AiFillHeart />}
-              variant={isLoved? "ghost":"outline"}
+              variant={isLoved ? "ghost" : "outline"}
               colorScheme={isLoved ? "red" : "gray"}
               onClick={toggleLove}
             />

@@ -120,48 +120,30 @@ function App() {
           />
           <Route path="/admin/salesreport" element={<ReportSales />} />
           <Route path="/wishlist" element={<WishlistPage />} />
-          {/* semua yang butuh login user taruh dalam <></> bawah ini */}
-          {role == 1 && (
-            <>
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/address" element={<Address />} />
-            </>
-          )}
-          {/* semua yang butuh minimal admin taruh didalam <> bawah ini */}
-          {admin.includes(role) && (
-            <>
-              <Route path="/admin" element={<Dashboard />} />
-
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route
-                path="/admin/category"
-                element={<AdminCategoryProduct />}
-              />
-
-              <Route path="/admin/editproduct" element={<EditProduct />} />
-
-              <Route path="/admin/requeststock" element={<RequestStock />} />
-              <Route path="/admin/orderlist" element={<AdminOrderList />} />
-              <Route
-                path="/admin/order-detail"
-                element={<AdminOrderListDetail />}
-              />
-            </>
-          )}
-
-          {/* semua yang butuh superadmin taruh dalam <></> bawah ini */}
-          {role == 3 && (
-            <>
-              <Route path="/admin/warehouse" element={<AdminWarehouse />} />
-              <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
-              <Route path="/admin/newproduct" element={<NewProduct />} />
-              <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
-              <Route path="/admin/newpromo" element={<NewPromo />} />
-              <Route path="/admin/promo" element={<AdminPromo />} />
-              <Route path="/admin/editpromo" element={<EditPromo />} />
-              <Route path="/admin/userlist" element={<AdminUserList />} />
-            </>
-          )}
+          {/* semua yang butuh login user taruh bawah ini */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/address" element={<Address />} />
+          {/* semua yang butuh minimal admin taruh bawah ini */}
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/category" element={<AdminCategoryProduct />} />
+          <Route path="/admin/editproduct" element={<EditProduct />} />
+          <Route path="/admin/requeststock" element={<RequestStock />} />
+          <Route path="/admin/orderlist" element={<AdminOrderList />} />
+          <Route
+            path="/admin/order-detail"
+            element={<AdminOrderListDetail />}
+          />
+          {/* semua yang butuh superadmin taruh bawah ini */}
+          <Route path="/admin/warehouse" element={<AdminWarehouse />} />
+          <Route path="/admin/newwarehouse" element={<NewWarehouse />} />
+          <Route path="/admin/newproduct" element={<NewProduct />} />
+          <Route path="/admin/editwarehouse" element={<EditWarehouse />} />
+          <Route path="/admin/newpromo" element={<NewPromo />} />
+          <Route path="/admin/promo" element={<AdminPromo />} />
+          <Route path="/admin/editpromo" element={<EditPromo />} />
+          <Route path="/admin/userlist" element={<AdminUserList />} />
+          {/*  */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Sidebar>

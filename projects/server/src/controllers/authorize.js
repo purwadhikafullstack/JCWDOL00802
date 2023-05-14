@@ -8,7 +8,7 @@ module.exports = {
       if (err) {
         return res.status(401).send({
           success: false,
-          message: "Authenticate token failed",
+          msg: "Authenticate token failed",
         });
       }
       req.decript = decript;
@@ -20,7 +20,7 @@ module.exports = {
       if (err) {
         return res.status(401).send({
           success: false,
-          message: "Authenticate token failed",
+          msg: "Authenticate token failed",
         });
       }
       if (decript.role == 2 || decript.role == 3) {
@@ -29,7 +29,7 @@ module.exports = {
       } else {
         return res.status(401).send({
           success: false,
-          message: "aha",
+          msg: "You are not admin",
         });
       }
     });
@@ -39,7 +39,7 @@ module.exports = {
       if (err) {
         return res.status(401).send({
           success: false,
-          message: "Authenticate token failed",
+          msg: "Authenticate token failed",
         });
       }
       if (decript.role == 3) {
@@ -48,7 +48,7 @@ module.exports = {
       } else {
         return res.status(401).send({
           success: false,
-          message: "bukan super admin",
+          msg: "bukan super admin",
         });
       }
     });

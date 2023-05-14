@@ -24,6 +24,7 @@ const EditWarehouse = (props) => {
   const [provinceList, setProvinceList] = useState(null);
   const [cityList, setCityList] = useState(null);
   const [warehouseData, setWarehouseData] = useState(0);
+  const [checker, setChecker] = useState([]);
 
   //FORMIK
   const { values, errors, touched, handleBlur, handleChange } = useFormik({
@@ -53,10 +54,15 @@ const EditWarehouse = (props) => {
           },
         }
       );
-      setWarehouseData(warehouse.data[0]);
-      setNameEdit(warehouse.data[0].warehouse_branch_name);
-      setDetailAddressEdit(warehouse.data[0].detail_address);
-      setPhoneNumberEdit(warehouse.data[0].phone_number);
+      if (!warehouse.data) {
+        setChecker(null);
+      } else {
+        setChecker(["1"]);
+        setWarehouseData(warehouse.data);
+        setNameEdit(warehouse.data.warehouse_branch_name);
+        setDetailAddressEdit(warehouse.data.detail_address);
+        setPhoneNumberEdit(warehouse.data.phone_number);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -64,8 +70,14 @@ const EditWarehouse = (props) => {
 
   const onGetSelectedCity = async () => {
     try {
+      let getLocalStorage = localStorage.getItem("cnc_login");
       let response = await Axios.get(
-        API_URL + `/apis/warehouse/postal?postal=${warehouseData.postal_code}`
+        API_URL + `/apis/warehouse/postal?postal=${warehouseData.postal_code}`,
+        {
+          headers: {
+            Authorization: `Bearer ${getLocalStorage}`,
+          },
+        }
       );
       let kota = response.data;
       let container = {
@@ -210,6 +222,7 @@ const EditWarehouse = (props) => {
         })
         .catch((error) => {
           console.log(error);
+          alert(error.response.data.msg);
         });
     }
   };
@@ -230,8 +243,10 @@ const EditWarehouse = (props) => {
       navigate("/");
     } else if (role && role == 2) {
       navigate("/admin");
+    } else if (!checker && role == 3) {
+      navigate("/admin/warehouse");
     }
-  }, [role, userToken]);
+  }, [checker, role, userToken]);
   const resetPageTitle = () => {
     document.title = "Cnc-ecommerce";
   };
@@ -283,7 +298,7 @@ const EditWarehouse = (props) => {
               Nomor Telepon
             </label>
             <Input
-              type="text"
+              type="tel"
               id="phone"
               placeholder="Nomor Telepon"
               value={values.phone}
@@ -330,7 +345,7 @@ const EditWarehouse = (props) => {
             <label className="form-label fw-bold text-muted">Propinsi</label>
             <select
               onChange={(e) => onGetCity(e.target.value)}
-              className="form-control form-control-lg"
+              className="form-control"
             >
               <option value={selectedCity?.province_id}>
                 {selectedCity?.province}
@@ -342,7 +357,7 @@ const EditWarehouse = (props) => {
             <label className="form-label fw-bold text-muted">Kota</label>
             <select
               onChange={(e) => onGetPostal(e.target.value)}
-              className="form-control form-control-lg"
+              className="form-control"
             >
               <option value={selectedCity?.city_id}>
                 {selectedCity?.city_name}
@@ -354,7 +369,7 @@ const EditWarehouse = (props) => {
             <label className="form-label fw-bold text-muted">Postal Code</label>
             <input
               type="text"
-              className="form-control p-3"
+              className="form-control"
               placeholder="Kode pos"
               value={selectedCity?.postal_code}
               disabled

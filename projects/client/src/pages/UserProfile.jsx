@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Axios from "axios";
 import {
   Button,
@@ -96,6 +96,19 @@ const Profile = (props) => {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  // ACCESS
+  useEffect(() => {
+    document.title = "Cnc || Profil Saya";
+    window.addEventListener("beforeunload", resetPageTitle);
+    return () => {
+      window.removeEventListener("beforeunload", resetPageTitle());
+    };
+  }, []);
+
+  const resetPageTitle = () => {
+    document.title = "Cnc-ecommerce";
   };
 
   return (
