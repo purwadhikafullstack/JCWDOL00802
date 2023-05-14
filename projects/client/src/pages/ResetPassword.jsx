@@ -49,7 +49,7 @@ const ResetPassword = (props) => {
       }
     )
       .then((response) => {
-        alert("Reset Password Success Success ✅");
+        alert("Reset Password Success ✅");
         navigate("/");
       })
       .catch((error) => {

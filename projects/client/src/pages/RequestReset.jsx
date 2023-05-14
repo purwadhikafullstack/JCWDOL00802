@@ -27,7 +27,7 @@ const RequestReset = () => {
       email: values.email,
     })
       .then((response) => {
-        alert("Request Reset Password Success ✅, Check your email");
+        alert("Request Reset Password Success ✅, Cek email anda");
         navigate("/");
       })
       .catch((error) => {
