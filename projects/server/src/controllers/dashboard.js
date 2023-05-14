@@ -99,6 +99,7 @@ module.exports = {
   getTotalOrders: async (req, res) => {
     try {
       const queryOptions = {
+        where: { transaction_status: 7 },
         attributes: [
           "warehouse_sender",
           [

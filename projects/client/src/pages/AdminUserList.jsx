@@ -24,8 +24,7 @@ import {
   AlertDialogFooter,
 } from "@chakra-ui/react";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
-import EditUserModal from "../components/UserListComponent/EditUserModal"; 
-import AddUserModal from "../components/UserListComponent/AddUserModal";
+import EditUserModal from "../components/UserListComponent/EditUserModal";
 
 function AdminUserList() {
   // STATE
@@ -40,12 +39,6 @@ function AdminUserList() {
   const onClose = () => setIsOpen(false);
   const cancelRef = React.useRef();
   const [updateTrigger, setUpdateTrigger] = useState(false);
-   
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const handleAddUserClick = () => {
-    setIsAddUserModalOpen(true);
-  };
-  
 
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const handleEditUserClick = (id_user) => {
@@ -69,26 +62,6 @@ function AdminUserList() {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const onDelete = async (id_user) => {
-    try {
-      await Axios.delete(API_URL + `/apis/user/delete`, {
-        data: { id_user },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
-        },
-      });
-      alert("Delete User Success ✅");
-      getUser(); // Refresh the user list after deletion
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleDeleteClick = (id_user) => {
-    setSelectedUserId(id_user);
-    setIsOpen(true);
   };
 
   let dataExist = false;
@@ -124,31 +97,22 @@ function AdminUserList() {
     let data = dataExist ? dataUser : [];
     // let num = 0;
     return data.map((val, idx) => {
-      
-        return (
-            <Tr>
+      return (
+        <Tr>
           <Td>{val.full_name}</Td>
           <Td>{val.email}</Td>
-          <Td>{val.role === 1 ? 'User' : 'Warehouse Admin'}</Td>    
+          <Td>{val.role === 1 ? "User" : "Warehouse Admin"}</Td>
           <Td>
-            <Button
-              type="button"
-              colorScheme="orange"
-              variant="solid"
-              onClick={() => handleEditUserClick(val.id_user)}
-            >
-              Edit User
-            </Button>
-          </Td>
-          <Td>
-            <Button
-              type="button"
-              colorScheme="red"
-              variant="solid"
-              onClick={() => handleDeleteClick(val.id_user)}
-            >
-              Delete User
-            </Button>
+            {val.role === 2 && (
+              <Button
+                type="button"
+                colorScheme="orange"
+                variant="solid"
+                onClick={() => handleEditUserClick(val.id_user)}
+              >
+                Edit User
+              </Button>
+            )}
           </Td>
         </Tr>
       );
@@ -159,30 +123,16 @@ function AdminUserList() {
     <div className="bg-white w-100 m-auto ">
       <div className="d-flex">
         <div className="col-9 rounded p-3 tablebox">
-          
           <TableContainer className="rounded">
-          <div className="d-flex justify-content-between align-items-center">
-      <Text fontSize="2xl">User List</Text>
-      <Button colorScheme="blue" onClick={handleAddUserClick}>
-        Add User
-      </Button>
-    </div>
-
-    {isAddUserModalOpen && (
-      <AddUserModal
-        isOpen={isAddUserModalOpen}
-        onClose={() => setIsAddUserModalOpen(false)}
-        onUserAdded={() => setUpdateTrigger(!updateTrigger)}
-        setUpdateTrigger={setUpdateTrigger}
-      />
-    )}
+            <div className="d-flex justify-content-between align-items-center">
+              <Text fontSize="2xl">User List</Text>
+            </div>
             <Table>
               <Thead>
                 <Tr className="tablehead">
                   <Th color="#ffffff">Full Name</Th>
                   <Th color="#ffffff">Email</Th>
                   <Th color="#ffffff">Role</Th>
-                  <Th></Th>
                   <Th></Th>
                 </Tr>
               </Thead>
@@ -260,50 +210,17 @@ function AdminUserList() {
               Reset Filter
             </Button>
           </ButtonGroup>
-          <AlertDialog
-        isOpen={isOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete User
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure you want to delete this User ?
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={() => {
-                  onDelete(selectedUserId);
-                  onClose();
-                }}
-                ml={3}
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
         </div>
       </div>
       {isEditUserModalOpen && (
-      <EditUserModal
-        id_user={selectedUserId}
-        isOpen={isEditUserModalOpen}
-        onClose={handleEditUserClose}
-        updateTrigger={updateTrigger}
-        setUpdateTrigger={setUpdateTrigger}
-      />
-    )}
+        <EditUserModal
+          id_user={selectedUserId}
+          isOpen={isEditUserModalOpen}
+          onClose={handleEditUserClose}
+          updateTrigger={updateTrigger}
+          setUpdateTrigger={setUpdateTrigger}
+        />
+      )}
     </div>
   );
 }
