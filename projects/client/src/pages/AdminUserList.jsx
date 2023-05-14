@@ -15,16 +15,9 @@ import {
   Input,
   Select,
   ButtonGroup,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
 } from "@chakra-ui/react";
 import PaginationOrder from "../components/OrderComponent/OrderPagination";
 import EditUserModal from "../components/UserListComponent/EditUserModal";
-import AddUserModal from "../components/UserListComponent/AddUserModal";
 import { useSelector } from "react-redux";
 
 function AdminUserList() {
@@ -47,11 +40,7 @@ function AdminUserList() {
       role: state.userReducer.role,
     };
   });
-  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
-  const handleAddUserClick = () => {
-    setIsAddUserModalOpen(true);
-  };
-
+ 
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const handleEditUserClick = (id_user) => {
     setSelectedUserId(id_user);
@@ -74,26 +63,6 @@ function AdminUserList() {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const onDelete = async (id_user) => {
-    try {
-      await Axios.delete(API_URL + `/apis/user/delete`, {
-        data: { id_user },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("cnc_login")}`,
-        },
-      });
-      alert("Delete User Success ✅");
-      getUser(); // Refresh the user list after deletion
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleDeleteClick = (id_user) => {
-    setSelectedUserId(id_user);
-    setIsOpen(true);
   };
 
   let dataExist = false;
@@ -135,24 +104,16 @@ function AdminUserList() {
           <Td>{val.email}</Td>
           <Td>{val.role === 1 ? "User" : "Warehouse Admin"}</Td>
           <Td>
-            <Button
-              type="button"
-              colorScheme="orange"
-              variant="solid"
-              onClick={() => handleEditUserClick(val.id_user)}
-            >
-              Edit User
-            </Button>
-          </Td>
-          <Td>
-            <Button
-              type="button"
-              colorScheme="red"
-              variant="solid"
-              onClick={() => handleDeleteClick(val.id_user)}
-            >
-              Delete User
-            </Button>
+            {val.role === 2 && (
+              <Button
+                type="button"
+                colorScheme="orange"
+                variant="solid"
+                onClick={() => handleEditUserClick(val.id_user)}
+              >
+                Edit User
+              </Button>
+            )}
           </Td>
         </Tr>
       );
@@ -186,21 +147,6 @@ function AdminUserList() {
       <div className="d-flex">
         <div className="col-9 rounded p-3 tablebox">
           <TableContainer className="rounded">
-            <div className="d-flex justify-content-between align-items-center">
-              <Text fontSize="2xl">User List</Text>
-              <Button colorScheme="blue" onClick={handleAddUserClick}>
-                Add User
-              </Button>
-            </div>
-
-            {isAddUserModalOpen && (
-              <AddUserModal
-                isOpen={isAddUserModalOpen}
-                onClose={() => setIsAddUserModalOpen(false)}
-                onUserAdded={() => setUpdateTrigger(!updateTrigger)}
-                setUpdateTrigger={setUpdateTrigger}
-              />
-            )}
             <Table>
               <Thead>
                 <Tr className="tablehead">
@@ -289,39 +235,6 @@ function AdminUserList() {
               Reset Filter
             </Button>
           </ButtonGroup>
-          <AlertDialog
-            isOpen={isOpen}
-            leastDestructiveRef={cancelRef}
-            onClose={onClose}
-          >
-            <AlertDialogOverlay>
-              <AlertDialogContent>
-                <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                  Delete User
-                </AlertDialogHeader>
-
-                <AlertDialogBody>
-                  Are you sure you want to delete this User ?
-                </AlertDialogBody>
-
-                <AlertDialogFooter>
-                  <Button ref={cancelRef} onClick={onClose}>
-                    Cancel
-                  </Button>
-                  <Button
-                    colorScheme="red"
-                    onClick={() => {
-                      onDelete(selectedUserId);
-                      onClose();
-                    }}
-                    ml={3}
-                  >
-                    Delete
-                  </Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialogOverlay>
-          </AlertDialog>
         </div>
       </div>
       {isEditUserModalOpen && (

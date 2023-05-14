@@ -13,6 +13,8 @@ import {
 } from '@chakra-ui/react';
 
 const TransactionProofModal = ({ isOpen, onClose, proofUrl, onAccept, onReject }) => {
+  const isAcceptDisabled = !proofUrl;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
@@ -24,7 +26,7 @@ const TransactionProofModal = ({ isOpen, onClose, proofUrl, onAccept, onReject }
         </ModalBody>
         <ModalFooter>
           <HStack spacing={4}>
-            <Button colorScheme="green" onClick={onAccept}>
+          <Button colorScheme="green" onClick={onAccept} isDisabled={isAcceptDisabled}>
               Accept
             </Button>
             <Button colorScheme="red" onClick={onReject}>
