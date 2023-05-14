@@ -196,6 +196,7 @@ function StockHistoryDetail() {
               totalPages={parseInt(totalPage)}
               onPageChange={setPage}
               onLimitChange={handleLimit}
+              maxLimit={20}
             />
           )}
         </div>

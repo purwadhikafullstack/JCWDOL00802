@@ -84,10 +84,10 @@ const OrderPage = (props) => {
       text = `apakah anda yakin ingin membatalkan pesanan?`;
     }
     if (stat == 7) {
-      let text = `apakah anda yakin ingin menerima pesanan?`;
+      text = `apakah anda yakin ingin menerima pesanan?`;
     }
     if (stat == 8) {
-      let text = `apakah anda yakin ingin mengajukan komplain pesanan?`;
+       text = `apakah anda yakin ingin mengajukan komplain pesanan?`;
     }
     if (window.confirm(text)) {
       const change = await Axios.get(
