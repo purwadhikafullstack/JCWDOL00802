@@ -11,7 +11,8 @@ route.patch("/resetpassword", readToken, userController.resetPassword);
 route.post("/login", userController.login);
 route.get("/keep", authorizeController.authUser, userController.keepLogin);
 
-route.get("/profile", authorizeController.authUser, userController.getProfile);
+route.get("/profile", authorizeController.authUser, userController.getProfile); 
+
 route.post(
   "/edit",
   authorizeController.authUser,
@@ -25,26 +26,12 @@ route.post(
   userController.getUserList
 );
 
-route.delete(
-  "/delete",
-  authorizeController.authSuperAdmin,
-  userController.deleteUser
-);
-
 route.post(
   "/edituser",
   authorizeController.authSuperAdmin,
-  uploader("/profile").single("profile_picture"),
   userController.updateUser
 );
 
-route.post(
-  "/adduser",
-  authorizeController.authSuperAdmin,
-  uploader("/profile").single("profile_picture"),
-  userController.addUser
-);
-
-route.get("/user", userController.getUserByID);
+route.get("/user", userController.getUserByID)
 
 module.exports = route;

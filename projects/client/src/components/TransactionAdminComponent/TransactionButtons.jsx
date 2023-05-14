@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Button } from '@chakra-ui/react';
+import { Button, useToast } from '@chakra-ui/react';
 import Axios from 'axios';
 import { API_URL } from '../../helper';
 
-const TransactionButtons = ({  transactionStatus, id_transaction, setTransactionProofModalVisible, setResiModalVisible  }) => {
+const TransactionButtons = ({  transactionStatus, id_transaction, setTransactionProofModalVisible, setResiModalVisible, fetchOrderDetails }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [acceptLabel, setAcceptLabel] = useState('');
   const [showResiInput, setShowResiInput] = useState(false);
-
+  const toast = useToast();
 
   const actions = [
     {
@@ -35,8 +35,13 @@ const TransactionButtons = ({  transactionStatus, id_transaction, setTransaction
     try {
       const response = await Axios.post(`${API_URL}/apis/trans/proceed?id=${id_transaction}`);
       if (response.status === 200) {
-        console.log("Transaction processed successfully");
-        // call fetchOrderDetails or similar function here to refresh the order details
+        toast({
+          title: "Transaction processed successfully",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+        fetchOrderDetails();
       } else {
         console.error("Failed to process transaction");
       }
@@ -49,8 +54,13 @@ const TransactionButtons = ({  transactionStatus, id_transaction, setTransaction
     try {
       const response = await Axios.post(`${API_URL}/apis/trans/dikemas?id=${id_transaction}`);
       if (response.status === 200) {
-        console.log("Transaction marked as 'dikemas' successfully");
-        // call fetchOrderDetails or similar function here to refresh the order details
+        toast({
+          title: "Transaction marked as 'dikemas' successfully",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+        fetchOrderDetails();
       } else {
         console.error("Failed to mark transaction as 'dikemas'");
       }

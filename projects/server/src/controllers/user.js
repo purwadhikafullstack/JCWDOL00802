@@ -379,98 +379,40 @@ module.exports = {
     }
   },
 
-  deleteUser: async (req, res) => {
-    try {
-      const adminId = req.decript.id_user;
-      const userIdToDelete = req.body.id_user;
-      if (adminId === userIdToDelete) {
-        return res
-          .status(400)
-          .json({ message: "You cannot delete your own account" });
-      }
-      const adminUser = await UserModel.findOne({
-        where: { id_user: adminId },
-      });
-      if (adminUser.role !== 3) {
-        return res.status(403).json({
-          message: "You do not have permission to perform this action",
-        });
-      }
-      const userToDelete = await UserModel.findOne({
-        where: { id_user: userIdToDelete },
-      });
-      if (!userToDelete) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      await userToDelete.update({ status: 3 });
-      res
-        .status(200)
-        .json({ message: "User deleted successfully", data: userToDelete });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Server error" });
-    }
-  },
-
   updateUser: async (req, res) => {
     try {
       const id_user = req.decript.id_user;
       const superAdmin = await UserModel.findOne({ where: { id_user } });
-
+  
       if (!superAdmin || superAdmin.role !== 3) {
-        return res.status(403).json({
-          message: "You do not have permission to perform this action",
-        });
+        return res
+          .status(403)
+          .json({
+            message: "You do not have permission to perform this action",
+          });
       }
-
-      const {
-        target_id_user,
-        username,
-        phone_number,
-        full_name,
-        role,
-        password,
-        email,
-      } = req.body;
+  
+      const { target_id_user, phone_number, full_name } =
+        req.body;
       const user = await UserModel.findOne({
         where: { id_user: target_id_user },
       });
-
+  
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-
+  
       const updateData = {};
-      if (username !== undefined && username !== "") {
-        updateData.username = username;
-      }
       if (phone_number !== undefined && phone_number !== "") {
         updateData.phone_number = phone_number;
       }
       if (full_name !== undefined && full_name !== "") {
         updateData.full_name = full_name;
       }
-      if (role !== undefined) {
-        const parsedRole = parseInt(role, 10);
-        if (parsedRole === 1 || parsedRole === 2) {
-          updateData.role = parsedRole;
-        }
-      }
-      if (password !== undefined && password !== "") {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        updateData.password = hashedPassword;
-      }
-      if (email !== undefined && email !== "") {
-        updateData.email = email;
-      }
-      if (req.file) {
-        updateData.profile_picture = req.file.filename;
-      }
-
       const updateUser = await UserModel.update(updateData, {
         where: { id_user: target_id_user },
       });
-
+  
       res.status(201).json({
         message: "Success",
         data: updateUser,
@@ -479,7 +421,7 @@ module.exports = {
       console.log(error.message);
       res.status(500).json({ message: "Something went wrong" });
     }
-  },
+  },  
 
   getUserByID: async (req, res) => {
     try {
@@ -512,71 +454,5 @@ module.exports = {
       res.status(500).json({ message: "Something went wrong" });
     }
   },
-
-  addUser: async (req, res) => {
-    try {
-      const id_user = req.decript.id_user;
-      const superAdmin = await UserModel.findOne({ where: { id_user } });
-
-      if (!superAdmin || superAdmin.role !== 3) {
-        return res.status(403).json({
-          message: "You do not have permission to perform this action",
-        });
-      }
-
-      const { username, phone_number, full_name, role, password, email } =
-        req.body;
-
-      if (
-        !username ||
-        !phone_number ||
-        !full_name ||
-        !role ||
-        !password ||
-        !email
-      ) {
-        return res.status(400).json({ message: "Missing required fields" });
-      }
-
-      const existingUser = await UserModel.findOne({ where: { username } });
-
-      if (existingUser) {
-        return res.status(409).json({ message: "Username already exists" });
-      }
-
-      const parsedRole = parseInt(role, 10);
-
-      if (parsedRole !== 1 && parsedRole !== 2) {
-        return res.status(400).json({ message: "Invalid role" });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const newUser = {
-        username,
-        phone_number,
-        full_name,
-        role: parsedRole,
-        password: hashedPassword,
-        email,
-        status: 2, // Set status to 2 (verified)
-      };
-
-      if (req.file) {
-        newUser.profile_picture = req.file.filename;
-      } else {
-        newUser.profile_picture = "default.png";
-      }
-
-      const createdUser = await UserModel.create(newUser);
-
-      res.status(201).json({
-        message: "User created successfully",
-        data: createdUser,
-      });
-    } catch (error) {
-      console.log(error.message);
-      res.status(500).json({ message: "Something went wrong" });
-    }
-  },
+  
 };
