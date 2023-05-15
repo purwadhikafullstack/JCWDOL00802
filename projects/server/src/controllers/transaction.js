@@ -13,6 +13,7 @@ const WarehouseAdminModel = require("../model/Warehouse_admin");
 const UserModel = require("../model/user");
 const { transporter } = require("../config/nodemailer");
 const { Op } = require("sequelize");
+const cron = require('node-cron');
 
 module.exports = {
   getTransaction: async (req, res) => {
@@ -776,7 +777,7 @@ module.exports = {
             job.stop();
             return;
           }
-      
+   
           const now = new Date();
           const sentDate = new Date(transaction.date_send);
           const diffDays = Math.abs(now - sentDate) / (1000 * 60 * 60 * 24);
